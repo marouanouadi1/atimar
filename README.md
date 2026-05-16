@@ -1,70 +1,68 @@
-# atimar
+## 🛠 Tech Stack
 
-A React Native mobile app built with Expo, supporting iOS, Android, and Web.
+| Categoria | Tecnologia |
+|---|---|
+| Mobile | Expo (React Native) |
+| Web | Next.js (App Router, React 19) |
+| Monorepo Tooling | Turborepo & pnpm |
+| Database/Auth | Supabase |
+| Styling | Tailwind CSS (Web) & NativeWind (Mobile - planned) |
 
-## Prerequisites
+---
 
-- [Node.js](https://nodejs.org/) v18 or later
-- [Expo Go](https://expo.dev/go) app on your device, **or** platform simulators:
-  - **iOS**: Xcode with iOS Simulator (macOS only)
-  - **Android**: Android Studio with an Android Virtual Device
+## 🚀 Come Iniziare
 
-## Getting Started
+### 1. Prerequisiti
 
-### 1. Clone and install dependencies
+Assicurati di avere installato:
 
-```bash
-git clone https://github.com/marouanouadi1/atimar.git
-cd atimar
-npm install
-```
+- **Node.js** (v24+)
+- **pnpm** (`npm install -g pnpm`)
+- **Turborepo** (`npm install -g turbo`)
 
-### 2. Start the development server
+### 2. Installazione
 
-```bash
-npm start
-```
-
-Then choose how to open the app:
-
-- **Physical device** — scan the QR code with the [Expo Go](https://expo.dev/go) app
-- **iOS Simulator** — press `i` in the terminal (macOS only)
-- **Android Emulator** — press `a` in the terminal
-- **Web browser** — press `w` in the terminal
-
-Or use the dedicated scripts:
-
-| Command              | Platform              |
-| -------------------- | --------------------- |
-| `npm run ios`        | iOS Simulator (macOS) |
-| `npm run android`    | Android Emulator      |
-| `npm run web`        | Browser               |
-
-## Project Structure
-
-```
-app/          # File-based routing (expo-router)
-components/   # Reusable UI components
-constants/    # Theme and shared constants
-hooks/        # Custom React hooks
-styles/       # Shared stylesheets
-utils/        # Supabase client and utilities
-assets/       # Images and static assets
-```
-
-## Building for Production
-
-This project uses [EAS Build](https://docs.expo.dev/build/introduction/).
+Dalla cartella principale del progetto, scarica tutte le dipendenze:
 
 ```bash
-npm install -g eas-cli
-eas build --platform android   # or ios / all
+pnpm install
 ```
 
-Build profiles are configured in `eas.json`.
+### 3. Sviluppo
 
-## Linting
+Per avviare tutti i progetti contemporaneamente:
 
 ```bash
-npm run lint
+pnpm dev
 ```
+
+---
+
+## ⌨️ Comandi Utili (Dalla Root)
+
+| Comando | Descrizione |
+|---|---|
+| `pnpm dev` | Avvia Dashboard e Mobile in parallelo |
+| `pnpm mobile` | Avvia solo l'app Expo (web browser)|
+| `pnpm web` | Avvia solo il sito web Next.js |
+| `pnpm dev-dashboard` | Avvia solo la dashboard Next.js |
+| `pnpm build` | Esegue la build di tutto il progetto con caching di Turbo |
+| `pnpm android` | Avvia l'app mobile direttamente su emulatore Android |
+| `pnpm ios` | Avvia l'app mobile direttamente su emulatore iOS |
+
+---
+
+## 🏗 Condivisione del Codice
+
+Per utilizzare un pacchetto locale (es. `packages/types`) dentro una delle app:
+
+1. Aggiungilo al `package.json` dell'app: `"@atimar/types": "workspace:*"`
+2. Lancia `pnpm install`.
+3. Importalo normalmente nel codice: `import { User } from "@atimar/types"`.
+
+---
+
+## 📝 Note per lo Sviluppo
+
+- **SSR su Web:** Per l'app mobile in modalità web, l'SSR è stato disattivato (`output: "single"`) per garantire la compatibilità immediata con Supabase.
+- **Porte:** La dashboard gira solitamente su `localhost:3000`, mentre il Metro bundler di Expo su `localhost:8081`.
