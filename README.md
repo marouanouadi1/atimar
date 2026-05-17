@@ -46,9 +46,16 @@ pnpm dev
 | `pnpm mobile` | Avvia solo l'app Expo (web browser)|
 | `pnpm web` | Avvia solo il sito web Next.js |
 | `pnpm dev-dashboard` | Avvia solo la dashboard Next.js |
-| `pnpm build` | Esegue la build di tutto il progetto con caching di Turbo |
 | `pnpm android` | Avvia l'app mobile direttamente su emulatore Android |
 | `pnpm ios` | Avvia l'app mobile direttamente su emulatore iOS |
+| `pnpm build` | Esegue la build di tutto il progetto con caching di Turbo |
+| `pnpm build:web` | Esegue la build del progetto web |
+| `pnpm build:dev-dashboard` | Esegue la build della dashboard|
+| `pnpm build:mobile` | Esegue la build dell'app mobile (genera la versione web dentro /dist)|
+| `pnpm build:android` | Esegue la build dell'app mobile (.apk Android)|
+| `pnpm build:ios` | Esegue la build dell'app mobile (.ipa iOS)|
+| `pnpm clean` | Pulizia cache |
+
 
 ---
 

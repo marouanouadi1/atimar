@@ -12,10 +12,12 @@
     "ios": "pnpm --filter @atimar/mobile ios",
     "mobile": "pnpm --filter @atimar/mobile web",
 
-    "build:dashboard": "turbo run build --filter=@atimar/dev-dashboard",
     "build:web": "turbo run build --filter=@atimar/web",
+    "build:dev-dashboard": "turbo run build --filter=@atimar/dev-dashboard",
     "build:mobile": "turbo run build --filter=@atimar/mobile",
-    
+    "mobile:build:android": "pnpm --filter @atimar/mobile exec eas build --platform android --profile preview",
+    "mobile:build:ios": "pnpm --filter @atimar/mobile exec eas build --platform ios --profile preview",
+
     "clean": "turbo clean && rm -rf node_modules"
   },
   "devDependencies": {
