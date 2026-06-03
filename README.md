@@ -19,7 +19,6 @@
 apps/
   mobile/          # package @atimar/app: app principale Expo per iOS, Android e Web
   dev-dashboard/   # dashboard temporanea per super admin
-  web/             # legacy/inattiva: il web principale passa da Expo Web
 
 packages/
   data/            # dati demo e accesso dati condivisibile
@@ -31,7 +30,7 @@ packages/
   utils/           # funzioni pure condivise
 ```
 
-La direzione architetturale è: **una sola app Expo universale** (`@atimar/app`) per mobile e web utente. Il web non è più una app Next separata: si avvia tramite Expo Web.
+La direzione architetturale è: **una sola app Expo universale** (`@atimar/app`) per mobile e web utente. Il sito/app web si avvia tramite Expo Web, non tramite una seconda app Next separata.
 
 ---
 
@@ -137,6 +136,5 @@ Per componenti condivisi tra mobile e web Expo, preferire componenti React Nativ
 
 - **Web principale:** servito da Expo Web tramite `@atimar/app`.
 - **Dashboard:** rimane separata perché è uno strumento interno temporaneo.
-- **Legacy Next web:** `apps/web` è mantenuta inattiva per ora, ma non è più la fonte principale del sito/app web.
 - **SSR su Web:** per l'app Expo web è usato `output: "single"` per compatibilità immediata.
 - **Porte:** Next dashboard gira solitamente su `localhost:3000`; Expo/Metro su `localhost:8081` o sulla porta proposta da Expo.
