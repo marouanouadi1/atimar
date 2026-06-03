@@ -52,7 +52,7 @@ importers:
         specifier: ^5
         version: 5.9.3
 
-  apps/mobile:
+  apps/app:
     dependencies:
       '@atimar/data':
         specifier: workspace:*

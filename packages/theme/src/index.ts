@@ -3,7 +3,7 @@
  *
  * Single source of truth for colors, spacing, radius, shadows, typography,
  * icon sizes, layout, motion and component variant defaults.
- * Framework-agnostic TypeScript: consumed by apps/mobile (React Native) and
+ * Framework-agnostic TypeScript: consumed by apps/app (React Native) and
  * apps/web (Next.js). No hardcoded colors in screens — always read from here.
  *
  * Derived from DESIGN_TOKENS.md (design export).
@@ -146,7 +146,7 @@ export const webShadows = {
 export const fonts = {
   /** Web / CSS font stack. */
   sans: "'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif",
-  /** Logical family name; mobile loads "Inter" via expo-font (see apps/mobile). */
+  /** Logical family name; mobile loads "Inter" via expo-font (see apps/app). */
   family: 'Inter',
 } as const;
 

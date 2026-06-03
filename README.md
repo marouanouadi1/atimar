@@ -17,7 +17,7 @@
 
 ```txt
 apps/
-  mobile/          # package @atimar/app: app principale Expo per iOS, Android e Web
+  app/             # package @atimar/app: app principale Expo per iOS, Android e Web
   dev-dashboard/   # dashboard temporanea per super admin
 
 packages/

@@ -1,6 +1,6 @@
 /**
  * ATIMAR — React Native UI library (@atimar/ui-native)
- * Consumed by apps/mobile. Built on @atimar/theme tokens + @atimar/ui-core logic.
+ * Consumed by apps/app. Built on @atimar/theme tokens + @atimar/ui-core logic.
  */
 
 export { useTheme, tokens, resolveColor, resolveTint, textStyle } from './theme';
