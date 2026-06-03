@@ -1,12 +1,37 @@
+# Atimar
+
 ## 🛠 Tech Stack
 
 | Categoria | Tecnologia |
 |---|---|
-| Mobile | Expo (React Native) |
-| Web | Next.js (App Router, React 19) |
-| Monorepo Tooling | Turborepo & pnpm |
+| App universale | Expo + React Native + React Native Web |
+| Routing | Expo Router |
+| Dashboard temporanea | Next.js |
+| Monorepo Tooling | Turborepo & pnpm workspaces |
 | Database/Auth | Supabase |
-| Styling | Tailwind CSS (Web) & NativeWind (Mobile - planned) |
+| UI condivisa | Package interni `@atimar/ui-*`, `@atimar/theme` |
+
+---
+
+## 🏗 Struttura del Monorepo
+
+```txt
+apps/
+  mobile/          # package @atimar/app: app principale Expo per iOS, Android e Web
+  dev-dashboard/   # dashboard temporanea per super admin
+  web/             # legacy/inattiva: il web principale passa da Expo Web
+
+packages/
+  data/            # dati demo e accesso dati condivisibile
+  theme/           # design tokens condivisi
+  types/           # tipi TypeScript condivisi
+  ui-core/         # primitive UI/framework-agnostic dove possibile
+  ui-native/       # componenti React Native usati da mobile e web Expo
+  ui-web/          # componenti web-specific, da usare solo se serve
+  utils/           # funzioni pure condivise
+```
+
+La direzione architetturale è: **una sola app Expo universale** (`@atimar/app`) per mobile e web utente. Il web non è più una app Next separata: si avvia tramite Expo Web.
 
 ---
 
@@ -22,7 +47,7 @@ Assicurati di avere installato:
 
 ### 2. Installazione
 
-Dalla cartella principale del progetto, scarica tutte le dipendenze:
+Dalla cartella principale del progetto:
 
 ```bash
 pnpm install
@@ -30,46 +55,88 @@ pnpm install
 
 ### 3. Sviluppo
 
-Per avviare tutti i progetti contemporaneamente:
+Avvia l'app Expo universale:
 
 ```bash
-pnpm dev
+pnpm app
+```
+
+Avvia la versione web dell'app Expo:
+
+```bash
+pnpm web
+```
+
+Avvia mobile direttamente:
+
+```bash
+pnpm android
+pnpm ios
+```
+
+Avvia la dashboard temporanea:
+
+```bash
+pnpm dev-dashboard
 ```
 
 ---
 
-## ⌨️ Comandi Utili (Dalla Root)
+## ⌨️ Comandi Utili dalla Root
 
 | Comando | Descrizione |
 |---|---|
-| `pnpm dev` | Avvia Dashboard e Mobile in parallelo |
-| `pnpm mobile` | Avvia solo l'app Expo (web browser)|
-| `pnpm web` | Avvia solo il sito web Next.js |
-| `pnpm dev-dashboard` | Avvia solo la dashboard Next.js |
-| `pnpm android` | Avvia l'app mobile direttamente su emulatore Android |
-| `pnpm ios` | Avvia l'app mobile direttamente su emulatore iOS |
-| `pnpm build` | Esegue la build di tutto il progetto con caching di Turbo |
-| `pnpm build:web` | Esegue la build del progetto web |
-| `pnpm build:dev-dashboard` | Esegue la build della dashboard|
-| `pnpm build:mobile` | Esegue la build dell'app mobile (genera la versione web dentro /dist)|
-| `pnpm build:android` | Esegue la build dell'app mobile (.apk Android)|
-| `pnpm build:ios` | Esegue la build dell'app mobile (.ipa iOS)|
-| `pnpm clean` | Pulizia cache |
-
+| `pnpm dev` | Avvia app Expo universale e dashboard temporanea tramite Turbo |
+| `pnpm app` | Avvia solo l'app Expo (`@atimar/app`) |
+| `pnpm web` | Avvia l'app Expo in modalità web (`expo start --web`) |
+| `pnpm android` | Avvia l'app Expo su Android |
+| `pnpm ios` | Avvia l'app Expo su iOS |
+| `pnpm dev-dashboard` | Avvia solo la dashboard temporanea Next.js |
+| `pnpm build` | Esegue build app web Expo + dashboard tramite Turbo |
+| `pnpm build:web` | Esporta la versione web dell'app Expo |
+| `pnpm build:app` | Build dell'app Expo universale |
+| `pnpm build:dev-dashboard` | Build della dashboard temporanea |
+| `pnpm clean` | Pulizia cache Turbo e `node_modules` |
 
 ---
 
-## 🏗 Condivisione del Codice
+## 🧩 Condivisione del Codice
 
-Per utilizzare un pacchetto locale (es. `packages/types`) dentro una delle app:
+Per utilizzare un package locale dentro una delle app:
 
-1. Aggiungilo al `package.json` dell'app: `"@atimar/types": "workspace:*"`
-2. Lancia `pnpm install`.
-3. Importalo normalmente nel codice: `import { User } from "@atimar/types"`.
+1. Aggiungilo al `package.json` dell'app, per esempio:
+
+```json
+"@atimar/types": "workspace:*"
+```
+
+2. Lancia:
+
+```bash
+pnpm install
+```
+
+3. Importalo normalmente:
+
+```ts
+import type { User } from "@atimar/types";
+```
+
+Regola pratica:
+
+```txt
+apps/      = prodotti avviabili/deployabili
+packages/  = codice riusabile
+```
+
+Per componenti condivisi tra mobile e web Expo, preferire componenti React Native dentro `packages/ui-native`.
 
 ---
 
 ## 📝 Note per lo Sviluppo
 
-- **SSR su Web:** Per l'app mobile in modalità web, l'SSR è stato disattivato (`output: "single"`) per garantire la compatibilità immediata con Supabase.
-- **Porte:** La dashboard gira solitamente su `localhost:3000`, mentre il Metro bundler di Expo su `localhost:8081`.
+- **Web principale:** servito da Expo Web tramite `@atimar/app`.
+- **Dashboard:** rimane separata perché è uno strumento interno temporaneo.
+- **Legacy Next web:** `apps/web` è mantenuta inattiva per ora, ma non è più la fonte principale del sito/app web.
+- **SSR su Web:** per l'app Expo web è usato `output: "single"` per compatibilità immediata.
+- **Porte:** Next dashboard gira solitamente su `localhost:3000`; Expo/Metro su `localhost:8081` o sulla porta proposta da Expo.
