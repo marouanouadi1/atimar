@@ -1,0 +1,22 @@
+{
+  "name": "@atimar/theme",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ATIMAR design tokens (colors, spacing, typography, shadows, motion). Framework-agnostic.",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "sideEffects": false,
+  "scripts": {
+    "lint": "echo \"@atimar/theme: no lint\" && exit 0",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.2"
+  }
+}
