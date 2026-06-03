@@ -1,13 +1,9 @@
 {
-  "name": "@atimar/web",
+  "name": "@atimar/web-legacy",
   "version": "0.1.0",
   "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
-  },
+  "description": "Inactive legacy Next.js web app. The primary web experience is served by @atimar/app through Expo Web.",
+  "scripts": {},
   "dependencies": {
     "next": "16.2.6",
     "react": "19.2.4",
