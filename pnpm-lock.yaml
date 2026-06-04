@@ -23,9 +23,6 @@ importers:
       '@atimar/types':
         specifier: workspace:*
         version: link:../../packages/types
-      '@atimar/ui-core':
-        specifier: workspace:*
-        version: link:../../packages/ui-core
       '@atimar/ui-native':
         specifier: workspace:*
         version: link:../../packages/ui-native
@@ -198,25 +195,6 @@ importers:
         specifier: ~5.9.2
         version: 5.9.3
 
-  packages/ui-core:
-    dependencies:
-      '@atimar/theme':
-        specifier: workspace:*
-        version: link:../theme
-      '@atimar/types':
-        specifier: workspace:*
-        version: link:../types
-      react:
-        specifier: ^19.0.0
-        version: 19.2.4
-    devDependencies:
-      '@types/react':
-        specifier: ~19.1.0
-        version: 19.1.17
-      typescript:
-        specifier: ~5.9.2
-        version: 5.9.3
-
   packages/ui-native:
     dependencies:
       '@atimar/theme':
@@ -225,9 +203,6 @@ importers:
       '@atimar/types':
         specifier: workspace:*
         version: link:../types
-      '@atimar/ui-core':
-        specifier: workspace:*
-        version: link:../ui-core
       '@atimar/utils':
         specifier: workspace:*
         version: link:../utils
@@ -246,22 +221,6 @@ importers:
     devDependencies:
       '@types/react':
         specifier: ~19.1.0
-        version: 19.1.17
-      typescript:
-        specifier: ~5.9.2
-        version: 5.9.3
-
-  packages/ui-web:
-    dependencies:
-      '@atimar/theme':
-        specifier: workspace:*
-        version: link:../theme
-      react:
-        specifier: ^19.0.0
-        version: 19.2.4
-    devDependencies:
-      '@types/react':
-        specifier: ^19
         version: 19.1.17
       typescript:
         specifier: ~5.9.2

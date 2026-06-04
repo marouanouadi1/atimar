@@ -7,7 +7,7 @@
 import type { TextStyle } from 'react-native';
 import { colors, semantic, tints, typography, theme } from '@atimar/theme';
 import type { Theme, TypographyToken } from '@atimar/theme';
-import type { ColorKey, TintKey } from '@atimar/ui-core';
+import type { ColorKey, TintKey } from './core';
 
 export const tokens: Theme = theme;
 

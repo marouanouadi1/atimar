@@ -3,7 +3,6 @@ import { StyleSheet, View } from 'react-native';
 
 import { theme } from '@atimar/theme';
 import { DAYS, TIMES } from '@atimar/data';
-import { useToggleSet } from '@atimar/ui-core';
 import type { DayLabel, TimeId } from '@atimar/types';
 import {
   Button,
@@ -13,6 +12,7 @@ import {
   ScreenTitle,
   SectionTitle,
   TimeOfDayCard,
+  useToggleSet,
 } from '@atimar/ui-native';
 import { useAppState } from '@/state/AppState';
 

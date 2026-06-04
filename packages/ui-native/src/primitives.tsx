@@ -15,8 +15,8 @@ import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { theme } from '@atimar/theme';
-import { resolveButtonSpec } from '@atimar/ui-core';
-import type { ButtonVariant } from '@atimar/ui-core';
+import { resolveButtonSpec } from './core';
+import type { ButtonVariant } from './core';
 import { resolveColor } from './theme';
 
 type IonName = keyof typeof Ionicons.glyphMap;

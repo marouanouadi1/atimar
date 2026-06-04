@@ -1,5 +1,5 @@
 /**
- * Chips, tags and badges. Variant→token mapping lives in @atimar/ui-core;
+ * Chips, tags and badges. Variant-to-token mapping lives in ./core;
  * this layer only renders. Colors/spacing from @atimar/theme.
  */
 
@@ -10,12 +10,12 @@ import { sportColor, theme } from '@atimar/theme';
 import {
   resolveAvailabilitySpec,
   resolveIconBadgeSpec,
-} from '@atimar/ui-core';
+} from './core';
 import type {
   AvailabilityState,
   FilterChipVariant,
   IconBadgeTone,
-} from '@atimar/ui-core';
+} from './core';
 import { formatRating } from '@atimar/utils';
 import { Icon } from './primitives';
 import { resolveColor, resolveTint, textStyle } from './theme';

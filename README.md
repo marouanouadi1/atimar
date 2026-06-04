@@ -24,9 +24,7 @@ packages/
   data/            # dati demo e accesso dati condivisibile
   theme/           # design tokens condivisi
   types/           # tipi TypeScript condivisi
-  ui-core/         # primitive UI/framework-agnostic dove possibile
-  ui-native/       # componenti React Native usati da mobile e web Expo
-  ui-web/          # componenti web-specific, da usare solo se serve
+  ui-native/       # componenti e hook React Native usati da mobile e web Expo
   utils/           # funzioni pure condivise
 ```
 

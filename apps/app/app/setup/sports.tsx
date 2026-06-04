@@ -4,7 +4,6 @@ import { StyleSheet, View } from 'react-native';
 
 import { theme } from '@atimar/theme';
 import { SPORTS } from '@atimar/data';
-import { useToggleSet } from '@atimar/ui-core';
 import { pluralize } from '@atimar/utils';
 import {
   Button,
@@ -14,6 +13,7 @@ import {
   ScreenTitle,
   SearchBar,
   SportSelectCard,
+  useToggleSet,
 } from '@atimar/ui-native';
 import { useAppState } from '@/state/AppState';
 

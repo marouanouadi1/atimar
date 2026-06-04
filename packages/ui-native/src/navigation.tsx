@@ -7,7 +7,7 @@ import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { StyleProp, ViewStyle } from 'react-native';
 import { theme } from '@atimar/theme';
-import type { ProgressVariant } from '@atimar/ui-core';
+import type { ProgressVariant } from './core';
 import { Divider, Icon, IconButton } from './primitives';
 import { ScreenContainer } from './primitives';
 import { ScreenTitle } from './typography';

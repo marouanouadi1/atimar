@@ -16,7 +16,6 @@
     "@atimar/data": "workspace:*",
     "@atimar/theme": "workspace:*",
     "@atimar/types": "workspace:*",
-    "@atimar/ui-core": "workspace:*",
     "@atimar/ui-native": "workspace:*",
     "@atimar/utils": "workspace:*",
     "@expo/vector-icons": "^15.0.3",

@@ -2,7 +2,7 @@
   "name": "@atimar/ui-native",
   "version": "0.1.0",
   "private": true,
-  "description": "ATIMAR React Native component library built on @atimar/theme + @atimar/ui-core.",
+  "description": "ATIMAR React Native component library built on @atimar/theme.",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "exports": {
@@ -19,7 +19,6 @@
   "dependencies": {
     "@atimar/theme": "workspace:*",
     "@atimar/types": "workspace:*",
-    "@atimar/ui-core": "workspace:*",
     "@atimar/utils": "workspace:*"
   },
   "peerDependencies": {

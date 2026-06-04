@@ -8,7 +8,6 @@
       "@atimar/types": ["../../packages/types/src"],
       "@atimar/data": ["../../packages/data/src"],
       "@atimar/utils": ["../../packages/utils/src"],
-      "@atimar/ui-core": ["../../packages/ui-core/src"],
       "@atimar/ui-native": ["../../packages/ui-native/src"]
     }
   },

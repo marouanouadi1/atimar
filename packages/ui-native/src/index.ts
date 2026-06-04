@@ -1,7 +1,32 @@
 /**
  * ATIMAR — React Native UI library (@atimar/ui-native)
- * Consumed by apps/app. Built on @atimar/theme tokens + @atimar/ui-core logic.
+ * Consumed by apps/app. Built on @atimar/theme tokens.
  */
+
+export {
+  resolveButtonSpec,
+  resolveAvailabilitySpec,
+  resolveIconBadgeSpec,
+  useDisclosure,
+  useStepper,
+  useToggleSet,
+} from './core';
+export type {
+  AvailabilityState,
+  ButtonSpec,
+  ButtonVariant,
+  ColorKey,
+  CourtCardVariant,
+  Disclosure,
+  FilterChipVariant,
+  IconBadgeSpec,
+  IconBadgeTone,
+  MapPinVariant,
+  ProgressVariant,
+  Stepper,
+  TintKey,
+  ToggleSet,
+} from './core';
 
 export { useTheme, tokens, resolveColor, resolveTint, textStyle } from './theme';
 

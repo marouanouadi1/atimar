@@ -1,13 +1,8 @@
 /**
- * ATIMAR — Headless UI core (@atimar/ui-core)
+ * Shared UI specs and hooks for @atimar/ui-native.
  *
- * Two responsibilities, both framework-agnostic (no DOM, no React Native):
- *  1. Variant "specs": map a component variant to design-token *names*, so the
- *     native (ui-native) and web (ui-web) renderers stay visually identical.
- *  2. Shared React hooks for stateful UI patterns (disclosure, stepper, sets).
- *
- * React is a peerDependency (^19) so each app supplies its own version
- * (mobile 19.1.x for Expo, web 19.2.x) without this package pinning one.
+ * Specs map component variants to design-token names. Hooks keep simple UI
+ * state patterns reusable across app screens without adding another package.
  */
 
 import { useCallback, useMemo, useState } from 'react';
@@ -114,7 +109,7 @@ export function resolveIconBadgeSpec(tone: IconBadgeTone): IconBadgeSpec {
 }
 
 /* ------------------------------------------------------------------ *
- * Other shared variant unions (consumed by renderers)
+ * Other shared variant unions
  * ------------------------------------------------------------------ */
 
 export type CourtCardVariant = 'large' | 'compact';
@@ -123,7 +118,7 @@ export type ProgressVariant = 'pill' | 'dots' | 'bar';
 export type FilterChipVariant = 'pill' | 'segment';
 
 /* ------------------------------------------------------------------ *
- * Hooks — disclosure (sheets, modals, dropdowns)
+ * Hooks - disclosure (sheets, modals, dropdowns)
  * ------------------------------------------------------------------ */
 
 export interface Disclosure {
@@ -143,7 +138,7 @@ export function useDisclosure(initial = false): Disclosure {
 }
 
 /* ------------------------------------------------------------------ *
- * Hooks — stepper (onboarding / setup wizard)
+ * Hooks - stepper (onboarding / setup wizard)
  * ------------------------------------------------------------------ */
 
 export interface Stepper {
@@ -180,7 +175,7 @@ export function useStepper(total: number, initial = 1): Stepper {
 }
 
 /* ------------------------------------------------------------------ *
- * Hooks — selection set (sports, days, time-of-day)
+ * Hooks - selection set (sports, days, time-of-day)
  * ------------------------------------------------------------------ */
 
 export interface ToggleSet<T> {
