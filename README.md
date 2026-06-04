@@ -54,16 +54,18 @@ pnpm install
 
 ### 3. Sviluppo
 
-Avvia l'app Expo universale:
-
-```bash
-pnpm app
-```
-
-Avvia la versione web dell'app Expo:
+Avvia la demo web visibile dell'app Expo:
 
 ```bash
 pnpm web
+```
+
+Apri l'URL mostrato da Expo nel terminale. La route `/` su web mostra una landing demo con collegamenti a onboarding, login e home app.
+
+Avvia l'app Expo generica:
+
+```bash
+pnpm app
 ```
 
 Avvia mobile direttamente:
@@ -85,9 +87,9 @@ pnpm dev-dashboard
 
 | Comando | Descrizione |
 |---|---|
-| `pnpm dev` | Avvia app Expo universale e dashboard temporanea tramite Turbo |
-| `pnpm app` | Avvia solo l'app Expo (`@atimar/app`) |
 | `pnpm web` | Avvia l'app Expo in modalità web (`expo start --web`) |
+| `pnpm app` | Avvia solo l'app Expo (`@atimar/app`) |
+| `pnpm dev` | Avvia app Expo universale e dashboard temporanea tramite Turbo |
 | `pnpm android` | Avvia l'app Expo su Android |
 | `pnpm ios` | Avvia l'app Expo su iOS |
 | `pnpm dev-dashboard` | Avvia solo la dashboard temporanea Next.js |
@@ -135,6 +137,8 @@ Per componenti condivisi tra mobile e web Expo, preferire componenti React Nativ
 ## 📝 Note per lo Sviluppo
 
 - **Web principale:** servito da Expo Web tramite `@atimar/app`.
+- **Demo web:** `apps/app/app/index.web.tsx` mostra una landing demo solo per browser.
+- **Mobile:** `apps/app/app/index.tsx` mantiene il gate onboarding/login.
 - **Dashboard:** rimane separata perché è uno strumento interno temporaneo.
 - **SSR su Web:** per l'app Expo web è usato `output: "single"` per compatibilità immediata.
 - **Porte:** Next dashboard gira solitamente su `localhost:3000`; Expo/Metro su `localhost:8081` o sulla porta proposta da Expo.
