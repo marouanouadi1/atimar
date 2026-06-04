@@ -11,16 +11,12 @@
     "dev-dashboard": "pnpm --filter @atimar/dev-dashboard dev",
     "android": "pnpm --filter @atimar/app android",
     "ios": "pnpm --filter @atimar/app ios",
-    "mobile": "pnpm --filter @atimar/app dev",
 
     "build:app": "turbo run build --filter=@atimar/app",
     "build:web": "pnpm --filter @atimar/app build:web",
     "build:dev-dashboard": "turbo run build --filter=@atimar/dev-dashboard",
-    "build:mobile": "turbo run build --filter=@atimar/app",
     "app:build:android": "pnpm --filter @atimar/app exec eas build --platform android --profile preview",
     "app:build:ios": "pnpm --filter @atimar/app exec eas build --platform ios --profile preview",
-    "mobile:build:android": "pnpm --filter @atimar/app exec eas build --platform android --profile preview",
-    "mobile:build:ios": "pnpm --filter @atimar/app exec eas build --platform ios --profile preview",
 
     "clean": "turbo clean && rm -rf node_modules"
   },
