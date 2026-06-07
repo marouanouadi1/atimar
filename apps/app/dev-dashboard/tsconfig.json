@@ -1,0 +1,25 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@dashboard/*": ["./*"],
+      "@atimar/theme": ["../../../packages/theme/src"],
+      "@atimar/types": ["../../../packages/types/src"],
+      "@atimar/data": ["../../../packages/data/src"],
+      "@atimar/utils": ["../../../packages/utils/src"]
+    },
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts"
+  ],
+  "exclude": ["node_modules"]
+}

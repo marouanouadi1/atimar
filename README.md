@@ -1,142 +1,81 @@
 # Atimar
 
-## 🛠 Tech Stack
+## Tech Stack
 
 | Categoria | Tecnologia |
 |---|---|
-| App universale | Expo + React Native + React Native Web |
-| Routing | Expo Router |
-| Dashboard temporanea | Next.js |
-| Monorepo Tooling | Turborepo & pnpm workspaces |
+| App cliente | Expo + React Native + React Native Web |
+| Routing app cliente | Expo Router |
+| Dashboard super admin | Next.js dentro `apps/app/dev-dashboard` |
+| Workspace | pnpm con un solo package applicativo (`apps/app`) |
 | Database/Auth | Supabase |
-| UI condivisa | Package interni `@atimar/ui-*`, `@atimar/theme` |
+| Dominio condiviso | Entità, tipi, selector e struttura DB in `packages/data` e `packages/types` |
 
----
-
-## 🏗 Struttura del Monorepo
+## Struttura
 
 ```txt
 apps/
-  app/             # package @atimar/app: app principale Expo per iOS, Android e Web
-  dev-dashboard/   # dashboard temporanea per super admin
+  app/                    # unico package installabile/eseguibile
+    app/                  # route Expo Router per app cliente
+    dev-dashboard/        # app Next.js interna per super admin
+    package.json          # dipendenze centralizzate: Expo, Next, React
+    tsconfig.json         # TypeScript condiviso
+    metro.config.js       # alias runtime per Expo
 
 packages/
-  data/            # dati demo e accesso dati condivisibile
-  theme/           # design tokens condivisi
-  types/           # tipi TypeScript condivisi
-  ui-native/       # componenti e hook React Native usati da mobile e web Expo
-  utils/           # funzioni pure condivise
+  data/src/               # selector, mock data e poi query Supabase
+  theme/src/              # design tokens condivisi
+  types/src/              # entità e tipi DB condivisi
+  ui-native/src/          # componenti React Native solo per app cliente
+  utils/src/              # funzioni pure condivise
 ```
 
-La direzione architetturale è: **una sola app Expo universale** (`@atimar/app`) per mobile e web utente. Il sito/app web si avvia tramite Expo Web, non tramite una seconda app Next separata.
+La dashboard super admin resta Next.js. Non usa i componenti Expo/React Native e non dipende da `ui-native`. Condivide invece lo stesso dominio dell'app cliente: entità, tipi, selector e futura struttura Supabase.
 
----
+I folder in `packages/*` sono sorgenti condivisi, non package pnpm autonomi. Gli alias dell'app Expo sono gestiti da `apps/app/tsconfig.json` e `apps/app/metro.config.js`. La dashboard ha un `tsconfig.json` minimo solo perché Next.js richiede un progetto TypeScript dentro la propria root.
 
-## 🚀 Come Iniziare
-
-### 1. Prerequisiti
-
-Assicurati di avere installato:
-
-- **Node.js** (v24+)
-- **pnpm** (`npm install -g pnpm`)
-- **Turborepo** (`npm install -g turbo`)
-
-### 2. Installazione
-
-Dalla cartella principale del progetto:
+## Installazione
 
 ```bash
 pnpm install
 ```
 
-### 3. Sviluppo
+Il lockfile viene rigenerato da `pnpm install` a partire dall'unico workspace reale: `apps/app`.
 
-Avvia la demo web visibile dell'app Expo:
+## Sviluppo
 
 ```bash
 pnpm web
-```
-
-Apri l'URL mostrato da Expo nel terminale. La route `/` su web mostra una landing demo con collegamenti a onboarding, login e home app.
-
-Avvia l'app Expo generica:
-
-```bash
 pnpm app
-```
-
-Avvia mobile direttamente:
-
-```bash
 pnpm android
 pnpm ios
-```
-
-Avvia la dashboard temporanea:
-
-```bash
 pnpm dev-dashboard
 ```
 
----
-
-## ⌨️ Comandi Utili dalla Root
+## Comandi dalla root
 
 | Comando | Descrizione |
 |---|---|
-| `pnpm web` | Avvia l'app Expo in modalità web (`expo start --web`) |
-| `pnpm app` | Avvia solo l'app Expo (`@atimar/app`) |
-| `pnpm dev` | Avvia app Expo universale e dashboard temporanea tramite Turbo |
-| `pnpm android` | Avvia l'app Expo su Android |
-| `pnpm ios` | Avvia l'app Expo su iOS |
-| `pnpm dev-dashboard` | Avvia solo la dashboard temporanea Next.js |
-| `pnpm build` | Esegue build app web Expo + dashboard tramite Turbo |
-| `pnpm build:web` | Esporta la versione web dell'app Expo |
+| `pnpm web` | Avvia l'app Expo in modalità web |
+| `pnpm app` | Avvia l'app Expo |
+| `pnpm dev` | Alias per `pnpm app` |
+| `pnpm android` | Avvia Android |
+| `pnpm ios` | Avvia iOS |
+| `pnpm dev-dashboard` | Avvia la dashboard Next.js dentro `apps/app/dev-dashboard` |
+| `pnpm build:web` | Esporta la versione web Expo |
 | `pnpm build:app` | Build dell'app Expo universale |
-| `pnpm build:dev-dashboard` | Build della dashboard temporanea |
-| `pnpm clean` | Pulizia cache Turbo e `node_modules` |
+| `pnpm build:dev-dashboard` | Build della dashboard interna |
+| `pnpm clean` | Rimuove dipendenze, cache e output locali |
 
----
+## Codice condiviso
 
-## 🧩 Condivisione del Codice
-
-Per utilizzare un package locale dentro una delle app:
-
-1. Aggiungilo al `package.json` dell'app, per esempio:
-
-```json
-"@atimar/types": "workspace:*"
-```
-
-2. Lancia:
-
-```bash
-pnpm install
-```
-
-3. Importalo normalmente:
+App cliente e dashboard possono importare lo stesso dominio dati:
 
 ```ts
-import type { User } from "@atimar/types";
+import { getCourtListItems } from "@atimar/data";
+import type { Court, Venue, Booking } from "@atimar/types";
 ```
 
-Regola pratica:
+Non aggiungere `workspace:*` per `@atimar/*`: quei moduli non sono package separati. Se serve un nuovo modulo condiviso, crea `packages/<nome>/src` e registra l'alias in `apps/app/tsconfig.json`. Per Expo aggiorna anche `apps/app/metro.config.js`; per la dashboard aggiorna `apps/app/dev-dashboard/tsconfig.json`.
 
-```txt
-apps/      = prodotti avviabili/deployabili
-packages/  = codice riusabile
-```
-
-Per componenti condivisi tra mobile e web Expo, preferire componenti React Native dentro `packages/ui-native`.
-
----
-
-## 📝 Note per lo Sviluppo
-
-- **Web principale:** servito da Expo Web tramite `@atimar/app`.
-- **Demo web:** `apps/app/app/index.web.tsx` mostra una landing demo solo per browser.
-- **Mobile:** `apps/app/app/index.tsx` mantiene il gate onboarding/login.
-- **Dashboard:** rimane separata perché è uno strumento interno temporaneo.
-- **SSR su Web:** per l'app Expo web è usato `output: "single"` per compatibilità immediata.
-- **Porte:** Next dashboard gira solitamente su `localhost:3000`; Expo/Metro su `localhost:8081` o sulla porta proposta da Expo.
+Regola pratica: `packages/types` e `packages/data` descrivono il dominio comune e la struttura DB; `packages/ui-native` resta solo per l'app cliente Expo.

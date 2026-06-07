@@ -9,15 +9,13 @@
     "web": "expo start --web",
     "build": "expo export --platform web",
     "build:web": "expo export --platform web",
+    "dev:dashboard": "next dev dev-dashboard",
+    "build:dashboard": "next build dev-dashboard",
+    "start:dashboard": "next start dev-dashboard",
     "lint": "expo lint",
     "reset-project": "node ./scripts/reset-project.js"
   },
   "dependencies": {
-    "@atimar/data": "workspace:*",
-    "@atimar/theme": "workspace:*",
-    "@atimar/types": "workspace:*",
-    "@atimar/ui-native": "workspace:*",
-    "@atimar/utils": "workspace:*",
     "@expo/vector-icons": "^15.0.3",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-navigation/bottom-tabs": "^7.4.0",
@@ -38,6 +36,7 @@
     "expo-symbols": "~1.0.8",
     "expo-system-ui": "~6.0.9",
     "expo-web-browser": "~15.0.10",
+    "next": "16.2.6",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-native": "0.81.5",
@@ -49,7 +48,10 @@
     "react-native-worklets": "0.5.1"
   },
   "devDependencies": {
+    "@types/node": "^20",
     "@types/react": "~19.1.0",
+    "@types/react-dom": "~19.1.0",
+    "babel-plugin-react-compiler": "1.0.0",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~10.0.0",
     "typescript": "~5.9.2"
