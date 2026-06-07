@@ -9,7 +9,7 @@
     ],
     "paths": {
       "@/*": ["./*"],
-      "@dashboard/*": ["./dev-dashboard/*"],
+      "@dashboard/*": ["../dev-dashboard/*"],
       "@atimar/theme": ["../../packages/theme/src"],
       "@atimar/types": ["../../packages/types/src"],
       "@atimar/data": ["../../packages/data/src"],
