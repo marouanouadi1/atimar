@@ -2,11 +2,11 @@
  * Text / titling components. Type metrics + colors come from @/theme/tokens.
  */
 
-import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
-import { theme } from '@/theme/tokens';
-import { textStyle } from './theme';
+import React from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import type { StyleProp, TextStyle, ViewStyle } from "react-native";
+import { theme } from "@/theme/tokens";
+import { textStyle } from "./theme";
 
 /* ------------------------------------------------------------------ *
  * ScreenTitle / TitleBlock — title + optional subtitle at the top of a screen
@@ -16,23 +16,41 @@ export interface ScreenTitleProps {
   title: string;
   subtitle?: string;
   /** Size of the title: 'h1' onboarding/auth, 'h1App' app screens, 'h2' detail. */
-  size?: 'h1' | 'h1App' | 'h2';
-  align?: 'left' | 'center';
+  size?: "h1" | "h1App" | "h2";
+  align?: "left" | "center";
   style?: StyleProp<ViewStyle>;
 }
 
 export function ScreenTitle({
   title,
   subtitle,
-  size = 'h1App',
-  align = 'left',
+  size = "h1App",
+  align = "left",
   style,
 }: ScreenTitleProps) {
   return (
-    <View style={[{ gap: theme.spacing.sm }, align === 'center' && styles.center, style]}>
-      <Text style={[textStyle(size, 'ink'), align === 'center' && styles.textCenter]}>{title}</Text>
+    <View
+      style={[
+        { gap: theme.spacing.sm },
+        align === "center" && styles.center,
+        style,
+      ]}
+    >
+      <Text
+        style={[
+          textStyle(size, "ink"),
+          align === "center" && styles.textCenter,
+        ]}
+      >
+        {title}
+      </Text>
       {subtitle ? (
-        <Text style={[textStyle('body', 'muted'), align === 'center' && styles.textCenter]}>
+        <Text
+          style={[
+            textStyle("body", "muted"),
+            align === "center" && styles.textCenter,
+          ]}
+        >
           {subtitle}
         </Text>
       ) : null}
@@ -51,7 +69,7 @@ export interface SectionTitleProps {
 
 export function SectionTitle({ children, style }: SectionTitleProps) {
   return (
-    <Text style={[textStyle('overline', 'subtle'), styles.overline, style]}>
+    <Text style={[textStyle("overline", "subtle"), styles.overline, style]}>
       {children.toUpperCase()}
     </Text>
   );
@@ -71,15 +89,15 @@ export interface SectionHeaderRowProps {
 export function SectionHeaderRow({
   title,
   onAction,
-  actionLabel = 'Vedi tutti',
+  actionLabel = "Vedi tutti",
   style,
 }: SectionHeaderRowProps) {
   return (
     <View style={[styles.headerRow, style]}>
-      <Text style={textStyle('sectionHead', 'ink')}>{title}</Text>
+      <Text style={textStyle("sectionHead", "ink")}>{title}</Text>
       {onAction ? (
         <Pressable onPress={onAction} hitSlop={8}>
-          <Text style={textStyle('caption', 'primary')}>{actionLabel}</Text>
+          <Text style={textStyle("caption", "primary")}>{actionLabel}</Text>
         </Pressable>
       ) : null}
     </View>
@@ -87,12 +105,12 @@ export function SectionHeaderRow({
 }
 
 const styles = StyleSheet.create({
-  center: { alignItems: 'center' },
-  textCenter: { textAlign: 'center' },
-  overline: { textTransform: 'uppercase' },
+  center: { alignItems: "center" },
+  textCenter: { textAlign: "center" },
+  overline: { textTransform: "uppercase" },
   headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
 });

@@ -1,9 +1,9 @@
-import { useRouter } from 'expo-router';
-import { StyleSheet, View } from 'react-native';
+import { useRouter } from "expo-router";
+import { StyleSheet, View } from "react-native";
 
-import { theme } from '@/theme/tokens';
-import { DAYS, TIMES } from '@atimar/data';
-import type { DayLabel, TimeId } from '@atimar/types';
+import { theme } from "@/theme/tokens";
+import { DAYS, TIMES } from "@atimar/data";
+import type { DayLabel, TimeId } from "@atimar/types";
 import {
   Button,
   DayChip,
@@ -13,8 +13,8 @@ import {
   SectionTitle,
   TimeOfDayCard,
   useToggleSet,
-} from '@/ui';
-import { useAppState } from '@/state/AppState';
+} from "@/ui";
+import { useAppState } from "@/state/AppState";
 
 export default function AvailabilityStep() {
   const router = useRouter();
@@ -26,7 +26,7 @@ export default function AvailabilityStep() {
 
   const onContinue = () => {
     setPrefs({ availability: { days: days.values, times: times.values } });
-    router.push('/setup/summary');
+    router.push("/setup/summary");
   };
 
   return (
@@ -39,13 +39,22 @@ export default function AvailabilityStep() {
       }
     >
       <View style={styles.body}>
-        <ScreenTitle title="Quando giochi di solito?" subtitle="Seleziona i giorni e le fasce orarie in cui sei disponibile." size="h1" />
+        <ScreenTitle
+          title="Quando giochi di solito?"
+          subtitle="Seleziona i giorni e le fasce orarie in cui sei disponibile."
+          size="h1"
+        />
 
         <View style={styles.section}>
           <SectionTitle>Giorni</SectionTitle>
           <View style={styles.daysRow}>
             {DAYS.map((day) => (
-              <DayChip key={day} label={day} active={days.has(day)} onPress={() => days.toggle(day)} />
+              <DayChip
+                key={day}
+                label={day}
+                active={days.has(day)}
+                onPress={() => days.toggle(day)}
+              />
             ))}
           </View>
         </View>
@@ -74,7 +83,7 @@ export default function AvailabilityStep() {
 const styles = StyleSheet.create({
   body: { gap: theme.spacing.xxl, paddingTop: theme.spacing.sm },
   section: { gap: theme.spacing.md },
-  daysRow: { flexDirection: 'row', gap: theme.spacing.xs },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.md },
-  cell: { width: '47.5%', flexGrow: 1 },
+  daysRow: { flexDirection: "row", gap: theme.spacing.xs },
+  grid: { flexDirection: "row", flexWrap: "wrap", gap: theme.spacing.md },
+  cell: { width: "47.5%", flexGrow: 1 },
 });

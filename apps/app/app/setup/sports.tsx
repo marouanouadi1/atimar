@@ -1,10 +1,10 @@
-import { useMemo, useState } from 'react';
-import { useRouter } from 'expo-router';
-import { StyleSheet, View } from 'react-native';
+import { useMemo, useState } from "react";
+import { useRouter } from "expo-router";
+import { StyleSheet, View } from "react-native";
 
-import { theme } from '@/theme/tokens';
-import { SPORTS } from '@atimar/data';
-import { pluralize } from '@atimar/utils';
+import { theme } from "@/theme/tokens";
+import { SPORTS } from "@atimar/data";
+import { pluralize } from "@atimar/utils";
 import {
   Button,
   Header,
@@ -14,14 +14,14 @@ import {
   SearchBar,
   SportSelectCard,
   useToggleSet,
-} from '@/ui';
-import { useAppState } from '@/state/AppState';
+} from "@/ui";
+import { useAppState } from "@/state/AppState";
 
 export default function SportsStep() {
   const router = useRouter();
   const { prefs, setPrefs } = useAppState();
   const selected = useToggleSet<string>(prefs.sports);
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -30,7 +30,7 @@ export default function SportsStep() {
 
   const onContinue = () => {
     setPrefs({ sports: selected.values });
-    router.push('/setup/area');
+    router.push("/setup/area");
   };
 
   return (
@@ -43,11 +43,23 @@ export default function SportsStep() {
       }
     >
       <View style={styles.body}>
-        <ScreenTitle title="Quali sport pratichi?" subtitle="Scegli uno o più sport per ricevere consigli su misura." size="h1" />
-        <SearchBar value={query} onChangeText={setQuery} placeholder="Cerca uno sport…" />
+        <ScreenTitle
+          title="Quali sport pratichi?"
+          subtitle="Scegli uno o più sport per ricevere consigli su misura."
+          size="h1"
+        />
+        <SearchBar
+          value={query}
+          onChangeText={setQuery}
+          placeholder="Cerca uno sport…"
+        />
         {selected.count > 0 ? (
           <InfoBanner icon="checkmark-circle" tone="lime">
-            {pluralize(selected.count, 'sport selezionato', 'sport selezionati')}
+            {pluralize(
+              selected.count,
+              "sport selezionato",
+              "sport selezionati",
+            )}
           </InfoBanner>
         ) : null}
         <View style={styles.grid}>
@@ -69,6 +81,6 @@ export default function SportsStep() {
 
 const styles = StyleSheet.create({
   body: { gap: theme.spacing.lg, paddingTop: theme.spacing.sm },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.md },
-  cell: { width: '47.5%', flexGrow: 1 },
+  grid: { flexDirection: "row", flexWrap: "wrap", gap: theme.spacing.md },
+  cell: { width: "47.5%", flexGrow: 1 },
 });

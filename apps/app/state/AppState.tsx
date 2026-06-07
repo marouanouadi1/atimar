@@ -15,24 +15,24 @@ import React, {
   useMemo,
   useRef,
   useState,
-} from 'react';
+} from "react";
 import {
   DEFAULT_FAVORITES,
   DEFAULT_FILTERS,
   DEFAULT_PREFS,
-} from '@atimar/data';
-import { withActiveCount } from '@atimar/utils';
+} from "@atimar/data";
+import { withActiveCount } from "@atimar/utils";
 import type {
   Booking,
   Favorites,
   Filters,
   User,
   UserPrefs,
-} from '@atimar/types';
-import { clearPersisted, loadPersisted, savePersisted } from './storage';
-import type { LoginInput, RegisterInput } from './auth';
-import { validateLogin, validateRegister } from './auth';
-import type { AuthResult } from './auth';
+} from "@atimar/types";
+import { clearPersisted, loadPersisted, savePersisted } from "./storage";
+import type { LoginInput, RegisterInput } from "./auth";
+import { validateLogin, validateRegister } from "./auth";
+import type { AuthResult } from "./auth";
 
 /* ------------------------------------------------------------------ *
  * Persisted shape
@@ -202,7 +202,11 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     ],
   );
 
-  return <AppStateContext.Provider value={value}>{children}</AppStateContext.Provider>;
+  return (
+    <AppStateContext.Provider value={value}>
+      {children}
+    </AppStateContext.Provider>
+  );
 }
 
 /* ------------------------------------------------------------------ *
@@ -211,6 +215,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
 export function useAppState(): AppStateValue {
   const ctx = useContext(AppStateContext);
-  if (!ctx) throw new Error('useAppState must be used within <AppStateProvider>');
+  if (!ctx)
+    throw new Error("useAppState must be used within <AppStateProvider>");
   return ctx;
 }

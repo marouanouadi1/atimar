@@ -1,9 +1,9 @@
-import { useRouter } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from "expo-router";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { theme } from '@/theme/tokens';
-import { getCourtListItems } from '@atimar/data';
-import { pluralize } from '@atimar/utils';
+import { theme } from "@/theme/tokens";
+import { getCourtListItems } from "@atimar/data";
+import { pluralize } from "@atimar/utils";
 import {
   Button,
   Header,
@@ -13,7 +13,7 @@ import {
   ScreenTitle,
   StepProgress,
   textStyle,
-} from '@/ui';
+} from "@/ui";
 
 export default function ValueNear() {
   const router = useRouter();
@@ -24,8 +24,8 @@ export default function ValueNear() {
       header={
         <Header
           right={
-            <Pressable onPress={() => router.push('/setup/sports')} hitSlop={8}>
-              <Text style={textStyle('caption', 'muted')}>Salta</Text>
+            <Pressable onPress={() => router.push("/setup/sports")} hitSlop={8}>
+              <Text style={textStyle("caption", "muted")}>Salta</Text>
             </Pressable>
           }
         />
@@ -33,7 +33,9 @@ export default function ValueNear() {
       footer={
         <View style={styles.footer}>
           <StepProgress step={1} total={3} variant="dots" />
-          <Button onPress={() => router.push('/onboarding/value-book')}>Continua</Button>
+          <Button onPress={() => router.push("/onboarding/value-book")}>
+            Continua
+          </Button>
         </View>
       }
     >
@@ -46,8 +48,8 @@ export default function ValueNear() {
         <MapPreview courts={courts} height={260} />
         <View style={styles.count}>
           <Icon name="location" size={theme.iconSizes.sm} color="primary" />
-          <Text style={textStyle('caption', 'text')}>
-            {pluralize(courts.length, 'campo disponibile', 'campi disponibili')}
+          <Text style={textStyle("caption", "text")}>
+            {pluralize(courts.length, "campo disponibile", "campi disponibili")}
           </Text>
         </View>
       </View>
@@ -57,11 +59,11 @@ export default function ValueNear() {
 
 const styles = StyleSheet.create({
   body: { gap: theme.spacing.xl, paddingTop: theme.spacing.lg },
-  footer: { gap: theme.spacing.md, alignItems: 'center' },
+  footer: { gap: theme.spacing.md, alignItems: "center" },
   count: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.xs,
-    alignSelf: 'center',
+    alignSelf: "center",
   },
 });

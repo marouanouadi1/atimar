@@ -34,11 +34,11 @@ Then choose how to open the app:
 
 Or use the dedicated scripts:
 
-| Command              | Platform              |
-| -------------------- | --------------------- |
-| `npm run ios`        | iOS Simulator (macOS) |
-| `npm run android`    | Android Emulator      |
-| `npm run web`        | Browser               |
+| Command           | Platform              |
+| ----------------- | --------------------- |
+| `npm run ios`     | iOS Simulator (macOS) |
+| `npm run android` | Android Emulator      |
+| `npm run web`     | Browser               |
 
 ## Project Structure
 

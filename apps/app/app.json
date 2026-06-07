@@ -27,7 +27,7 @@
       "package": "com.marouanouadi.atimar"
     },
     "web": {
-      "output": "single", 
+      "output": "single",
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [

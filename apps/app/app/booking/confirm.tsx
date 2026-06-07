@@ -1,8 +1,8 @@
-import { useLocalSearchParams, useRouter } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { StyleSheet, Text, View } from "react-native";
 
-import { theme } from '@/theme/tokens';
-import { getCourtById, getVenueById } from '@atimar/data';
+import { theme } from "@/theme/tokens";
+import { getCourtById, getVenueById } from "@atimar/data";
 import {
   AvailabilityBadge,
   Button,
@@ -12,10 +12,10 @@ import {
   ScreenContainer,
   ScreenTitle,
   textStyle,
-} from '@/ui';
+} from "@/ui";
 
 function formatDate(iso: string): string {
-  const [y, m, d] = iso.split('-');
+  const [y, m, d] = iso.split("-");
   return d && m && y ? `${d}/${m}/${y}` : iso;
 }
 
@@ -35,7 +35,7 @@ export default function BookingConfirm() {
   return (
     <ScreenContainer
       footer={
-        <Button icon onPress={() => router.replace('/home')}>
+        <Button icon onPress={() => router.replace("/home")}>
           Torna alla home
         </Button>
       }
@@ -52,12 +52,28 @@ export default function BookingConfirm() {
         </View>
 
         <Card style={styles.summary}>
-          <Row icon="business-outline" label="Struttura" value={venue?.name ?? '—'} />
-          <Row icon="grid-outline" label="Campo" value={court ? `${court.name} · ${court.sport}` : '—'} />
-          <Row icon="calendar-outline" label="Data" value={date ? formatDate(date) : '—'} />
-          <Row icon="time-outline" label="Orario" value={start && end ? `${start} – ${end}` : '—'} />
+          <Row
+            icon="business-outline"
+            label="Struttura"
+            value={venue?.name ?? "—"}
+          />
+          <Row
+            icon="grid-outline"
+            label="Campo"
+            value={court ? `${court.name} · ${court.sport}` : "—"}
+          />
+          <Row
+            icon="calendar-outline"
+            label="Data"
+            value={date ? formatDate(date) : "—"}
+          />
+          <Row
+            icon="time-outline"
+            label="Orario"
+            value={start && end ? `${start} – ${end}` : "—"}
+          />
           <View style={styles.statusRow}>
-            <Text style={textStyle('caption', 'subtle')}>Stato</Text>
+            <Text style={textStyle("caption", "subtle")}>Stato</Text>
             <AvailabilityBadge state="closed" label="In attesa" />
           </View>
         </Card>
@@ -66,13 +82,21 @@ export default function BookingConfirm() {
   );
 }
 
-function Row({ icon, label, value }: { icon: string; label: string; value: string }) {
+function Row({
+  icon,
+  label,
+  value,
+}: {
+  icon: string;
+  label: string;
+  value: string;
+}) {
   return (
     <View style={styles.row}>
       <Icon name={icon} size={theme.iconSizes.md} color="primary" />
       <View style={{ flex: 1, gap: 2 }}>
-        <Text style={textStyle('caption', 'subtle')}>{label}</Text>
-        <Text style={textStyle('bodyStrong', 'ink')}>{value}</Text>
+        <Text style={textStyle("caption", "subtle")}>{label}</Text>
+        <Text style={textStyle("bodyStrong", "ink")}>{value}</Text>
       </View>
     </View>
   );
@@ -80,8 +104,12 @@ function Row({ icon, label, value }: { icon: string; label: string; value: strin
 
 const styles = StyleSheet.create({
   body: { gap: theme.spacing.xxl, paddingTop: theme.spacing.xxxl },
-  hero: { alignItems: 'center', gap: theme.spacing.lg },
+  hero: { alignItems: "center", gap: theme.spacing.lg },
   summary: { gap: theme.spacing.lg },
-  row: { flexDirection: 'row', alignItems: 'center', gap: theme.spacing.md },
-  statusRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  row: { flexDirection: "row", alignItems: "center", gap: theme.spacing.md },
+  statusRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
 });

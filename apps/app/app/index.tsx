@@ -1,9 +1,9 @@
-import { Redirect } from 'expo-router';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { Redirect } from "expo-router";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 
-import { theme } from '@/theme/tokens';
-import { Logo } from '@/ui';
-import { useAppState } from '@/state/AppState';
+import { theme } from "@/theme/tokens";
+import { Logo } from "@/ui";
+import { useAppState } from "@/state/AppState";
 
 /**
  * Splash + navigation gate. Holds the splash until persisted state hydrates,
@@ -22,7 +22,9 @@ function SplashView() {
   return (
     <View style={styles.root}>
       <Logo scale={1.4} />
-      <Text style={styles.tagline}>Trova il campo giusto, gioca quando vuoi.</Text>
+      <Text style={styles.tagline}>
+        Trova il campo giusto, gioca quando vuoi.
+      </Text>
       <ActivityIndicator color={theme.colors.primary} style={styles.spinner} />
     </View>
   );
@@ -31,8 +33,8 @@ function SplashView() {
 const styles = StyleSheet.create({
   root: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     gap: theme.spacing.md,
     padding: theme.spacing.xl,
     backgroundColor: theme.colors.bg,
@@ -40,7 +42,7 @@ const styles = StyleSheet.create({
   tagline: {
     color: theme.colors.muted,
     fontSize: theme.typography.body.fontSize,
-    textAlign: 'center',
+    textAlign: "center",
   },
   spinner: {
     marginTop: theme.spacing.lg,

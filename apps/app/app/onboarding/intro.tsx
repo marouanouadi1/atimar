@@ -1,7 +1,7 @@
-import { useRouter } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from "expo-router";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { theme } from '@/theme/tokens';
+import { theme } from "@/theme/tokens";
 import {
   BenefitRow,
   Button,
@@ -10,12 +10,24 @@ import {
   ScreenTitle,
   StepProgress,
   textStyle,
-} from '@/ui';
+} from "@/ui";
 
 const BENEFITS = [
-  { icon: 'options', title: 'Match personalizzati', desc: 'Campi e orari adatti ai tuoi sport e al tuo livello.' },
-  { icon: 'bulb', title: 'Suggerimenti migliori', desc: 'Scopri le strutture più vicine e meglio recensite.' },
-  { icon: 'time', title: 'Risparmia tempo', desc: 'Richiedi disponibilità in pochi tocchi, senza chiamate.' },
+  {
+    icon: "options",
+    title: "Match personalizzati",
+    desc: "Campi e orari adatti ai tuoi sport e al tuo livello.",
+  },
+  {
+    icon: "bulb",
+    title: "Suggerimenti migliori",
+    desc: "Scopri le strutture più vicine e meglio recensite.",
+  },
+  {
+    icon: "time",
+    title: "Risparmia tempo",
+    desc: "Richiedi disponibilità in pochi tocchi, senza chiamate.",
+  },
 ];
 
 export default function SetupIntro() {
@@ -27,8 +39,8 @@ export default function SetupIntro() {
         <Header
           onBack={() => router.back()}
           right={
-            <Pressable onPress={() => router.push('/setup/sports')} hitSlop={8}>
-              <Text style={textStyle('caption', 'muted')}>Salta</Text>
+            <Pressable onPress={() => router.push("/setup/sports")} hitSlop={8}>
+              <Text style={textStyle("caption", "muted")}>Salta</Text>
             </Pressable>
           }
         />
@@ -36,7 +48,7 @@ export default function SetupIntro() {
       footer={
         <View style={styles.footer}>
           <StepProgress step={3} total={3} variant="dots" />
-          <Button icon onPress={() => router.push('/setup/sports')}>
+          <Button icon onPress={() => router.push("/setup/sports")}>
             Iniziamo
           </Button>
         </View>
@@ -50,7 +62,12 @@ export default function SetupIntro() {
         />
         <View style={styles.benefits}>
           {BENEFITS.map((b) => (
-            <BenefitRow key={b.title} icon={b.icon} title={b.title} desc={b.desc} />
+            <BenefitRow
+              key={b.title}
+              icon={b.icon}
+              title={b.title}
+              desc={b.desc}
+            />
           ))}
         </View>
       </View>
@@ -61,5 +78,5 @@ export default function SetupIntro() {
 const styles = StyleSheet.create({
   body: { gap: theme.spacing.xxl, paddingTop: theme.spacing.lg },
   benefits: { gap: theme.spacing.xl },
-  footer: { gap: theme.spacing.md, alignItems: 'center' },
+  footer: { gap: theme.spacing.md, alignItems: "center" },
 });

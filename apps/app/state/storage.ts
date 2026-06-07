@@ -5,9 +5,9 @@
  * dependency). On web it transparently uses localStorage via react-native-web.
  */
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const KEY = 'atimar-app';
+const KEY = "atimar-app";
 
 export async function loadPersisted<T>(): Promise<T | null> {
   try {

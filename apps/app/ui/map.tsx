@@ -4,12 +4,12 @@
  * can be swapped later without touching screens. Colors from @/theme/tokens.
  */
 
-import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import type { StyleProp, ViewStyle } from 'react-native';
-import { sportColor, theme } from '@/theme/tokens';
-import type { CourtListItem } from '@atimar/types';
-import { textStyle } from './theme';
+import React from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import type { StyleProp, ViewStyle } from "react-native";
+import { sportColor, theme } from "@/theme/tokens";
+import type { CourtListItem } from "@atimar/types";
+import { textStyle } from "./theme";
 
 /* ------------------------------------------------------------------ *
  * MapPin
@@ -24,11 +24,18 @@ interface MapPinProps {
 
 function MapPin({ label, sportId, selected = false, onPress }: MapPinProps) {
   return (
-    <Pressable onPress={onPress} style={({ pressed }) => [pressed && { opacity: 0.8 }]}>
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [pressed && { opacity: 0.8 }]}
+    >
       {selected ? <View style={styles.pinHalo} /> : null}
-      <View style={[styles.pin, selected ? styles.pinSelected : styles.pinIdle]}>
-        <View style={[styles.pinDot, { backgroundColor: sportColor(sportId) }]} />
-        <Text style={textStyle('micro', 'ink')}>{label}</Text>
+      <View
+        style={[styles.pin, selected ? styles.pinSelected : styles.pinIdle]}
+      >
+        <View
+          style={[styles.pinDot, { backgroundColor: sportColor(sportId) }]}
+        />
+        <Text style={textStyle("micro", "ink")}>{label}</Text>
       </View>
     </Pressable>
   );
@@ -60,7 +67,8 @@ export function MapPreview({
 }: MapPreviewProps) {
   const h = height ?? (compact ? 140 : 320);
   // radius 1..50 mapped to 30%..95% of the frame.
-  const ringPct = radius != null ? Math.min(0.3 + (radius / 50) * 0.65, 0.95) : 0;
+  const ringPct =
+    radius != null ? Math.min(0.3 + (radius / 50) * 0.65, 0.95) : 0;
 
   return (
     <View style={[styles.map, { height: h }, style]}>
@@ -70,7 +78,12 @@ export function MapPreview({
 
       {radius != null ? (
         <View style={styles.center}>
-          <View style={[styles.ring, { width: `${ringPct * 100}%`, aspectRatio: 1 }]} />
+          <View
+            style={[
+              styles.ring,
+              { width: `${ringPct * 100}%`, aspectRatio: 1 },
+            ]}
+          />
           <View style={styles.meDot} />
         </View>
       ) : null}
@@ -101,30 +114,30 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.chip,
     borderWidth: 1,
     borderColor: theme.colors.line,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   blob: {
-    position: 'absolute',
+    position: "absolute",
     borderRadius: theme.radius.pill,
     backgroundColor: theme.colors.placeholder,
     opacity: 0.6,
   },
   blobA: {
-    width: '60%',
-    height: '50%',
-    top: '-10%',
-    left: '-15%',
+    width: "60%",
+    height: "50%",
+    top: "-10%",
+    left: "-15%",
   },
   blobB: {
-    width: '55%',
-    height: '45%',
-    bottom: '-12%',
-    right: '-12%',
+    width: "55%",
+    height: "45%",
+    bottom: "-12%",
+    right: "-12%",
   },
   center: {
     ...StyleSheet.absoluteFillObject,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   ring: {
     borderRadius: theme.radius.pill,
@@ -133,7 +146,7 @@ const styles = StyleSheet.create({
     backgroundColor: theme.tints.limeTint,
   },
   meDot: {
-    position: 'absolute',
+    position: "absolute",
     width: 16,
     height: 16,
     borderRadius: theme.radius.pill,
@@ -142,12 +155,12 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.surface,
   },
   pinWrap: {
-    position: 'absolute',
+    position: "absolute",
     transform: [{ translateX: -24 }, { translateY: -16 }],
   },
   pin: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.xs,
     paddingVertical: theme.spacing.xs,
     paddingHorizontal: theme.spacing.sm,
@@ -166,12 +179,12 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.pill,
   },
   pinHalo: {
-    position: 'absolute',
+    position: "absolute",
     width: 44,
     height: 44,
     borderRadius: theme.radius.pill,
     backgroundColor: theme.tints.limeTint,
-    alignSelf: 'center',
+    alignSelf: "center",
     top: -10,
   },
 });

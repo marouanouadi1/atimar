@@ -1,10 +1,10 @@
-import { useMemo, useState } from 'react';
-import { useRouter } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useMemo, useState } from "react";
+import { useRouter } from "expo-router";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { theme } from '@/theme/tokens';
-import { getCourtListItemById, getCourtListItems } from '@atimar/data';
-import { filterCourts } from '@atimar/utils';
+import { theme } from "@/theme/tokens";
+import { getCourtListItemById, getCourtListItems } from "@atimar/data";
+import { filterCourts } from "@atimar/utils";
 import {
   CourtCard,
   EmptyState,
@@ -14,16 +14,16 @@ import {
   ScreenContainer,
   SearchBar,
   textStyle,
-} from '@/ui';
-import { useAppState } from '@/state/AppState';
+} from "@/ui";
+import { useAppState } from "@/state/AppState";
 
-type ViewMode = 'list' | 'map';
+type ViewMode = "list" | "map";
 
 export default function Search() {
   const router = useRouter();
   const { filters, isFavCourt, toggleFavCourt } = useAppState();
-  const [query, setQuery] = useState('');
-  const [view, setView] = useState<ViewMode>('list');
+  const [query, setQuery] = useState("");
+  const [view, setView] = useState<ViewMode>("list");
   const [selectedId, setSelectedId] = useState<string | undefined>(undefined);
 
   const results = useMemo(() => {
@@ -39,32 +39,55 @@ export default function Search() {
   }, [filters, query]);
 
   const selected = selectedId ? getCourtListItemById(selectedId) : undefined;
-  const openVenue = (venueId: string) => router.push({ pathname: '/venue/[id]', params: { id: venueId } });
+  const openVenue = (venueId: string) =>
+    router.push({ pathname: "/venue/[id]", params: { id: venueId } });
 
   return (
     <ScreenContainer>
       <View style={styles.body}>
         <View style={styles.searchRow}>
           <View style={{ flex: 1 }}>
-            <SearchBar value={query} onChangeText={setQuery} placeholder="Cerca campi, sport, zone…" />
+            <SearchBar
+              value={query}
+              onChangeText={setQuery}
+              placeholder="Cerca campi, sport, zone…"
+            />
           </View>
-          <Pressable onPress={() => router.push('/filters')} style={styles.filterBtn} accessibilityLabel="Filtri">
-            <Icon name="options-outline" size={theme.iconSizes.lg} color="ink" />
+          <Pressable
+            onPress={() => router.push("/filters")}
+            style={styles.filterBtn}
+            accessibilityLabel="Filtri"
+          >
+            <Icon
+              name="options-outline"
+              size={theme.iconSizes.lg}
+              color="ink"
+            />
             {filters.active > 0 ? (
               <View style={styles.filterBadge}>
-                <Text style={textStyle('micro', 'ink')}>{filters.active}</Text>
+                <Text style={textStyle("micro", "ink")}>{filters.active}</Text>
               </View>
             ) : null}
           </Pressable>
         </View>
 
         <View style={styles.toolbar}>
-          <Text style={textStyle('caption', 'muted')}>
-            {results.length} {results.length === 1 ? 'campo' : 'campi'}
+          <Text style={textStyle("caption", "muted")}>
+            {results.length} {results.length === 1 ? "campo" : "campi"}
           </Text>
           <View style={styles.segment}>
-            <FilterChip label="Lista" variant="segment" active={view === 'list'} onPress={() => setView('list')} />
-            <FilterChip label="Mappa" variant="segment" active={view === 'map'} onPress={() => setView('map')} />
+            <FilterChip
+              label="Lista"
+              variant="segment"
+              active={view === "list"}
+              onPress={() => setView("list")}
+            />
+            <FilterChip
+              label="Mappa"
+              variant="segment"
+              active={view === "map"}
+              onPress={() => setView("map")}
+            />
           </View>
         </View>
 
@@ -74,7 +97,7 @@ export default function Search() {
             title="Nessun campo trovato"
             desc="Prova a modificare i filtri o ad ampliare la distanza di ricerca."
           />
-        ) : view === 'list' ? (
+        ) : view === "list" ? (
           <View style={styles.list}>
             {results.map((court) => (
               <CourtCard
@@ -89,11 +112,22 @@ export default function Search() {
           </View>
         ) : (
           <View style={styles.mapWrap}>
-            <MapPreview courts={results} selectedId={selectedId} onSelect={setSelectedId} height={380} />
+            <MapPreview
+              courts={results}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+              height={380}
+            />
             {selected ? (
-              <CourtCard court={selected} variant="compact" onPress={() => openVenue(selected.venueId)} />
+              <CourtCard
+                court={selected}
+                variant="compact"
+                onPress={() => openVenue(selected.venueId)}
+              />
             ) : (
-              <Text style={[textStyle('caption', 'subtle'), styles.hint]}>Tocca un campo sulla mappa per i dettagli.</Text>
+              <Text style={[textStyle("caption", "subtle"), styles.hint]}>
+                Tocca un campo sulla mappa per i dettagli.
+              </Text>
             )}
           </View>
         )}
@@ -104,19 +138,23 @@ export default function Search() {
 
 const styles = StyleSheet.create({
   body: { gap: theme.spacing.lg, paddingTop: theme.spacing.sm },
-  searchRow: { flexDirection: 'row', alignItems: 'center', gap: theme.spacing.sm },
+  searchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: theme.spacing.sm,
+  },
   filterBtn: {
     width: theme.layout.searchHeight,
     height: theme.layout.searchHeight,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     borderRadius: theme.radius.md,
     backgroundColor: theme.colors.surface,
     borderWidth: 1,
     borderColor: theme.colors.line,
   },
   filterBadge: {
-    position: 'absolute',
+    position: "absolute",
     top: 4,
     right: 4,
     minWidth: 18,
@@ -124,12 +162,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
     borderRadius: theme.radius.pill,
     backgroundColor: theme.colors.lime,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
-  toolbar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  toolbar: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
   segment: {
-    flexDirection: 'row',
+    flexDirection: "row",
     backgroundColor: theme.colors.chip,
     borderRadius: theme.radius.pill,
     padding: theme.spacing.xs,
@@ -138,5 +180,5 @@ const styles = StyleSheet.create({
   },
   list: { gap: theme.spacing.md },
   mapWrap: { gap: theme.spacing.md },
-  hint: { textAlign: 'center' },
+  hint: { textAlign: "center" },
 });

@@ -3,21 +3,15 @@
  * All colors/spacing/typography come from @/theme/tokens — never hardcoded.
  */
 
-import React from 'react';
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
-import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { theme } from '@/theme/tokens';
-import { resolveButtonSpec } from './core';
-import type { ButtonVariant } from './core';
-import { resolveColor } from './theme';
+import React from "react";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import type { StyleProp, TextStyle, ViewStyle } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { theme } from "@/theme/tokens";
+import { resolveButtonSpec } from "./core";
+import type { ButtonVariant } from "./core";
+import { resolveColor } from "./theme";
 
 type IonName = keyof typeof Ionicons.glyphMap;
 
@@ -34,7 +28,12 @@ export interface IconProps {
   style?: StyleProp<TextStyle>;
 }
 
-export function Icon({ name, size = theme.iconSizes.xl, color = 'ink', style }: IconProps) {
+export function Icon({
+  name,
+  size = theme.iconSizes.xl,
+  color = "ink",
+  style,
+}: IconProps) {
   return (
     <Ionicons
       name={name as IonName}
@@ -66,7 +65,7 @@ export interface ButtonProps {
 export function Button({
   children,
   onPress,
-  variant = 'primary',
+  variant = "primary",
   disabled = false,
   icon = false,
   leadingIcon,
@@ -75,7 +74,7 @@ export function Button({
   testID,
 }: ButtonProps) {
   const spec = resolveButtonSpec(variant, disabled);
-  const bg = spec.bg ? resolveColor(spec.bg) : 'transparent';
+  const bg = spec.bg ? resolveColor(spec.bg) : "transparent";
   const fg = resolveColor(spec.fg);
   const shadow = spec.shadow ? theme.shadows[spec.shadow] : undefined;
 
@@ -98,9 +97,17 @@ export function Button({
         style,
       ]}
     >
-      {leadingIcon ? <Icon name={leadingIcon} size={theme.iconSizes.md} color={spec.fg} /> : null}
+      {leadingIcon ? (
+        <Icon name={leadingIcon} size={theme.iconSizes.md} color={spec.fg} />
+      ) : null}
       <Text style={[styles.btnLabel, { color: fg }]}>{children}</Text>
-      {icon ? <Icon name="chevron-forward" size={theme.iconSizes.lg} color={spec.fg} /> : null}
+      {icon ? (
+        <Icon
+          name="chevron-forward"
+          size={theme.iconSizes.lg}
+          color={spec.fg}
+        />
+      ) : null}
     </Pressable>
   );
 }
@@ -109,7 +116,7 @@ export function Button({
  * IconButton — round tappable icon (back, heart, map controls, floating CTAs)
  * ------------------------------------------------------------------ */
 
-export type IconButtonTone = 'plain' | 'surface' | 'glass';
+export type IconButtonTone = "plain" | "surface" | "glass";
 
 export interface IconButtonProps {
   name: string;
@@ -132,10 +139,10 @@ export function IconButton({
   onPress,
   size = theme.layout.iconButton,
   iconSize = theme.iconSizes.lg,
-  tone = 'plain',
-  color = 'ink',
+  tone = "plain",
+  color = "ink",
   active = false,
-  activeColor = 'heart',
+  activeColor = "heart",
   accessibilityLabel,
   style,
 }: IconButtonProps) {
@@ -151,8 +158,8 @@ export function IconButton({
         styles.iconBtn,
         { width: size, height: size, borderRadius: theme.radius.pill },
         toneStyle.container,
-        tone === 'glass' && theme.shadows.floatBtn,
-        tone === 'surface' && theme.shadows.card,
+        tone === "glass" && theme.shadows.floatBtn,
+        tone === "surface" && theme.shadows.card,
         pressed && styles.pressed,
         style,
       ]}
@@ -173,9 +180,16 @@ export interface CardProps {
   style?: StyleProp<ViewStyle>;
 }
 
-export function Card({ children, padding = theme.spacing.lg, elevated = true, style }: CardProps) {
+export function Card({
+  children,
+  padding = theme.spacing.lg,
+  elevated = true,
+  style,
+}: CardProps) {
   return (
-    <View style={[styles.card, { padding }, elevated && theme.shadows.card, style]}>
+    <View
+      style={[styles.card, { padding }, elevated && theme.shadows.card, style]}
+    >
       {children}
     </View>
   );
@@ -210,29 +224,39 @@ export function Divider({ label, style }: DividerProps) {
 export interface AvatarProps {
   name: string;
   size?: number;
-  variant?: 'lime' | 'gradient';
+  variant?: "lime" | "gradient";
   style?: StyleProp<ViewStyle>;
 }
 
 function initials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return '?';
+  if (parts.length === 0) return "?";
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
 }
 
-export function Avatar({ name, size = 64, variant = 'lime', style }: AvatarProps) {
-  const bg = variant === 'lime' ? theme.colors.lime : theme.colors.primary;
-  const fg = variant === 'lime' ? theme.colors.ink : theme.colors.surface;
+export function Avatar({
+  name,
+  size = 64,
+  variant = "lime",
+  style,
+}: AvatarProps) {
+  const bg = variant === "lime" ? theme.colors.lime : theme.colors.primary;
+  const fg = variant === "lime" ? theme.colors.ink : theme.colors.surface;
   return (
     <View
       style={[
         styles.avatar,
-        { width: size, height: size, borderRadius: theme.radius.pill, backgroundColor: bg },
+        {
+          width: size,
+          height: size,
+          borderRadius: theme.radius.pill,
+          backgroundColor: bg,
+        },
         style,
       ]}
     >
-      <Text style={{ color: fg, fontSize: size * 0.38, fontWeight: '700' }}>
+      <Text style={{ color: fg, fontSize: size * 0.38, fontWeight: "700" }}>
         {initials(name)}
       </Text>
     </View>
@@ -255,7 +279,7 @@ export function Logo({ scale = 1, style }: LogoProps) {
         style={{
           color: theme.colors.ink,
           fontSize: theme.typography.display.fontSize * scale,
-          fontWeight: '800',
+          fontWeight: "800",
           letterSpacing: theme.typography.display.letterSpacing,
         }}
       >
@@ -297,7 +321,7 @@ export function ScreenContainer({
   header,
   footer,
   safeTop = true,
-  background = 'bg',
+  background = "bg",
   style,
   contentStyle,
 }: ScreenContainerProps) {
@@ -307,7 +331,10 @@ export function ScreenContainer({
     <View
       style={[
         styles.screen,
-        { backgroundColor: resolveColor(background), paddingTop: safeTop ? insets.top : 0 },
+        {
+          backgroundColor: resolveColor(background),
+          paddingTop: safeTop ? insets.top : 0,
+        },
         style,
       ]}
     >
@@ -315,19 +342,35 @@ export function ScreenContainer({
       {scroll ? (
         <ScrollView
           style={styles.body}
-          contentContainerStyle={[styles.bodyContent, { paddingBottom: bottomPad }, contentStyle]}
+          contentContainerStyle={[
+            styles.bodyContent,
+            { paddingBottom: bottomPad },
+            contentStyle,
+          ]}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
           {children}
         </ScrollView>
       ) : (
-        <View style={[styles.body, styles.bodyContent, { paddingBottom: bottomPad }, contentStyle]}>
+        <View
+          style={[
+            styles.body,
+            styles.bodyContent,
+            { paddingBottom: bottomPad },
+            contentStyle,
+          ]}
+        >
           {children}
         </View>
       )}
       {footer ? (
-        <View style={[styles.footer, { paddingBottom: insets.bottom + theme.spacing.lg }]}>
+        <View
+          style={[
+            styles.footer,
+            { paddingBottom: insets.bottom + theme.spacing.lg },
+          ]}
+        >
           {footer}
         </View>
       ) : null}
@@ -340,34 +383,42 @@ export function ScreenContainer({
  * ------------------------------------------------------------------ */
 
 const toneStyles = {
-  plain: StyleSheet.create({ container: { backgroundColor: 'transparent' } }),
+  plain: StyleSheet.create({ container: { backgroundColor: "transparent" } }),
   surface: StyleSheet.create({
-    container: { backgroundColor: theme.colors.surface, borderWidth: 1, borderColor: theme.colors.line },
+    container: {
+      backgroundColor: theme.colors.surface,
+      borderWidth: 1,
+      borderColor: theme.colors.line,
+    },
   }),
   glass: StyleSheet.create({
-    container: { backgroundColor: theme.overlays.glass, borderWidth: 1, borderColor: theme.overlays.glassLine },
+    container: {
+      backgroundColor: theme.overlays.glass,
+      borderWidth: 1,
+      borderColor: theme.overlays.glassLine,
+    },
   }),
 } as const;
 
 const styles = StyleSheet.create({
   btn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     paddingHorizontal: theme.spacing.xl,
     gap: theme.spacing.sm,
   },
   btnFull: {
-    alignSelf: 'stretch',
+    alignSelf: "stretch",
   },
   btnLabel: {
     fontSize: theme.typography.bodyStrong.fontSize,
-    fontWeight: '700',
+    fontWeight: "700",
     letterSpacing: theme.typography.bodyStrong.letterSpacing,
   } as TextStyle,
   iconBtn: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   pressed: {
     opacity: 0.7,
@@ -383,8 +434,8 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.line,
   },
   dividerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.md,
   },
   dividerLine: {
@@ -395,15 +446,15 @@ const styles = StyleSheet.create({
   dividerLabel: {
     color: theme.colors.subtle,
     fontSize: theme.typography.caption.fontSize,
-    fontWeight: '600',
+    fontWeight: "600",
   } as TextStyle,
   avatar: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
   logoRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
+    flexDirection: "row",
+    alignItems: "flex-end",
     gap: 6,
   },
   screen: {

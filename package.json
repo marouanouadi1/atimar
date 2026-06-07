@@ -12,9 +12,19 @@
     "build:app": "pnpm --filter @atimar/app build",
     "build:web": "pnpm --filter @atimar/app build:web",
     "build:dev-dashboard": "pnpm --filter @atimar/dev-dashboard build",
+    "lint": "pnpm --filter @atimar/app lint && pnpm --filter @atimar/dev-dashboard lint",
+    "typecheck": "pnpm --filter @atimar/app exec tsc --noEmit && pnpm --filter @atimar/dev-dashboard exec tsc --noEmit",
+    "prepare": "husky",
+    "lint-staged": "lint-staged",
     "app:build:android": "pnpm --filter @atimar/app exec eas build --platform android --profile preview",
     "app:build:ios": "pnpm --filter @atimar/app exec eas build --platform ios --profile preview",
     "clean": "rm -rf node_modules apps/app/node_modules apps/app/.expo apps/app/.next apps/app/dist apps/dev-dashboard/node_modules apps/dev-dashboard/.next"
   },
-  "packageManager": "pnpm@9.0.0"
+  "packageManager": "pnpm@9.0.0",
+  "devDependencies": {
+    "eslint-config-prettier": "^10.1.8",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
+    "prettier": "^3.8.3"
+  }
 }

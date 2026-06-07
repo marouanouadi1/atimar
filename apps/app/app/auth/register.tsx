@@ -1,29 +1,32 @@
-import { useState } from 'react';
-import { useRouter } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useState } from "react";
+import { useRouter } from "expo-router";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { theme } from '@/theme/tokens';
-import { AuthLayout, Button, FormInput, textStyle } from '@/ui';
-import { useAppState } from '@/state/AppState';
-import type { AuthField } from '@/state/auth';
+import { theme } from "@/theme/tokens";
+import { AuthLayout, Button, FormInput, textStyle } from "@/ui";
+import { useAppState } from "@/state/AppState";
+import type { AuthField } from "@/state/auth";
 
 export default function Register() {
   const router = useRouter();
   const { register, login } = useAppState();
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<Partial<Record<AuthField, string>>>({});
 
   const onSubmit = () => {
     const result = register({ name, email, password });
     setErrors(result.errors);
-    if (result.ok) router.replace('/home');
+    if (result.ok) router.replace("/home");
   };
 
-  const onSocial = (provider: 'google' | 'apple') => {
-    const result = login({ email: `${provider}@atimar.app`, password: 'social-mock' });
-    if (result.ok) router.replace('/home');
+  const onSocial = (provider: "google" | "apple") => {
+    const result = login({
+      email: `${provider}@atimar.app`,
+      password: "social-mock",
+    });
+    if (result.ok) router.replace("/home");
   };
 
   return (
@@ -38,9 +41,14 @@ export default function Register() {
             Registrati
           </Button>
           <View style={styles.switchRow}>
-            <Text style={textStyle('caption', 'muted')}>Hai già un account?</Text>
-            <Pressable onPress={() => router.replace('/auth/login')} hitSlop={8}>
-              <Text style={textStyle('caption', 'primary')}>Accedi</Text>
+            <Text style={textStyle("caption", "muted")}>
+              Hai già un account?
+            </Text>
+            <Pressable
+              onPress={() => router.replace("/auth/login")}
+              hitSlop={8}
+            >
+              <Text style={textStyle("caption", "primary")}>Accedi</Text>
             </Pressable>
           </View>
         </View>
@@ -83,9 +91,9 @@ export default function Register() {
 const styles = StyleSheet.create({
   footer: { gap: theme.spacing.md },
   switchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: theme.spacing.xs,
   },
 });

@@ -3,22 +3,19 @@
  * this layer only renders. Colors/spacing from @/theme/tokens.
  */
 
-import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import type { StyleProp, ViewStyle } from 'react-native';
-import { sportColor, theme } from '@/theme/tokens';
-import {
-  resolveAvailabilitySpec,
-  resolveIconBadgeSpec,
-} from './core';
+import React from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import type { StyleProp, ViewStyle } from "react-native";
+import { sportColor, theme } from "@/theme/tokens";
+import { resolveAvailabilitySpec, resolveIconBadgeSpec } from "./core";
 import type {
   AvailabilityState,
   FilterChipVariant,
   IconBadgeTone,
-} from './core';
-import { formatRating } from '@atimar/utils';
-import { Icon } from './primitives';
-import { resolveColor, resolveTint, textStyle } from './theme';
+} from "./core";
+import { formatRating } from "@atimar/utils";
+import { Icon } from "./primitives";
+import { resolveColor, resolveTint, textStyle } from "./theme";
 
 /* ------------------------------------------------------------------ *
  * SportChip — quick filter / sport selection pill
@@ -32,7 +29,13 @@ export interface SportChipProps {
   style?: StyleProp<ViewStyle>;
 }
 
-export function SportChip({ label, active = false, onPress, icon, style }: SportChipProps) {
+export function SportChip({
+  label,
+  active = false,
+  onPress,
+  icon,
+  style,
+}: SportChipProps) {
   return (
     <Pressable
       onPress={onPress}
@@ -43,8 +46,14 @@ export function SportChip({ label, active = false, onPress, icon, style }: Sport
         style,
       ]}
     >
-      {icon ? <Icon name={icon} size={theme.iconSizes.sm} color={active ? 'ink' : 'muted'} /> : null}
-      <Text style={textStyle('caption', active ? 'ink' : 'text')}>{label}</Text>
+      {icon ? (
+        <Icon
+          name={icon}
+          size={theme.iconSizes.sm}
+          color={active ? "ink" : "muted"}
+        />
+      ) : null}
+      <Text style={textStyle("caption", active ? "ink" : "text")}>{label}</Text>
     </Pressable>
   );
 }
@@ -65,10 +74,10 @@ export function FilterChip({
   label,
   active = false,
   onPress,
-  variant = 'pill',
+  variant = "pill",
   style,
 }: FilterChipProps) {
-  const segment = variant === 'segment';
+  const segment = variant === "segment";
   return (
     <Pressable
       onPress={onPress}
@@ -77,16 +86,16 @@ export function FilterChip({
         segment
           ? active && styles.segmentActive
           : active
-          ? styles.chipInk
-          : styles.chipIdle,
+            ? styles.chipInk
+            : styles.chipIdle,
         pressed && styles.pressed,
         style,
       ]}
     >
       <Text
         style={textStyle(
-          'caption',
-          segment ? (active ? 'ink' : 'muted') : active ? 'surface' : 'text',
+          "caption",
+          segment ? (active ? "ink" : "muted") : active ? "surface" : "text",
         )}
       >
         {label}
@@ -109,7 +118,7 @@ export function SportTag({ label, sportId, style }: SportTagProps) {
   return (
     <View style={[styles.tag, style]}>
       <View style={[styles.dot, { backgroundColor: sportColor(sportId) }]} />
-      <Text style={textStyle('small', 'text')}>{label}</Text>
+      <Text style={textStyle("small", "text")}>{label}</Text>
     </View>
   );
 }
@@ -134,7 +143,7 @@ export function DayChip({ label, active = false, onPress }: DayChipProps) {
         pressed && styles.pressed,
       ]}
     >
-      <Text style={textStyle('caption', active ? 'ink' : 'text')}>{label}</Text>
+      <Text style={textStyle("caption", active ? "ink" : "text")}>{label}</Text>
     </Pressable>
   );
 }
@@ -150,7 +159,12 @@ export interface IconBadgeProps {
   style?: StyleProp<ViewStyle>;
 }
 
-export function IconBadge({ icon, tone = 'lime', size = 40, style }: IconBadgeProps) {
+export function IconBadge({
+  icon,
+  tone = "lime",
+  size = 40,
+  style,
+}: IconBadgeProps) {
   const spec = resolveIconBadgeSpec(tone);
   return (
     <View
@@ -176,12 +190,24 @@ export interface AvailabilityBadgeProps {
   style?: StyleProp<ViewStyle>;
 }
 
-export function AvailabilityBadge({ state, label, style }: AvailabilityBadgeProps) {
+export function AvailabilityBadge({
+  state,
+  label,
+  style,
+}: AvailabilityBadgeProps) {
   const spec = resolveAvailabilitySpec(state);
   return (
-    <View style={[styles.availBadge, { backgroundColor: resolveTint(spec.tint) }, style]}>
-      <View style={[styles.statusDot, { backgroundColor: resolveColor(spec.fg) }]} />
-      <Text style={textStyle('micro', spec.fg)}>{label ?? spec.label}</Text>
+    <View
+      style={[
+        styles.availBadge,
+        { backgroundColor: resolveTint(spec.tint) },
+        style,
+      ]}
+    >
+      <View
+        style={[styles.statusDot, { backgroundColor: resolveColor(spec.fg) }]}
+      />
+      <Text style={textStyle("micro", spec.fg)}>{label ?? spec.label}</Text>
     </View>
   );
 }
@@ -198,13 +224,19 @@ export interface RatingBadgeProps {
   style?: StyleProp<ViewStyle>;
 }
 
-export function RatingBadge({ value, count, showCount = false, size = theme.iconSizes.sm, style }: RatingBadgeProps) {
+export function RatingBadge({
+  value,
+  count,
+  showCount = false,
+  size = theme.iconSizes.sm,
+  style,
+}: RatingBadgeProps) {
   return (
     <View style={[styles.rating, style]}>
       <Icon name="star" size={size} color="star" />
-      <Text style={textStyle('caption', 'ink')}>{formatRating(value)}</Text>
+      <Text style={textStyle("caption", "ink")}>{formatRating(value)}</Text>
       {showCount && count != null ? (
-        <Text style={textStyle('caption', 'subtle')}>({count})</Text>
+        <Text style={textStyle("caption", "subtle")}>({count})</Text>
       ) : null}
     </View>
   );
@@ -216,12 +248,12 @@ export function RatingBadge({ value, count, showCount = false, size = theme.icon
 
 export interface PriceTagProps {
   label: string;
-  tone?: 'lime' | 'surface';
+  tone?: "lime" | "surface";
   style?: StyleProp<ViewStyle>;
 }
 
-export function PriceTag({ label, tone = 'lime', style }: PriceTagProps) {
-  const lime = tone === 'lime';
+export function PriceTag({ label, tone = "lime", style }: PriceTagProps) {
+  const lime = tone === "lime";
   return (
     <View
       style={[
@@ -230,15 +262,15 @@ export function PriceTag({ label, tone = 'lime', style }: PriceTagProps) {
         style,
       ]}
     >
-      <Text style={textStyle('micro', 'ink')}>{label}</Text>
+      <Text style={textStyle("micro", "ink")}>{label}</Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   chip: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.xs,
     height: 36,
     paddingHorizontal: theme.spacing.md,
@@ -260,8 +292,8 @@ const styles = StyleSheet.create({
   pressed: { opacity: 0.7 },
   segment: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     paddingVertical: theme.spacing.sm,
     borderRadius: theme.radius.pill,
   },
@@ -270,10 +302,10 @@ const styles = StyleSheet.create({
     ...theme.shadows.card,
   },
   tag: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.xs,
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
     paddingVertical: theme.spacing.xs,
     paddingHorizontal: theme.spacing.sm,
     borderRadius: theme.radius.pill,
@@ -286,20 +318,20 @@ const styles = StyleSheet.create({
   },
   dayChip: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     height: 44,
     borderRadius: theme.radius.md,
   },
   iconBadge: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     borderRadius: theme.radius.md,
   },
   availBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
     gap: theme.spacing.xs,
     paddingVertical: theme.spacing.xs,
     paddingHorizontal: theme.spacing.sm,
@@ -311,8 +343,8 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.pill,
   },
   rating: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.xs,
   },
   priceTag: {

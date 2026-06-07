@@ -23,7 +23,7 @@ export interface Sport {
   icon: string;
 }
 
-export type LevelId = 'beginner' | 'intermediate' | 'advanced' | 'expert';
+export type LevelId = "beginner" | "intermediate" | "advanced" | "expert";
 
 export interface Level {
   id: LevelId;
@@ -38,11 +38,11 @@ export interface Level {
 
 /** Graphic placeholder kind for hero / court illustration. */
 export type HeroKind =
-  | 'tennis-clay'
-  | 'padel-green'
-  | 'padel-blue'
-  | 'beach'
-  | 'soccer';
+  | "tennis-clay"
+  | "padel-green"
+  | "padel-blue"
+  | "beach"
+  | "soccer";
 
 export interface GeoPoint {
   lat: number;
@@ -63,7 +63,7 @@ export interface MapPoint {
  * Venue kind. `public` = campo comunale; `standalone` = single isolated court
  * not part of a real club (still wrapped in a Venue so every Court has a parent).
  */
-export type VenueKind = 'club' | 'public' | 'standalone';
+export type VenueKind = "club" | "public" | "standalone";
 
 export interface Venue {
   id: string;
@@ -127,7 +127,7 @@ export interface CourtListItem extends Court {
  * Availability & booking
  * ------------------------------------------------------------------ */
 
-export type SlotStatus = 'free' | 'busy';
+export type SlotStatus = "free" | "busy";
 
 export interface AvailabilitySlot {
   id: string;
@@ -143,10 +143,10 @@ export interface AvailabilitySlot {
 }
 
 export type BookingStatus =
-  | 'requested'
-  | 'confirmed'
-  | 'declined'
-  | 'cancelled';
+  | "requested"
+  | "confirmed"
+  | "declined"
+  | "cancelled";
 
 export interface Booking {
   id: string;
@@ -185,8 +185,8 @@ export interface User {
   email: string;
 }
 
-export type DayLabel = 'Lun' | 'Mar' | 'Mer' | 'Gio' | 'Ven' | 'Sab' | 'Dom';
-export type TimeId = 'morning' | 'afternoon' | 'evening' | 'night';
+export type DayLabel = "Lun" | "Mar" | "Mer" | "Gio" | "Ven" | "Sab" | "Dom";
+export type TimeId = "morning" | "afternoon" | "evening" | "night";
 
 export interface UserPrefs {
   sports: SportId[];
@@ -206,7 +206,7 @@ export interface Favorites {
  * ------------------------------------------------------------------ */
 
 export interface Filters {
-  sport: 'all' | SportId;
+  sport: "all" | SportId;
   /** km, 1..50. */
   maxDistance: number;
   openOnly: boolean;
@@ -216,7 +216,7 @@ export interface Filters {
 }
 
 /** Onboarding / app phase (mirrors prototype `app.jsx`). */
-export type AppPhase = 'onboarding' | 'auth-register' | 'auth-login' | 'app';
+export type AppPhase = "onboarding" | "auth-register" | "auth-login" | "app";
 
 /** Slide transition direction. */
-export type Direction = 'forward' | 'back';
+export type Direction = "forward" | "back";

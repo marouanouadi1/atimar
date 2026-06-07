@@ -1,28 +1,29 @@
-import { useRouter } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from "expo-router";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
-import { theme } from '@/theme/tokens';
+import { theme } from "@/theme/tokens";
 
 const ROUTES = [
   {
-    title: 'Onboarding',
-    description: 'Flusso iniziale per mostrare valore, sport preferiti e setup utente.',
-    href: '/onboarding/value-near',
+    title: "Onboarding",
+    description:
+      "Flusso iniziale per mostrare valore, sport preferiti e setup utente.",
+    href: "/onboarding/value-near",
   },
   {
-    title: 'Login demo',
-    description: 'Schermata di accesso mock per entrare nell’applicazione.',
-    href: '/auth/login',
+    title: "Login demo",
+    description: "Schermata di accesso mock per entrare nell’applicazione.",
+    href: "/auth/login",
   },
   {
-    title: 'Esplora campi',
-    description: 'Home app con campi, strutture, ricerca e preferiti.',
-    href: '/home',
+    title: "Esplora campi",
+    description: "Home app con campi, strutture, ricerca e preferiti.",
+    href: "/home",
   },
   {
-    title: 'Ricerca',
-    description: 'Vista ricerca con filtri e lista risultati.',
-    href: '/search',
+    title: "Ricerca",
+    description: "Vista ricerca con filtri e lista risultati.",
+    href: "/search",
   },
 ] as const;
 
@@ -35,14 +36,20 @@ export default function WebDemoLanding() {
         <Text style={styles.eyebrow}>ATIMAR demo</Text>
         <Text style={styles.title}>Bozza web dell’app Expo universale</Text>
         <Text style={styles.subtitle}>
-          Questa pagina esiste solo su web per rendere visibile subito la demo. Su mobile l’app continua a usare il gate
-          onboarding/login.
+          Questa pagina esiste solo su web per rendere visibile subito la demo.
+          Su mobile l’app continua a usare il gate onboarding/login.
         </Text>
         <View style={styles.actions}>
-          <Pressable style={styles.primaryButton} onPress={() => router.push('/onboarding/value-near')}>
+          <Pressable
+            style={styles.primaryButton}
+            onPress={() => router.push("/onboarding/value-near")}
+          >
             <Text style={styles.primaryButtonText}>Inizia onboarding</Text>
           </Pressable>
-          <Pressable style={styles.secondaryButton} onPress={() => router.push('/home')}>
+          <Pressable
+            style={styles.secondaryButton}
+            onPress={() => router.push("/home")}
+          >
             <Text style={styles.secondaryButtonText}>Vai alla home demo</Text>
           </Pressable>
         </View>
@@ -50,7 +57,11 @@ export default function WebDemoLanding() {
 
       <View style={styles.grid}>
         {ROUTES.map((item) => (
-          <Pressable key={item.href} style={styles.card} onPress={() => router.push(item.href)}>
+          <Pressable
+            key={item.href}
+            style={styles.card}
+            onPress={() => router.push(item.href)}
+          >
             <Text style={styles.cardTitle}>{item.title}</Text>
             <Text style={styles.cardDescription}>{item.description}</Text>
             <Text style={styles.cardLink}>Apri →</Text>
@@ -63,16 +74,16 @@ export default function WebDemoLanding() {
 
 const styles = StyleSheet.create({
   root: {
-    minHeight: '100%',
+    minHeight: "100%",
     backgroundColor: theme.colors.bg,
     paddingHorizontal: theme.spacing.xxxl,
     paddingVertical: 56,
     gap: theme.spacing.xxxl,
   },
   hero: {
-    width: '100%',
+    width: "100%",
     maxWidth: 920,
-    alignSelf: 'center',
+    alignSelf: "center",
     backgroundColor: theme.colors.surface,
     borderRadius: theme.radius.xl,
     borderWidth: 1,
@@ -86,13 +97,13 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.overline.fontSize,
     fontWeight: theme.typography.overline.fontWeight,
     letterSpacing: theme.typography.overline.letterSpacing,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
   },
   title: {
     color: theme.colors.ink,
     fontSize: 44,
     lineHeight: 52,
-    fontWeight: '800',
+    fontWeight: "800",
     letterSpacing: -1.2,
     maxWidth: 760,
   },
@@ -103,8 +114,8 @@ const styles = StyleSheet.create({
     maxWidth: 720,
   },
   actions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: theme.spacing.md,
     marginTop: theme.spacing.sm,
   },
@@ -116,7 +127,7 @@ const styles = StyleSheet.create({
   },
   primaryButtonText: {
     color: theme.colors.surface,
-    fontWeight: '700',
+    fontWeight: "700",
     fontSize: theme.typography.body.fontSize,
   },
   secondaryButton: {
@@ -127,15 +138,15 @@ const styles = StyleSheet.create({
   },
   secondaryButtonText: {
     color: theme.colors.ink,
-    fontWeight: '700',
+    fontWeight: "700",
     fontSize: theme.typography.body.fontSize,
   },
   grid: {
-    width: '100%',
+    width: "100%",
     maxWidth: 920,
-    alignSelf: 'center',
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    alignSelf: "center",
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: theme.spacing.lg,
   },
   card: {

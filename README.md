@@ -2,14 +2,14 @@
 
 ## Tech Stack
 
-| Categoria | Tecnologia |
-|---|---|
-| App cliente | Expo + React Native + React Native Web |
-| Routing app cliente | Expo Router |
-| Dashboard super admin | Next.js dentro `apps/app/dev-dashboard` |
-| Workspace | pnpm con un solo package applicativo (`apps/app`) |
-| Database/Auth | Supabase |
-| Dominio condiviso | Entità, tipi, selector e struttura DB in `packages/data` e `packages/types` |
+| Categoria             | Tecnologia                                                                  |
+| --------------------- | --------------------------------------------------------------------------- |
+| App cliente           | Expo + React Native + React Native Web                                      |
+| Routing app cliente   | Expo Router                                                                 |
+| Dashboard super admin | Next.js dentro `apps/app/dev-dashboard`                                     |
+| Workspace             | pnpm con un solo package applicativo (`apps/app`)                           |
+| Database/Auth         | Supabase                                                                    |
+| Dominio condiviso     | Entità, tipi, selector e struttura DB in `packages/data` e `packages/types` |
 
 ## Struttura
 
@@ -54,18 +54,18 @@ pnpm dev-dashboard
 
 ## Comandi dalla root
 
-| Comando | Descrizione |
-|---|---|
-| `pnpm web` | Avvia l'app Expo in modalità web |
-| `pnpm app` | Avvia l'app Expo |
-| `pnpm dev` | Alias per `pnpm app` |
-| `pnpm android` | Avvia Android |
-| `pnpm ios` | Avvia iOS |
-| `pnpm dev-dashboard` | Avvia la dashboard Next.js dentro `apps/app/dev-dashboard` |
-| `pnpm build:web` | Esporta la versione web Expo |
-| `pnpm build:app` | Build dell'app Expo universale |
-| `pnpm build:dev-dashboard` | Build della dashboard interna |
-| `pnpm clean` | Rimuove dipendenze, cache e output locali |
+| Comando                    | Descrizione                                                |
+| -------------------------- | ---------------------------------------------------------- |
+| `pnpm web`                 | Avvia l'app Expo in modalità web                           |
+| `pnpm app`                 | Avvia l'app Expo                                           |
+| `pnpm dev`                 | Alias per `pnpm app`                                       |
+| `pnpm android`             | Avvia Android                                              |
+| `pnpm ios`                 | Avvia iOS                                                  |
+| `pnpm dev-dashboard`       | Avvia la dashboard Next.js dentro `apps/app/dev-dashboard` |
+| `pnpm build:web`           | Esporta la versione web Expo                               |
+| `pnpm build:app`           | Build dell'app Expo universale                             |
+| `pnpm build:dev-dashboard` | Build della dashboard interna                              |
+| `pnpm clean`               | Rimuove dipendenze, cache e output locali                  |
 
 ## Codice condiviso
 

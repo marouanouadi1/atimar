@@ -3,7 +3,7 @@
  * RangeSlider is a dependency-free slider built on PanResponder (works on web).
  */
 
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState } from "react";
 import {
   PanResponder,
   Pressable,
@@ -12,16 +12,16 @@ import {
   Text,
   TextInput,
   View,
-} from 'react-native';
+} from "react-native";
 import type {
   KeyboardTypeOptions,
   LayoutChangeEvent,
   StyleProp,
   ViewStyle,
-} from 'react-native';
-import { theme } from '@/theme/tokens';
-import { Icon } from './primitives';
-import { textStyle } from './theme';
+} from "react-native";
+import { theme } from "@/theme/tokens";
+import { Icon } from "./primitives";
+import { textStyle } from "./theme";
 
 /* ------------------------------------------------------------------ *
  * FormInput
@@ -36,8 +36,8 @@ export interface FormInputProps {
   error?: string;
   secureTextEntry?: boolean;
   keyboardType?: KeyboardTypeOptions;
-  autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
-  autoComplete?: React.ComponentProps<typeof TextInput>['autoComplete'];
+  autoCapitalize?: "none" | "sentences" | "words" | "characters";
+  autoComplete?: React.ComponentProps<typeof TextInput>["autoComplete"];
   style?: StyleProp<ViewStyle>;
 }
 
@@ -50,7 +50,7 @@ export function FormInput({
   error,
   secureTextEntry = false,
   keyboardType,
-  autoCapitalize = 'none',
+  autoCapitalize = "none",
   autoComplete,
   style,
 }: FormInputProps) {
@@ -58,9 +58,11 @@ export function FormInput({
   const hasError = !!error;
   return (
     <View style={[{ gap: theme.spacing.xs }, style]}>
-      {label ? <Text style={textStyle('caption', 'text')}>{label}</Text> : null}
+      {label ? <Text style={textStyle("caption", "text")}>{label}</Text> : null}
       <View style={[styles.input, hasError && styles.inputError]}>
-        {icon ? <Icon name={icon} size={theme.iconSizes.md} color="subtle" /> : null}
+        {icon ? (
+          <Icon name={icon} size={theme.iconSizes.md} color="subtle" />
+        ) : null}
         <TextInput
           style={[styles.inputText, { flex: 1 }]}
           value={value}
@@ -74,11 +76,15 @@ export function FormInput({
         />
         {secureTextEntry ? (
           <Pressable onPress={() => setHidden((h) => !h)} hitSlop={8}>
-            <Text style={textStyle('caption', 'primary')}>{hidden ? 'Mostra' : 'Nascondi'}</Text>
+            <Text style={textStyle("caption", "primary")}>
+              {hidden ? "Mostra" : "Nascondi"}
+            </Text>
           </Pressable>
         ) : null}
       </View>
-      {hasError ? <Text style={textStyle('small', 'danger')}>{error}</Text> : null}
+      {hasError ? (
+        <Text style={textStyle("small", "danger")}>{error}</Text>
+      ) : null}
     </View>
   );
 }
@@ -97,7 +103,7 @@ export interface SearchBarProps {
 }
 
 export function SearchBar({
-  placeholder = 'Cerca campi, sport, zone…',
+  placeholder = "Cerca campi, sport, zone…",
   value,
   onChangeText,
   onPress,
@@ -111,7 +117,10 @@ export function SearchBar({
     <>
       <Icon name="search" size={theme.iconSizes.md} color="subtle" />
       {asButton ? (
-        <Text style={[textStyle('body', 'subtle'), { flex: 1 }]} numberOfLines={1}>
+        <Text
+          style={[textStyle("body", "subtle"), { flex: 1 }]}
+          numberOfLines={1}
+        >
           {placeholder}
         </Text>
       ) : (
@@ -125,7 +134,7 @@ export function SearchBar({
         />
       )}
       {showClear ? (
-        <Pressable onPress={() => onChangeText?.('')} hitSlop={8}>
+        <Pressable onPress={() => onChangeText?.("")} hitSlop={8}>
           <Icon name="close-circle" size={theme.iconSizes.md} color="subtle" />
         </Pressable>
       ) : null}
@@ -135,7 +144,14 @@ export function SearchBar({
 
   if (asButton) {
     return (
-      <Pressable onPress={onPress} style={({ pressed }) => [styles.search, pressed && styles.pressed, style]}>
+      <Pressable
+        onPress={onPress}
+        style={({ pressed }) => [
+          styles.search,
+          pressed && styles.pressed,
+          style,
+        ]}
+      >
         {inner}
       </Pressable>
     );
@@ -156,18 +172,30 @@ export interface ToggleRowProps {
   style?: StyleProp<ViewStyle>;
 }
 
-export function ToggleRow({ label, sub, value, onValueChange, icon, style }: ToggleRowProps) {
+export function ToggleRow({
+  label,
+  sub,
+  value,
+  onValueChange,
+  icon,
+  style,
+}: ToggleRowProps) {
   return (
     <View style={[styles.toggleRow, style]}>
-      {icon ? <Icon name={icon} size={theme.iconSizes.md} color="muted" /> : null}
+      {icon ? (
+        <Icon name={icon} size={theme.iconSizes.md} color="muted" />
+      ) : null}
       <View style={{ flex: 1, gap: 2 }}>
-        <Text style={textStyle('bodyStrong', 'ink')}>{label}</Text>
-        {sub ? <Text style={textStyle('caption', 'muted')}>{sub}</Text> : null}
+        <Text style={textStyle("bodyStrong", "ink")}>{label}</Text>
+        {sub ? <Text style={textStyle("caption", "muted")}>{sub}</Text> : null}
       </View>
       <Switch
         value={value}
         onValueChange={onValueChange}
-        trackColor={{ true: theme.colors.lime, false: theme.semantic.toggleOff }}
+        trackColor={{
+          true: theme.colors.lime,
+          false: theme.semantic.toggleOff,
+        }}
         thumbColor={theme.colors.surface}
         ios_backgroundColor={theme.semantic.toggleOff}
       />
@@ -187,7 +215,13 @@ export interface RangeSliderProps {
   onChange: (v: number) => void;
 }
 
-export function RangeSlider({ value, min = 1, max = 50, step = 1, onChange }: RangeSliderProps) {
+export function RangeSlider({
+  value,
+  min = 1,
+  max = 50,
+  step = 1,
+  onChange,
+}: RangeSliderProps) {
   const [width, setWidth] = useState(0);
   const range = Math.max(max - min, 1);
   const ratio = Math.min(Math.max((value - min) / range, 0), 1);
@@ -216,10 +250,15 @@ export function RangeSlider({ value, min = 1, max = 50, step = 1, onChange }: Ra
     }),
   ).current;
 
-  const onLayout = (e: LayoutChangeEvent) => setWidth(e.nativeEvent.layout.width);
+  const onLayout = (e: LayoutChangeEvent) =>
+    setWidth(e.nativeEvent.layout.width);
 
   return (
-    <View style={styles.sliderWrap} onLayout={onLayout} {...responder.panHandlers}>
+    <View
+      style={styles.sliderWrap}
+      onLayout={onLayout}
+      {...responder.panHandlers}
+    >
       <View style={styles.sliderTrack} />
       <View style={[styles.sliderFill, { width: `${ratio * 100}%` }]} />
       <View style={[styles.sliderThumb, { left: `${ratio * 100}%` }]} />
@@ -229,8 +268,8 @@ export function RangeSlider({ value, min = 1, max = 50, step = 1, onChange }: Ra
 
 const styles = StyleSheet.create({
   input: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.sm,
     height: theme.layout.inputHeight,
     paddingHorizontal: theme.spacing.lg,
@@ -248,8 +287,8 @@ const styles = StyleSheet.create({
     paddingVertical: 0,
   },
   search: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.sm,
     height: theme.layout.searchHeight,
     paddingHorizontal: theme.spacing.lg,
@@ -260,14 +299,14 @@ const styles = StyleSheet.create({
   },
   pressed: { opacity: 0.7 },
   toggleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.md,
     paddingVertical: theme.spacing.sm,
   },
   sliderWrap: {
     height: 36,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   sliderTrack: {
     height: 6,
@@ -275,13 +314,13 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.placeholder,
   },
   sliderFill: {
-    position: 'absolute',
+    position: "absolute",
     height: 6,
     borderRadius: theme.radius.pill,
     backgroundColor: theme.colors.lime,
   },
   sliderThumb: {
-    position: 'absolute',
+    position: "absolute",
     width: 24,
     height: 24,
     marginLeft: -12,

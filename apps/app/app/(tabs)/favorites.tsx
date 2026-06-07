@@ -1,13 +1,13 @@
-import { useState } from 'react';
-import { useRouter } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
+import { useState } from "react";
+import { useRouter } from "expo-router";
+import { StyleSheet, Text, View } from "react-native";
 
-import { theme } from '@/theme/tokens';
+import { theme } from "@/theme/tokens";
 import {
   getCourtListItemsByIds,
   getCourtsByVenue,
   getVenueById,
-} from '@atimar/data';
+} from "@atimar/data";
 import {
   CourtCard,
   EmptyState,
@@ -15,34 +15,46 @@ import {
   ScreenContainer,
   VenueCard,
   textStyle,
-} from '@/ui';
-import { useAppState } from '@/state/AppState';
+} from "@/ui";
+import { useAppState } from "@/state/AppState";
 
-type ViewMode = 'courts' | 'venues';
+type ViewMode = "courts" | "venues";
 
 export default function Favorites() {
   const router = useRouter();
-  const { favorites, isFavCourt, toggleFavCourt, toggleFavVenue } = useAppState();
-  const [view, setView] = useState<ViewMode>('courts');
+  const { favorites, isFavCourt, toggleFavCourt, toggleFavVenue } =
+    useAppState();
+  const [view, setView] = useState<ViewMode>("courts");
 
   const courts = getCourtListItemsByIds(favorites.courtIds);
   const venues = favorites.venueIds
     .map((id) => getVenueById(id))
     .filter((v): v is NonNullable<typeof v> => v != null);
 
-  const openVenue = (venueId: string) => router.push({ pathname: '/venue/[id]', params: { id: venueId } });
+  const openVenue = (venueId: string) =>
+    router.push({ pathname: "/venue/[id]", params: { id: venueId } });
 
   return (
     <ScreenContainer>
       <View style={styles.body}>
-        <Text style={textStyle('h1App', 'ink')}>Preferiti</Text>
+        <Text style={textStyle("h1App", "ink")}>Preferiti</Text>
 
         <View style={styles.segment}>
-          <FilterChip label="Campi" variant="segment" active={view === 'courts'} onPress={() => setView('courts')} />
-          <FilterChip label="Strutture" variant="segment" active={view === 'venues'} onPress={() => setView('venues')} />
+          <FilterChip
+            label="Campi"
+            variant="segment"
+            active={view === "courts"}
+            onPress={() => setView("courts")}
+          />
+          <FilterChip
+            label="Strutture"
+            variant="segment"
+            active={view === "venues"}
+            onPress={() => setView("venues")}
+          />
         </View>
 
-        {view === 'courts' ? (
+        {view === "courts" ? (
           courts.length === 0 ? (
             <EmptyState
               icon="heart-outline"
@@ -91,7 +103,7 @@ export default function Favorites() {
 const styles = StyleSheet.create({
   body: { gap: theme.spacing.lg, paddingTop: theme.spacing.sm },
   segment: {
-    flexDirection: 'row',
+    flexDirection: "row",
     backgroundColor: theme.colors.chip,
     borderRadius: theme.radius.pill,
     padding: theme.spacing.xs,

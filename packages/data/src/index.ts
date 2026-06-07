@@ -18,13 +18,13 @@ import type {
   Sport,
   UserPrefs,
   Venue,
-} from '@atimar/types';
+} from "@atimar/types";
 
-import { COURTS, VENUES } from './venues';
-import { LEVELS, SPORTS, SPORT_BY_ID, sportLabel } from './sports';
+import { COURTS, VENUES } from "./venues";
+import { LEVELS, SPORTS, SPORT_BY_ID, sportLabel } from "./sports";
 
-export * from './sports';
-export { VENUES, COURTS } from './venues';
+export * from "./sports";
+export { VENUES, COURTS } from "./venues";
 
 /* ------------------------------------------------------------------ *
  * Reviews
@@ -32,28 +32,28 @@ export { VENUES, COURTS } from './venues';
 
 export const REVIEWS: Review[] = [
   {
-    id: 'r1',
-    venueId: 'sanpaolo',
-    name: 'Marco B.',
+    id: "r1",
+    venueId: "sanpaolo",
+    name: "Marco B.",
     rating: 5,
-    when: '2 settimane fa',
-    text: 'Campi in terra rossa tenuti benissimo, staff gentile. Torno di sicuro.',
+    when: "2 settimane fa",
+    text: "Campi in terra rossa tenuti benissimo, staff gentile. Torno di sicuro.",
   },
   {
-    id: 'r2',
-    venueId: 'sanpaolo',
-    name: 'Giulia R.',
+    id: "r2",
+    venueId: "sanpaolo",
+    name: "Giulia R.",
     rating: 4,
-    when: '1 mese fa',
-    text: 'Bella struttura e prenotazione facile. Parcheggio un po’ piccolo.',
+    when: "1 mese fa",
+    text: "Bella struttura e prenotazione facile. Parcheggio un po’ piccolo.",
   },
   {
-    id: 'r3',
-    venueId: 'greenpadel',
-    name: 'Luca P.',
+    id: "r3",
+    venueId: "greenpadel",
+    name: "Luca P.",
     rating: 5,
-    when: '3 giorni fa',
-    text: 'Campi padel indoor top, luci perfette anche di sera. Consigliato.',
+    when: "3 giorni fa",
+    text: "Campi padel indoor top, luci perfette anche di sera. Consigliato.",
   },
 ];
 
@@ -62,13 +62,13 @@ export const REVIEWS: Review[] = [
  * ------------------------------------------------------------------ */
 
 export const DEFAULT_PREFS: UserPrefs = {
-  sports: ['padel', 'tennis'],
-  area: { location: 'Via Marco Polo, 1, Milano', radius: 10 },
-  availability: { days: ['Lun', 'Mer', 'Ven'], times: ['afternoon'] },
+  sports: ["padel", "tennis"],
+  area: { location: "Via Marco Polo, 1, Milano", radius: 10 },
+  availability: { days: ["Lun", "Mer", "Ven"], times: ["afternoon"] },
 };
 
 export const DEFAULT_FILTERS: Filters = {
-  sport: 'all',
+  sport: "all",
   maxDistance: 50,
   openOnly: false,
   onlyAvailable: false,
@@ -77,7 +77,7 @@ export const DEFAULT_FILTERS: Filters = {
 
 /** Default favorites are court ids (court-first). */
 export const DEFAULT_FAVORITES: Favorites = {
-  courtIds: ['sanpaolo-c1', 'greenpadel-c1'],
+  courtIds: ["sanpaolo-c1", "greenpadel-c1"],
   venueIds: [],
 };
 
@@ -186,7 +186,7 @@ export function getReviewsByVenue(venueId: string): Review[] {
  * Availability slots (seeded; used by the booking flow)
  * ------------------------------------------------------------------ */
 
-const SLOT_HOURS = ['09:00', '11:00', '15:00', '17:00', '19:00', '21:00'];
+const SLOT_HOURS = ["09:00", "11:00", "15:00", "17:00", "19:00", "21:00"];
 
 /**
  * Generate seeded availability slots for a court on a given date.
@@ -199,7 +199,7 @@ export function getSlotsForCourt(
   const court = COURT_BY_ID[courtId];
   if (!court) return [];
   return SLOT_HOURS.map((start, i) => {
-    const end = `${String(Number(start.slice(0, 2)) + 1).padStart(2, '0')}:00`;
+    const end = `${String(Number(start.slice(0, 2)) + 1).padStart(2, "0")}:00`;
     return {
       id: `${courtId}-${date}-${start}`,
       venueId: court.venueId,
@@ -207,7 +207,7 @@ export function getSlotsForCourt(
       date,
       start,
       end,
-      status: i % 3 === 1 ? 'busy' : 'free',
+      status: i % 3 === 1 ? "busy" : "free",
       price: court.pricePerHour,
     };
   });

@@ -1,11 +1,11 @@
-import { useMemo, useState } from 'react';
-import { useRouter } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useMemo, useState } from "react";
+import { useRouter } from "expo-router";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { theme } from '@/theme/tokens';
-import { DEFAULT_FILTERS, getCourtListItems, sportLabel } from '@atimar/data';
-import { filterCourts } from '@atimar/utils';
-import type { Filters } from '@atimar/types';
+import { theme } from "@/theme/tokens";
+import { DEFAULT_FILTERS, getCourtListItems, sportLabel } from "@atimar/data";
+import { filterCourts } from "@atimar/utils";
+import type { Filters } from "@atimar/types";
 import {
   Button,
   Header,
@@ -15,8 +15,8 @@ import {
   SportChip,
   ToggleRow,
   textStyle,
-} from '@/ui';
-import { useAppState } from '@/state/AppState';
+} from "@/ui";
+import { useAppState } from "@/state/AppState";
 
 export default function FiltersModal() {
   const router = useRouter();
@@ -28,7 +28,10 @@ export default function FiltersModal() {
     () => Array.from(new Set(courts.map((c) => c.sportId))),
     [courts],
   );
-  const count = useMemo(() => filterCourts(courts, draft).length, [courts, draft]);
+  const count = useMemo(
+    () => filterCourts(courts, draft).length,
+    [courts, draft],
+  );
 
   const apply = () => {
     setFilters(draft);
@@ -44,14 +47,14 @@ export default function FiltersModal() {
           title="Filtri"
           right={
             <Pressable onPress={() => setDraft(DEFAULT_FILTERS)} hitSlop={8}>
-              <Text style={textStyle('caption', 'primary')}>Reimposta</Text>
+              <Text style={textStyle("caption", "primary")}>Reimposta</Text>
             </Pressable>
           }
         />
       }
       footer={
         <Button onPress={apply}>
-          Applica · {count} {count === 1 ? 'campo' : 'campi'}
+          Applica · {count} {count === 1 ? "campo" : "campi"}
         </Button>
       }
     >
@@ -59,7 +62,11 @@ export default function FiltersModal() {
         <View style={styles.section}>
           <SectionTitle>Sport</SectionTitle>
           <View style={styles.chips}>
-            <SportChip label="Tutti" active={draft.sport === 'all'} onPress={() => setDraft((d) => ({ ...d, sport: 'all' }))} />
+            <SportChip
+              label="Tutti"
+              active={draft.sport === "all"}
+              onPress={() => setDraft((d) => ({ ...d, sport: "all" }))}
+            />
             {sports.map((id) => (
               <SportChip
                 key={id}
@@ -74,9 +81,16 @@ export default function FiltersModal() {
         <View style={styles.section}>
           <View style={styles.rowBetween}>
             <SectionTitle>Distanza massima</SectionTitle>
-            <Text style={textStyle('caption', 'primary')}>{draft.maxDistance} km</Text>
+            <Text style={textStyle("caption", "primary")}>
+              {draft.maxDistance} km
+            </Text>
           </View>
-          <RangeSlider value={draft.maxDistance} min={1} max={50} onChange={(v) => setDraft((d) => ({ ...d, maxDistance: v }))} />
+          <RangeSlider
+            value={draft.maxDistance}
+            min={1}
+            max={50}
+            onChange={(v) => setDraft((d) => ({ ...d, maxDistance: v }))}
+          />
         </View>
 
         <View style={styles.section}>
@@ -104,6 +118,10 @@ export default function FiltersModal() {
 const styles = StyleSheet.create({
   body: { gap: theme.spacing.xxl, paddingTop: theme.spacing.sm },
   section: { gap: theme.spacing.md },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.sm },
-  rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  chips: { flexDirection: "row", flexWrap: "wrap", gap: theme.spacing.sm },
+  rowBetween: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
 });

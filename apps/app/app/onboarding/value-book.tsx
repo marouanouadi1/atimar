@@ -1,8 +1,8 @@
-import { useRouter } from 'expo-router';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from "expo-router";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { theme } from '@/theme/tokens';
-import { getCourtListItems } from '@atimar/data';
+import { theme } from "@/theme/tokens";
+import { getCourtListItems } from "@atimar/data";
 import {
   Button,
   CourtCard,
@@ -11,7 +11,7 @@ import {
   ScreenTitle,
   StepProgress,
   textStyle,
-} from '@/ui';
+} from "@/ui";
 
 export default function ValueBook() {
   const router = useRouter();
@@ -23,8 +23,11 @@ export default function ValueBook() {
         <Header
           onBack={() => router.back()}
           right={
-            <Pressable onPress={() => router.push('/onboarding/intro')} hitSlop={8}>
-              <Text style={textStyle('caption', 'muted')}>Salta</Text>
+            <Pressable
+              onPress={() => router.push("/onboarding/intro")}
+              hitSlop={8}
+            >
+              <Text style={textStyle("caption", "muted")}>Salta</Text>
             </Pressable>
           }
         />
@@ -32,7 +35,9 @@ export default function ValueBook() {
       footer={
         <View style={styles.footer}>
           <StepProgress step={2} total={3} variant="dots" />
-          <Button onPress={() => router.push('/onboarding/intro')}>Continua</Button>
+          <Button onPress={() => router.push("/onboarding/intro")}>
+            Continua
+          </Button>
         </View>
       }
     >
@@ -43,7 +48,11 @@ export default function ValueBook() {
           size="h1"
         />
         {court ? <CourtCard court={court} variant="large" /> : null}
-        <Button variant="lime" icon onPress={() => router.push('/onboarding/intro')}>
+        <Button
+          variant="lime"
+          icon
+          onPress={() => router.push("/onboarding/intro")}
+        >
           Richiedi disponibilità
         </Button>
       </View>
@@ -53,5 +62,5 @@ export default function ValueBook() {
 
 const styles = StyleSheet.create({
   body: { gap: theme.spacing.xl, paddingTop: theme.spacing.lg },
-  footer: { gap: theme.spacing.md, alignItems: 'center' },
+  footer: { gap: theme.spacing.md, alignItems: "center" },
 });

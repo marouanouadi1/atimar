@@ -5,9 +5,9 @@
  * state patterns reusable across app screens without adding another package.
  */
 
-import { useCallback, useMemo, useState } from 'react';
-import { layout } from '@/theme/tokens';
-import type { ColorToken, SemanticToken, ShadowToken } from '@/theme/tokens';
+import { useCallback, useMemo, useState } from "react";
+import { layout } from "@/theme/tokens";
+import type { ColorToken, SemanticToken, ShadowToken } from "@/theme/tokens";
 
 /* ------------------------------------------------------------------ *
  * Shared token key unions
@@ -15,17 +15,17 @@ import type { ColorToken, SemanticToken, ShadowToken } from '@/theme/tokens';
 
 export type ColorKey = ColorToken | SemanticToken;
 export type TintKey =
-  | 'limeTint'
-  | 'limeTintSoft'
-  | 'blueTint'
-  | 'inkTint'
-  | 'successTint';
+  | "limeTint"
+  | "limeTintSoft"
+  | "blueTint"
+  | "inkTint"
+  | "successTint";
 
 /* ------------------------------------------------------------------ *
  * Button
  * ------------------------------------------------------------------ */
 
-export type ButtonVariant = 'primary' | 'lime' | 'ghost';
+export type ButtonVariant = "primary" | "lime" | "ghost";
 
 export interface ButtonSpec {
   /** Background color token; `undefined` means transparent. */
@@ -42,16 +42,26 @@ export function resolveButtonSpec(
   disabled = false,
 ): ButtonSpec {
   if (disabled) {
-    return { bg: 'disabled', fg: 'surface', height: layout.ctaHeight };
+    return { bg: "disabled", fg: "surface", height: layout.ctaHeight };
   }
   switch (variant) {
-    case 'lime':
-      return { bg: 'lime', fg: 'ink', shadow: 'lime', height: layout.ctaHeight };
-    case 'ghost':
-      return { fg: 'primary', height: layout.ghostHeight };
-    case 'primary':
+    case "lime":
+      return {
+        bg: "lime",
+        fg: "ink",
+        shadow: "lime",
+        height: layout.ctaHeight,
+      };
+    case "ghost":
+      return { fg: "primary", height: layout.ghostHeight };
+    case "primary":
     default:
-      return { bg: 'primary', fg: 'surface', shadow: 'cta', height: layout.ctaHeight };
+      return {
+        bg: "primary",
+        fg: "surface",
+        shadow: "cta",
+        height: layout.ctaHeight,
+      };
   }
 }
 
@@ -59,7 +69,7 @@ export function resolveButtonSpec(
  * Availability badge
  * ------------------------------------------------------------------ */
 
-export type AvailabilityState = 'open' | 'closed' | 'free' | 'busy';
+export type AvailabilityState = "open" | "closed" | "free" | "busy";
 
 export interface AvailabilitySpec {
   label: string;
@@ -71,15 +81,15 @@ export function resolveAvailabilitySpec(
   state: AvailabilityState,
 ): AvailabilitySpec {
   switch (state) {
-    case 'open':
-      return { label: 'Aperto', fg: 'success', tint: 'successTint' };
-    case 'free':
-      return { label: 'Libero', fg: 'success', tint: 'successTint' };
-    case 'busy':
-      return { label: 'Occupato', fg: 'muted', tint: 'inkTint' };
-    case 'closed':
+    case "open":
+      return { label: "Aperto", fg: "success", tint: "successTint" };
+    case "free":
+      return { label: "Libero", fg: "success", tint: "successTint" };
+    case "busy":
+      return { label: "Occupato", fg: "muted", tint: "inkTint" };
+    case "closed":
     default:
-      return { label: 'Chiuso', fg: 'muted', tint: 'inkTint' };
+      return { label: "Chiuso", fg: "muted", tint: "inkTint" };
   }
 }
 
@@ -87,7 +97,7 @@ export function resolveAvailabilitySpec(
  * IconBadge tones
  * ------------------------------------------------------------------ */
 
-export type IconBadgeTone = 'lime' | 'blue' | 'ink' | 'success';
+export type IconBadgeTone = "lime" | "blue" | "ink" | "success";
 
 export interface IconBadgeSpec {
   fg: ColorKey;
@@ -96,15 +106,15 @@ export interface IconBadgeSpec {
 
 export function resolveIconBadgeSpec(tone: IconBadgeTone): IconBadgeSpec {
   switch (tone) {
-    case 'blue':
-      return { fg: 'primary', tint: 'blueTint' };
-    case 'success':
-      return { fg: 'success', tint: 'successTint' };
-    case 'ink':
-      return { fg: 'ink', tint: 'inkTint' };
-    case 'lime':
+    case "blue":
+      return { fg: "primary", tint: "blueTint" };
+    case "success":
+      return { fg: "success", tint: "successTint" };
+    case "ink":
+      return { fg: "ink", tint: "inkTint" };
+    case "lime":
     default:
-      return { fg: 'limeDark', tint: 'limeTint' };
+      return { fg: "limeDark", tint: "limeTint" };
   }
 }
 
@@ -112,10 +122,10 @@ export function resolveIconBadgeSpec(tone: IconBadgeTone): IconBadgeSpec {
  * Other shared variant unions
  * ------------------------------------------------------------------ */
 
-export type CourtCardVariant = 'large' | 'compact';
-export type MapPinVariant = 'default' | 'selected' | 'compact';
-export type ProgressVariant = 'pill' | 'dots' | 'bar';
-export type FilterChipVariant = 'pill' | 'segment';
+export type CourtCardVariant = "large" | "compact";
+export type MapPinVariant = "default" | "selected" | "compact";
+export type ProgressVariant = "pill" | "dots" | "bar";
+export type FilterChipVariant = "pill" | "segment";
 
 /* ------------------------------------------------------------------ *
  * Hooks - disclosure (sheets, modals, dropdowns)
@@ -159,7 +169,10 @@ export function useStepper(total: number, initial = 1): Stepper {
     (n: number) => Math.min(Math.max(n, 1), total),
     [total],
   );
-  const next = useCallback(() => setStep((s) => Math.min(s + 1, total)), [total]);
+  const next = useCallback(
+    () => setStep((s) => Math.min(s + 1, total)),
+    [total],
+  );
   const prev = useCallback(() => setStep((s) => Math.max(s - 1, 1)), []);
   const goTo = useCallback((n: number) => setStep(clamp(n)), [clamp]);
   return {
