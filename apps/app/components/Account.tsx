@@ -1,6 +1,6 @@
 import { appStyles } from "@/styles/styles";
 import { supabase } from "@/utils/supabase";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { View, Alert, TextInput, Text, TouchableOpacity } from "react-native";
 
 // ...
@@ -18,11 +18,7 @@ export default function Account({
   const [avatarUrl, setAvatarUrl] = useState("");
   const styles = appStyles;
 
-  useEffect(() => {
-    if (userId) getProfile();
-  }, [userId]);
-
-  async function getProfile() {
+  const getProfile = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -47,7 +43,11 @@ export default function Account({
     } finally {
       setLoading(false);
     }
-  }
+  }, [userId]);
+
+  useEffect(() => {
+    if (userId) getProfile();
+  }, [getProfile, userId]);
 
   async function updateProfile({
     username,
