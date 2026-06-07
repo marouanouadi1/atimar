@@ -5,16 +5,16 @@
     "dev": "pnpm app",
     "app": "pnpm --filter @atimar/app dev",
     "web": "pnpm --filter @atimar/app web",
-    "dev-dashboard": "pnpm --filter @atimar/app dev:dashboard",
+    "dev-dashboard": "pnpm --filter @atimar/dev-dashboard dev",
     "android": "pnpm --filter @atimar/app android",
     "ios": "pnpm --filter @atimar/app ios",
     "build": "pnpm build:app && pnpm build:dev-dashboard",
     "build:app": "pnpm --filter @atimar/app build",
     "build:web": "pnpm --filter @atimar/app build:web",
-    "build:dev-dashboard": "pnpm --filter @atimar/app build:dashboard",
+    "build:dev-dashboard": "pnpm --filter @atimar/dev-dashboard build",
     "app:build:android": "pnpm --filter @atimar/app exec eas build --platform android --profile preview",
     "app:build:ios": "pnpm --filter @atimar/app exec eas build --platform ios --profile preview",
-    "clean": "rm -rf node_modules apps/app/node_modules apps/app/.expo apps/app/.next apps/app/dist"
+    "clean": "rm -rf node_modules apps/app/node_modules apps/app/.expo apps/app/.next apps/app/dist apps/dev-dashboard/node_modules apps/dev-dashboard/.next"
   },
   "packageManager": "pnpm@9.0.0"
 }
