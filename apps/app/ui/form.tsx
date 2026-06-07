@@ -1,5 +1,5 @@
 /**
- * Form & input components. Colors/spacing/typography from @atimar/theme.
+ * Form & input components. Colors/spacing/typography from @/theme/tokens.
  * RangeSlider is a dependency-free slider built on PanResponder (works on web).
  */
 
@@ -19,7 +19,7 @@ import type {
   StyleProp,
   ViewStyle,
 } from 'react-native';
-import { theme } from '@atimar/theme';
+import { theme } from '@/theme/tokens';
 import { Icon } from './primitives';
 import { textStyle } from './theme';
 

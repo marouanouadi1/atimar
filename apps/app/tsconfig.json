@@ -10,11 +10,9 @@
     "paths": {
       "@/*": ["./*"],
       "@dashboard/*": ["../dev-dashboard/*"],
-      "@atimar/theme": ["../../packages/theme/src"],
       "@atimar/types": ["../../packages/types/src"],
       "@atimar/data": ["../../packages/data/src"],
-      "@atimar/utils": ["../../packages/utils/src"],
-      "@atimar/ui-native": ["../../packages/ui-native/src"]
+      "@atimar/utils": ["../../packages/utils/src"]
     }
   },
   "include": [

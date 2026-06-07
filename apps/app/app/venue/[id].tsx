@@ -3,7 +3,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { theme } from '@atimar/theme';
+import { theme } from '@/theme/tokens';
 import {
   getCourtsByVenue,
   getReviewsByVenue,
@@ -26,7 +26,7 @@ import {
   SectionTitle,
   SportTag,
   textStyle,
-} from '@atimar/ui-native';
+} from '@/ui';
 import { useAppState } from '@/state/AppState';
 
 type Tab = 'info' | 'courts' | 'reviews';

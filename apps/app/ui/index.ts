@@ -1,6 +1,6 @@
 /**
- * ATIMAR — React Native UI library (@atimar/ui-native)
- * Consumed by apps/app. Built on @atimar/theme tokens.
+ * ATIMAR React Native UI components.
+ * Local to apps/app and built on @/theme/tokens.
  */
 
 export {

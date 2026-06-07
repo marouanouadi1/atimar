@@ -1,11 +1,11 @@
 /**
- * Text / titling components. Type metrics + colors come from @atimar/theme.
+ * Text / titling components. Type metrics + colors come from @/theme/tokens.
  */
 
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
-import { theme } from '@atimar/theme';
+import { theme } from '@/theme/tokens';
 import { textStyle } from './theme';
 
 /* ------------------------------------------------------------------ *

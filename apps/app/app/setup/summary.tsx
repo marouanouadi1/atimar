@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { theme } from '@atimar/theme';
+import { theme } from '@/theme/tokens';
 import { TIMES, sportLabel } from '@atimar/data';
 import {
   Button,
@@ -12,7 +12,7 @@ import {
   ScreenContainer,
   ScreenTitle,
   textStyle,
-} from '@atimar/ui-native';
+} from '@/ui';
 import { useAppState } from '@/state/AppState';
 
 function timeLabel(id: string): string {

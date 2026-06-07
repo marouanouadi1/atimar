@@ -1,12 +1,12 @@
 /**
  * Composite card / row components built on the primitives + chips.
- * All visuals come from @atimar/theme; product shapes from @atimar/types.
+ * All visuals come from @/theme/tokens; product shapes from @atimar/types.
  */
 
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import type { StyleProp, ViewStyle } from "react-native";
-import { sportColor, theme } from "@atimar/theme";
+import { sportColor, theme } from "@/theme/tokens";
 import type {
   Booking,
   BookingStatus,

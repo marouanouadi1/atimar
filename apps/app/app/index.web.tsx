@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { theme } from '@atimar/theme';
+import { theme } from '@/theme/tokens';
 
 const ROUTES = [
   {

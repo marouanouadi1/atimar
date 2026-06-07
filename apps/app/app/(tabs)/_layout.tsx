@@ -5,8 +5,8 @@ import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import * as Haptics from 'expo-haptics';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { theme } from '@atimar/theme';
-import { Icon, textStyle } from '@atimar/ui-native';
+import { theme } from '@/theme/tokens';
+import { Icon, textStyle } from '@/ui';
 
 interface TabDef {
   label: string;

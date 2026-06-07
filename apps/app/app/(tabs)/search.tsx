@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { theme } from '@atimar/theme';
+import { theme } from '@/theme/tokens';
 import { getCourtListItemById, getCourtListItems } from '@atimar/data';
 import { filterCourts } from '@atimar/utils';
 import {
@@ -14,7 +14,7 @@ import {
   ScreenContainer,
   SearchBar,
   textStyle,
-} from '@atimar/ui-native';
+} from '@/ui';
 import { useAppState } from '@/state/AppState';
 
 type ViewMode = 'list' | 'map';

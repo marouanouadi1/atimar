@@ -18,19 +18,19 @@ apps/
   app/                    # unico package installabile/eseguibile
     app/                  # route Expo Router per app cliente
     dev-dashboard/        # app Next.js interna per super admin
+    theme/tokens.ts       # design tokens locali dell'app Expo
+    ui/                   # componenti React Native locali dell'app Expo
     package.json          # dipendenze centralizzate: Expo, Next, React
     tsconfig.json         # TypeScript condiviso
     metro.config.js       # alias runtime per Expo
 
 packages/
   data/src/               # selector, mock data e poi query Supabase
-  theme/src/              # design tokens condivisi
   types/src/              # entità e tipi DB condivisi
-  ui-native/src/          # componenti React Native solo per app cliente
   utils/src/              # funzioni pure condivise
 ```
 
-La dashboard super admin resta Next.js. Non usa i componenti Expo/React Native e non dipende da `ui-native`. Condivide invece lo stesso dominio dell'app cliente: entità, tipi, selector e futura struttura Supabase.
+La dashboard super admin resta Next.js. Non usa i componenti Expo/React Native locali dell'app. Condivide invece lo stesso dominio dell'app cliente: entità, tipi, selector e futura struttura Supabase.
 
 I folder in `packages/*` sono sorgenti condivisi, non package pnpm autonomi. Gli alias dell'app Expo sono gestiti da `apps/app/tsconfig.json` e `apps/app/metro.config.js`. La dashboard ha un `tsconfig.json` minimo solo perché Next.js richiede un progetto TypeScript dentro la propria root.
 
@@ -78,4 +78,4 @@ import type { Court, Venue, Booking } from "@atimar/types";
 
 Non aggiungere `workspace:*` per `@atimar/*`: quei moduli non sono package separati. Se serve un nuovo modulo condiviso, crea `packages/<nome>/src` e registra l'alias in `apps/app/tsconfig.json`. Per Expo aggiorna anche `apps/app/metro.config.js`; per la dashboard aggiorna `apps/app/dev-dashboard/tsconfig.json`.
 
-Regola pratica: `packages/types` e `packages/data` descrivono il dominio comune e la struttura DB; `packages/ui-native` resta solo per l'app cliente Expo.
+Regola pratica: `packages/types` e `packages/data` descrivono il dominio comune e la struttura DB; UI e design tokens restano dentro l'app Expo.

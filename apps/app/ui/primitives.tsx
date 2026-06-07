@@ -1,6 +1,6 @@
 /**
  * Foundational React Native primitives.
- * All colors/spacing/typography come from @atimar/theme — never hardcoded.
+ * All colors/spacing/typography come from @/theme/tokens — never hardcoded.
  */
 
 import React from 'react';
@@ -14,7 +14,7 @@ import {
 import type { StyleProp, TextStyle, ViewStyle } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { theme } from '@atimar/theme';
+import { theme } from '@/theme/tokens';
 import { resolveButtonSpec } from './core';
 import type { ButtonVariant } from './core';
 import { resolveColor } from './theme';

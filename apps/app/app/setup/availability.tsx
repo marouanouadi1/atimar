@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
-import { theme } from '@atimar/theme';
+import { theme } from '@/theme/tokens';
 import { DAYS, TIMES } from '@atimar/data';
 import type { DayLabel, TimeId } from '@atimar/types';
 import {
@@ -13,7 +13,7 @@ import {
   SectionTitle,
   TimeOfDayCard,
   useToggleSet,
-} from '@atimar/ui-native';
+} from '@/ui';
 import { useAppState } from '@/state/AppState';
 
 export default function AvailabilityStep() {

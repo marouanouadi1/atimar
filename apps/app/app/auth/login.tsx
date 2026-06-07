@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { theme } from '@atimar/theme';
-import { AuthLayout, Button, FormInput, textStyle } from '@atimar/ui-native';
+import { theme } from '@/theme/tokens';
+import { AuthLayout, Button, FormInput, textStyle } from '@/ui';
 import { useAppState } from '@/state/AppState';
 import type { AuthField } from '@/state/auth';
 

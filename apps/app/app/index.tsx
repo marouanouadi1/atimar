@@ -1,8 +1,8 @@
 import { Redirect } from 'expo-router';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 
-import { theme } from '@atimar/theme';
-import { Logo } from '@atimar/ui-native';
+import { theme } from '@/theme/tokens';
+import { Logo } from '@/ui';
 import { useAppState } from '@/state/AppState';
 
 /**

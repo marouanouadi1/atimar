@@ -1,13 +1,13 @@
 /**
  * MapPreview + MapPin — an isolated graphic placeholder (no Google/Mapbox).
  * Same API a real map would expose (courts/selectedId/onSelect/radius), so it
- * can be swapped later without touching screens. Colors from @atimar/theme.
+ * can be swapped later without touching screens. Colors from @/theme/tokens.
  */
 
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { StyleProp, ViewStyle } from 'react-native';
-import { sportColor, theme } from '@atimar/theme';
+import { sportColor, theme } from '@/theme/tokens';
 import type { CourtListItem } from '@atimar/types';
 import { textStyle } from './theme';
 

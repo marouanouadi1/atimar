@@ -1,12 +1,12 @@
 /**
  * Chips, tags and badges. Variant-to-token mapping lives in ./core;
- * this layer only renders. Colors/spacing from @atimar/theme.
+ * this layer only renders. Colors/spacing from @/theme/tokens.
  */
 
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import type { StyleProp, ViewStyle } from 'react-native';
-import { sportColor, theme } from '@atimar/theme';
+import { sportColor, theme } from '@/theme/tokens';
 import {
   resolveAvailabilitySpec,
   resolveIconBadgeSpec,

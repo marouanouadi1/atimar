@@ -3,7 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Constants from 'expo-constants';
 
-import { theme } from '@atimar/theme';
+import { theme } from '@/theme/tokens';
 import { sportLabel } from '@atimar/data';
 import {
   Avatar,
@@ -14,7 +14,7 @@ import {
   SectionTitle,
   SportChip,
   textStyle,
-} from '@atimar/ui-native';
+} from '@/ui';
 import { useAppState } from '@/state/AppState';
 
 export default function Profile() {

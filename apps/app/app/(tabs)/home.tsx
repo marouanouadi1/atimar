@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useRouter } from 'expo-router';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { theme } from '@atimar/theme';
+import { theme } from '@/theme/tokens';
 import { getCourtListItems, sportLabel } from '@atimar/data';
 import { sortCourts } from '@atimar/utils';
 import {
@@ -13,7 +13,7 @@ import {
   SectionHeaderRow,
   SportChip,
   textStyle,
-} from '@atimar/ui-native';
+} from '@/ui';
 import { useAppState } from '@/state/AppState';
 
 export default function Home() {

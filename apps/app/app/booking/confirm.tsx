@@ -1,7 +1,7 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { theme } from '@atimar/theme';
+import { theme } from '@/theme/tokens';
 import { getCourtById, getVenueById } from '@atimar/data';
 import {
   AvailabilityBadge,
@@ -12,7 +12,7 @@ import {
   ScreenContainer,
   ScreenTitle,
   textStyle,
-} from '@atimar/ui-native';
+} from '@/ui';
 
 function formatDate(iso: string): string {
   const [y, m, d] = iso.split('-');

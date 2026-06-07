@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { theme } from '@atimar/theme';
+import { theme } from '@/theme/tokens';
 import {
   getCourtListItemsByIds,
   getCourtsByVenue,
@@ -15,7 +15,7 @@ import {
   ScreenContainer,
   VenueCard,
   textStyle,
-} from '@atimar/ui-native';
+} from '@/ui';
 import { useAppState } from '@/state/AppState';
 
 type ViewMode = 'courts' | 'venues';

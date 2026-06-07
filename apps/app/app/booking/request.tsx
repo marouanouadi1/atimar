@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { theme } from '@atimar/theme';
+import { theme } from '@/theme/tokens';
 import { getCourtsByVenue, getSlotsForCourt, getVenueById } from '@atimar/data';
 import type { Booking } from '@atimar/types';
 import {
@@ -12,7 +12,7 @@ import {
   ScreenContainer,
   SectionTitle,
   textStyle,
-} from '@atimar/ui-native';
+} from '@/ui';
 import { useAppState } from '@/state/AppState';
 
 const ITALIAN_DAYS = ['Dom', 'Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab'];

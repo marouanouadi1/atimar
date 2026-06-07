@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { theme } from '@atimar/theme';
+import { theme } from '@/theme/tokens';
 import { getCourtListItems } from '@atimar/data';
 import {
   Button,
@@ -11,7 +11,7 @@ import {
   ScreenTitle,
   StepProgress,
   textStyle,
-} from '@atimar/ui-native';
+} from '@/ui';
 
 export default function ValueBook() {
   const router = useRouter();

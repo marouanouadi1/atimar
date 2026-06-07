@@ -1,12 +1,12 @@
 /**
  * Navigation chrome: Header, StepProgress, SocialButton, AuthLayout.
- * Colors/spacing/typography from @atimar/theme.
+ * Colors/spacing/typography from @/theme/tokens.
  */
 
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import type { StyleProp, ViewStyle } from "react-native";
-import { theme } from "@atimar/theme";
+import { theme } from "@/theme/tokens";
 import type { ProgressVariant } from "./core";
 import { ScreenContainer, Divider, Icon, IconButton } from "./primitives";
 import { ScreenTitle } from "./typography";

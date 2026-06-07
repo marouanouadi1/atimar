@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
-import { theme } from '@atimar/theme';
+import { theme } from '@/theme/tokens';
 import { SPORTS } from '@atimar/data';
 import { pluralize } from '@atimar/utils';
 import {
@@ -14,7 +14,7 @@ import {
   SearchBar,
   SportSelectCard,
   useToggleSet,
-} from '@atimar/ui-native';
+} from '@/ui';
 import { useAppState } from '@/state/AppState';
 
 export default function SportsStep() {

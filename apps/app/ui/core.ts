@@ -1,13 +1,13 @@
 /**
- * Shared UI specs and hooks for @atimar/ui-native.
+ * Shared UI specs and hooks for the local React Native UI layer.
  *
  * Specs map component variants to design-token names. Hooks keep simple UI
  * state patterns reusable across app screens without adding another package.
  */
 
 import { useCallback, useMemo, useState } from 'react';
-import { layout } from '@atimar/theme';
-import type { ColorToken, SemanticToken, ShadowToken } from '@atimar/theme';
+import { layout } from '@/theme/tokens';
+import type { ColorToken, SemanticToken, ShadowToken } from '@/theme/tokens';
 
 /* ------------------------------------------------------------------ *
  * Shared token key unions

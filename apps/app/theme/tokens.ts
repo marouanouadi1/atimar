@@ -1,10 +1,9 @@
 /**
- * ATIMAR — Design Tokens (@atimar/theme)
+ * ATIMAR design tokens.
  *
  * Single source of truth for colors, spacing, radius, shadows, typography,
  * icon sizes, layout, motion and component variant defaults.
- * Framework-agnostic TypeScript: consumed by apps/app (React Native) and
- * apps/web (Next.js). No hardcoded colors in screens — always read from here.
+ * Local to the Expo app. No hardcoded colors in screens — always read from here.
  *
  * Derived from DESIGN_TOKENS.md (design export).
  */

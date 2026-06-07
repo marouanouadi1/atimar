@@ -19,9 +19,7 @@ config.resolver.nodeModulesPaths = [
 ];
 config.resolver.extraNodeModules = {
   '@atimar/data': path.resolve(packagesRoot, 'data/src'),
-  '@atimar/theme': path.resolve(packagesRoot, 'theme/src'),
   '@atimar/types': path.resolve(packagesRoot, 'types/src'),
-  '@atimar/ui-native': path.resolve(packagesRoot, 'ui-native/src'),
   '@atimar/utils': path.resolve(packagesRoot, 'utils/src'),
 };
 
