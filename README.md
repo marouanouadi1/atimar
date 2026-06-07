@@ -2,37 +2,29 @@
 
 ## Tech Stack
 
-| Categoria             | Tecnologia                                                                  |
-| --------------------- | --------------------------------------------------------------------------- |
-| App cliente           | Expo + React Native + React Native Web                                      |
-| Routing app cliente   | Expo Router                                                                 |
-| Dashboard super admin | Next.js dentro `apps/app/dev-dashboard`                                     |
-| Workspace             | pnpm con un solo package applicativo (`apps/app`)                           |
-| Database/Auth         | Supabase                                                                    |
-| Dominio condiviso     | Entità, tipi, selector e struttura DB in `packages/data` e `packages/types` |
+| Categoria           | Tecnologia                                      |
+| ------------------- | ----------------------------------------------- |
+| App cliente         | Expo + React Native + React Native Web          |
+| Routing             | Expo Router                                     |
+| Dashboard interna   | Next.js                                         |
+| Workspace           | pnpm workspace con organizzazione Turborepo     |
+| Database/Auth       | Supabase                                        |
+| Codice condiviso    | Moduli di dominio, tipi e utility in `packages` |
 
 ## Struttura
 
 ```txt
 apps/
-  app/                    # unico package installabile/eseguibile
-    app/                  # route Expo Router per app cliente
-    dev-dashboard/        # app Next.js interna per super admin
-    theme/tokens.ts       # design tokens locali dell'app Expo
-    ui/                   # componenti React Native locali dell'app Expo
-    package.json          # dipendenze centralizzate: Expo, Next, React
-    tsconfig.json         # TypeScript condiviso
-    metro.config.js       # alias runtime per Expo
+  app/                  # app Expo installabile/eseguibile
+  dev-dashboard/        # dashboard interna Next.js
 
 packages/
-  data/src/               # selector, mock data e poi query Supabase
-  types/src/              # entità e tipi DB condivisi
-  utils/src/              # funzioni pure condivise
+  */                    # codice condiviso tra le app
 ```
 
-La dashboard super admin resta Next.js. Non usa i componenti Expo/React Native locali dell'app. Condivide invece lo stesso dominio dell'app cliente: entità, tipi, selector e futura struttura Supabase.
+Il progetto è organizzato come monorepo: dalla root si installano le dipendenze e si lanciano i comandi principali, che vengono poi delegati ai workspace corretti. Le app restano separate, mentre `packages/*` contiene codice riutilizzabile come dominio, tipi e funzioni condivise.
 
-I folder in `packages/*` sono sorgenti condivisi, non package pnpm autonomi. Gli alias dell'app Expo sono gestiti da `apps/app/tsconfig.json` e `apps/app/metro.config.js`. La dashboard ha un `tsconfig.json` minimo solo perché Next.js richiede un progetto TypeScript dentro la propria root.
+La configurazione è volutamente centralizzata quanto basta per lavorare dalla root senza dover entrare manualmente nei singoli folder. Per i dettagli specifici di una app, fare riferimento al relativo `README.md`.
 
 ## Installazione
 
@@ -40,42 +32,36 @@ I folder in `packages/*` sono sorgenti condivisi, non package pnpm autonomi. Gli
 pnpm install
 ```
 
-Il lockfile viene rigenerato da `pnpm install` a partire dall'unico workspace reale: `apps/app`.
-
 ## Sviluppo
 
 ```bash
-pnpm web
 pnpm app
+pnpm web
+pnpm dev-dashboard
 pnpm android
 pnpm ios
-pnpm dev-dashboard
 ```
 
 ## Comandi dalla root
 
-| Comando                    | Descrizione                                                |
-| -------------------------- | ---------------------------------------------------------- |
-| `pnpm web`                 | Avvia l'app Expo in modalità web                           |
-| `pnpm app`                 | Avvia l'app Expo                                           |
-| `pnpm dev`                 | Alias per `pnpm app`                                       |
-| `pnpm android`             | Avvia Android                                              |
-| `pnpm ios`                 | Avvia iOS                                                  |
-| `pnpm dev-dashboard`       | Avvia la dashboard Next.js dentro `apps/app/dev-dashboard` |
-| `pnpm build:web`           | Esporta la versione web Expo                               |
-| `pnpm build:app`           | Build dell'app Expo universale                             |
-| `pnpm build:dev-dashboard` | Build della dashboard interna                              |
-| `pnpm clean`               | Rimuove dipendenze, cache e output locali                  |
+| Comando                    | Descrizione                                      |
+| -------------------------- | ------------------------------------------------ |
+| `pnpm app`                 | Avvia l'app Expo                                 |
+| `pnpm web`                 | Avvia l'app Expo in modalità web                 |
+| `pnpm dev`                 | Alias per `pnpm app`                             |
+| `pnpm dev-dashboard`       | Avvia la dashboard interna                       |
+| `pnpm android`             | Avvia l'app su Android                           |
+| `pnpm ios`                 | Avvia l'app su iOS                               |
+| `pnpm build`               | Esegue le build principali del monorepo          |
+| `pnpm build:app`           | Build dell'app Expo                              |
+| `pnpm build:web`           | Esporta la versione web dell'app Expo            |
+| `pnpm build:dev-dashboard` | Build della dashboard interna                    |
+| `pnpm lint`                | Esegue i controlli lint configurati              |
+| `pnpm typecheck`           | Esegue il controllo TypeScript                   |
+| `pnpm clean`               | Rimuove dipendenze, cache e output locali        |
 
 ## Codice condiviso
 
-App cliente e dashboard possono importare lo stesso dominio dati:
+Il codice condiviso va tenuto in `packages/*` quando serve a più app o rappresenta logica di dominio comune. UI, componenti visuali e configurazioni specifiche restano invece dentro l'app che li usa.
 
-```ts
-import { getCourtListItems } from "@atimar/data";
-import type { Court, Venue, Booking } from "@atimar/types";
-```
-
-Non aggiungere `workspace:*` per `@atimar/*`: quei moduli non sono package separati. Se serve un nuovo modulo condiviso, crea `packages/<nome>/src` e registra l'alias in `apps/app/tsconfig.json`. Per Expo aggiorna anche `apps/app/metro.config.js`; per la dashboard aggiorna `apps/app/dev-dashboard/tsconfig.json`.
-
-Regola pratica: `packages/types` e `packages/data` descrivono il dominio comune e la struttura DB; UI e design tokens restano dentro l'app Expo.
+Gli import condivisi sono gestiti tramite alias `@atimar/*` dove necessario.
