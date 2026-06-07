@@ -3,15 +3,14 @@
  * Colors/spacing/typography from @atimar/theme.
  */
 
-import React from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
-import type { StyleProp, ViewStyle } from 'react-native';
-import { theme } from '@atimar/theme';
-import type { ProgressVariant } from './core';
-import { Divider, Icon, IconButton } from './primitives';
-import { ScreenContainer } from './primitives';
-import { ScreenTitle } from './typography';
-import { textStyle } from './theme';
+import React from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import type { StyleProp, ViewStyle } from "react-native";
+import { theme } from "@atimar/theme";
+import type { ProgressVariant } from "./core";
+import { ScreenContainer, Divider, Icon, IconButton } from "./primitives";
+import { ScreenTitle } from "./typography";
+import { textStyle } from "./theme";
 
 /* ------------------------------------------------------------------ *
  * StepProgress — pill | dots | bar
@@ -24,17 +23,28 @@ export interface StepProgressProps {
   style?: StyleProp<ViewStyle>;
 }
 
-export function StepProgress({ step, total, variant = 'pill', style }: StepProgressProps) {
-  if (variant === 'dots') {
+export function StepProgress({
+  step,
+  total,
+  variant = "pill",
+  style,
+}: StepProgressProps) {
+  if (variant === "dots") {
     return (
       <View style={[styles.dotsRow, style]}>
         {Array.from({ length: total }).map((_, i) => (
-          <View key={i} style={[styles.dot, i + 1 === step ? styles.dotActive : styles.dotIdle]} />
+          <View
+            key={i}
+            style={[
+              styles.dot,
+              i + 1 === step ? styles.dotActive : styles.dotIdle,
+            ]}
+          />
         ))}
       </View>
     );
   }
-  if (variant === 'bar') {
+  if (variant === "bar") {
     const ratio = total > 0 ? Math.min(Math.max(step / total, 0), 1) : 0;
     return (
       <View style={[styles.barTrack, style]}>
@@ -44,7 +54,9 @@ export function StepProgress({ step, total, variant = 'pill', style }: StepProgr
   }
   return (
     <View style={[styles.pill, style]}>
-      <Text style={textStyle('small', 'muted')}>{`Step ${step} di ${total}`}</Text>
+      <Text
+        style={textStyle("small", "muted")}
+      >{`Step ${step} di ${total}`}</Text>
     </View>
   );
 }
@@ -63,21 +75,41 @@ export interface HeaderProps {
   style?: StyleProp<ViewStyle>;
 }
 
-export function Header({ onBack, step, total, progressVariant, right, title, style }: HeaderProps) {
+export function Header({
+  onBack,
+  step,
+  total,
+  progressVariant,
+  right,
+  title,
+  style,
+}: HeaderProps) {
   return (
     <View style={[styles.header, style]}>
       <View style={styles.headerSide}>
         {onBack ? (
-          <IconButton name="chevron-back" onPress={onBack} tone="surface" accessibilityLabel="Indietro" />
+          <IconButton
+            name="chevron-back"
+            onPress={onBack}
+            tone="surface"
+            accessibilityLabel="Indietro"
+          />
         ) : (
-          <View style={{ width: theme.layout.iconButton, height: theme.layout.iconButton }} />
+          <View
+            style={{
+              width: theme.layout.iconButton,
+              height: theme.layout.iconButton,
+            }}
+          />
         )}
       </View>
       <View style={styles.headerCenter}>
         {step != null && total != null ? (
           <StepProgress step={step} total={total} variant={progressVariant} />
         ) : title ? (
-          <Text style={textStyle('title', 'ink')} numberOfLines={1}>{title}</Text>
+          <Text style={textStyle("title", "ink")} numberOfLines={1}>
+            {title}
+          </Text>
         ) : null}
       </View>
       <View style={[styles.headerSide, styles.headerRight]}>{right}</View>
@@ -90,22 +122,26 @@ export function Header({ onBack, step, total, progressVariant, right, title, sty
  * ------------------------------------------------------------------ */
 
 export interface SocialButtonProps {
-  provider: 'google' | 'apple';
+  provider: "google" | "apple";
   onPress?: () => void;
   style?: StyleProp<ViewStyle>;
 }
 
 export function SocialButton({ provider, onPress, style }: SocialButtonProps) {
-  const isGoogle = provider === 'google';
+  const isGoogle = provider === "google";
   return (
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
       style={({ pressed }) => [styles.social, pressed && styles.pressed, style]}
     >
-      <Icon name={isGoogle ? 'logo-google' : 'logo-apple'} size={theme.iconSizes.lg} color="ink" />
-      <Text style={textStyle('bodyStrong', 'ink')}>
-        {isGoogle ? 'Continua con Google' : 'Continua con Apple'}
+      <Icon
+        name={isGoogle ? "logo-google" : "logo-apple"}
+        size={theme.iconSizes.lg}
+        color="ink"
+      />
+      <Text style={textStyle("bodyStrong", "ink")}>
+        {isGoogle ? "Continua con Google" : "Continua con Apple"}
       </Text>
     </Pressable>
   );
@@ -119,20 +155,30 @@ export interface AuthLayoutProps {
   title: string;
   subtitle?: string;
   onBack?: () => void;
-  onSocial?: (provider: 'google' | 'apple') => void;
+  onSocial?: (provider: "google" | "apple") => void;
   children: React.ReactNode;
   footer: React.ReactNode;
 }
 
-export function AuthLayout({ title, subtitle, onBack, onSocial, children, footer }: AuthLayoutProps) {
+export function AuthLayout({
+  title,
+  subtitle,
+  onBack,
+  onSocial,
+  children,
+  footer,
+}: AuthLayoutProps) {
   return (
     <ScreenContainer header={<Header onBack={onBack} />} footer={footer}>
       <View style={styles.authBody}>
         <ScreenTitle title={title} subtitle={subtitle} size="h1" />
         {onSocial ? (
           <View style={{ gap: theme.spacing.sm }}>
-            <SocialButton provider="google" onPress={() => onSocial('google')} />
-            <SocialButton provider="apple" onPress={() => onSocial('apple')} />
+            <SocialButton
+              provider="google"
+              onPress={() => onSocial("google")}
+            />
+            <SocialButton provider="apple" onPress={() => onSocial("apple")} />
           </View>
         ) : null}
         <Divider label="oppure" />
@@ -150,8 +196,8 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.chip,
   },
   dotsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: theme.spacing.xs,
   },
   dot: {
@@ -171,7 +217,7 @@ const styles = StyleSheet.create({
     width: 120,
     borderRadius: theme.radius.pill,
     backgroundColor: theme.colors.placeholder,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   barFill: {
     height: 6,
@@ -179,8 +225,8 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.lime,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     paddingHorizontal: theme.layout.screenPadX,
     paddingTop: theme.spacing.sm,
     paddingBottom: theme.spacing.sm,
@@ -188,19 +234,19 @@ const styles = StyleSheet.create({
   },
   headerSide: {
     minWidth: theme.layout.iconButton,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   headerCenter: {
     flex: 1,
-    alignItems: 'center',
+    alignItems: "center",
   },
   headerRight: {
-    alignItems: 'flex-end',
+    alignItems: "flex-end",
   },
   social: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     gap: theme.spacing.sm,
     height: theme.layout.inputHeight,
     borderRadius: theme.radius.md,
