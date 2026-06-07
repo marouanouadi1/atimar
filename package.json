@@ -2,26 +2,19 @@
   "name": "atimar",
   "private": true,
   "scripts": {
-    "dev": "turbo run dev --filter=@atimar/app --filter=@atimar/dev-dashboard",
-    "build": "turbo run build --filter=@atimar/app --filter=@atimar/dev-dashboard",
-    "lint": "turbo run lint",
-
+    "dev": "pnpm app",
     "app": "pnpm --filter @atimar/app dev",
     "web": "pnpm --filter @atimar/app web",
-    "dev-dashboard": "pnpm --filter @atimar/dev-dashboard dev",
+    "dev-dashboard": "pnpm --filter @atimar/app dev:dashboard",
     "android": "pnpm --filter @atimar/app android",
     "ios": "pnpm --filter @atimar/app ios",
-
-    "build:app": "turbo run build --filter=@atimar/app",
+    "build": "pnpm build:app && pnpm build:dev-dashboard",
+    "build:app": "pnpm --filter @atimar/app build",
     "build:web": "pnpm --filter @atimar/app build:web",
-    "build:dev-dashboard": "turbo run build --filter=@atimar/dev-dashboard",
+    "build:dev-dashboard": "pnpm --filter @atimar/app build:dashboard",
     "app:build:android": "pnpm --filter @atimar/app exec eas build --platform android --profile preview",
     "app:build:ios": "pnpm --filter @atimar/app exec eas build --platform ios --profile preview",
-
-    "clean": "turbo clean && rm -rf node_modules"
-  },
-  "devDependencies": {
-    "turbo": "latest"
+    "clean": "rm -rf node_modules apps/app/node_modules apps/app/.expo apps/app/.next apps/app/dist"
   },
   "packageManager": "pnpm@9.0.0"
 }
