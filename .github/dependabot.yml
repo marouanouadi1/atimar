@@ -1,0 +1,46 @@
+version: 2
+
+updates:
+  - package-ecosystem: "npm"
+    directories:
+      - "/"
+      - "/apps/app"
+      - "/apps/dev-dashboard"
+    schedule:
+      interval: "monthly"
+    labels:
+      - "dependencies"
+    groups:
+      expo:
+        patterns:
+          - "expo"
+          - "expo-*"
+          - "@expo/*"
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "react-native"
+          - "react-native-*"
+          - "@react-navigation/*"
+      next:
+        patterns:
+          - "next"
+          - "eslint-config-next"
+      tooling:
+        dependency-type: "development"
+        patterns:
+          - "typescript"
+          - "eslint"
+          - "eslint-*"
+          - "@types/*"
+          - "tailwindcss"
+          - "@tailwindcss/*"
+          - "babel-plugin-react-compiler"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    labels:
+      - "dependencies"

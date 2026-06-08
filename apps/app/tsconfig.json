@@ -1,0 +1,27 @@
+{
+  "extends": "expo/tsconfig.base",
+  "compilerOptions": {
+    "strict": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./*"],
+      "@dashboard/*": ["../dev-dashboard/*"],
+      "@atimar/types": ["../../packages/types/src"],
+      "@atimar/data": ["../../packages/data/src"],
+      "@atimar/utils": ["../../packages/utils/src"]
+    }
+  },
+  "include": [
+    "**/*.ts",
+    "**/*.tsx",
+    "**/*.mts",
+    ".expo/types/**/*.ts",
+    ".next/types/**/*.ts",
+    "next-env.d.ts",
+    "expo-env.d.ts"
+  ]
+}

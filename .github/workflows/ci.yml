@@ -1,0 +1,104 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  repo-shape:
+    name: repo-shape
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Validate expected structure
+        run: |
+          test -f package.json
+          test -f pnpm-lock.yaml
+          test -f pnpm-workspace.yaml
+          test -f apps/app/package.json
+          test -f apps/app/tsconfig.json
+          test -d packages/types/src
+          test -d packages/data/src
+          test -d packages/utils/src
+
+  app:
+    name: app / lint, typecheck, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: repo-shape
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 9.0.0
+          run_install: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint app
+        run: pnpm --filter @atimar/app lint
+
+      - name: Typecheck app
+        run: pnpm --filter @atimar/app exec tsc --noEmit
+
+      - name: Build app web export
+        run: pnpm --filter @atimar/app build:web
+
+  dashboard:
+    name: dashboard / lint, typecheck, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs: repo-shape
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with:
+          version: 9.0.0
+          run_install: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint dashboard
+        run: pnpm --filter @atimar/dev-dashboard lint
+
+      - name: Typecheck dashboard
+        run: pnpm --filter @atimar/dev-dashboard exec tsc --noEmit
+
+      - name: Build dashboard
+        run: pnpm --filter @atimar/dev-dashboard build

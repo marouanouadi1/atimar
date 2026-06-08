@@ -1,75 +1,67 @@
-## 🛠 Tech Stack
+# Atimar
 
-| Categoria | Tecnologia |
-|---|---|
-| Mobile | Expo (React Native) |
-| Web | Next.js (App Router, React 19) |
-| Monorepo Tooling | Turborepo & pnpm |
-| Database/Auth | Supabase |
-| Styling | Tailwind CSS (Web) & NativeWind (Mobile - planned) |
+## Tech Stack
 
----
+| Categoria           | Tecnologia                                      |
+| ------------------- | ----------------------------------------------- |
+| App cliente         | Expo + React Native + React Native Web          |
+| Routing             | Expo Router                                     |
+| Dashboard interna   | Next.js                                         |
+| Workspace           | pnpm workspace con organizzazione Turborepo     |
+| Database/Auth       | Supabase                                        |
+| Codice condiviso    | Moduli di dominio, tipi e utility in `packages` |
 
-## 🚀 Come Iniziare
+## Struttura
 
-### 1. Prerequisiti
+```txt
+apps/
+  app/                  # app Expo installabile/eseguibile
+  dev-dashboard/        # dashboard interna Next.js
 
-Assicurati di avere installato:
+packages/
+  */                    # codice condiviso tra le app
+```
 
-- **Node.js** (v24+)
-- **pnpm** (`npm install -g pnpm`)
-- **Turborepo** (`npm install -g turbo`)
+Il progetto è organizzato come monorepo: dalla root si installano le dipendenze e si lanciano i comandi principali, che vengono poi delegati ai workspace corretti. Le app restano separate, mentre `packages/*` contiene codice riutilizzabile come dominio, tipi e funzioni condivise.
 
-### 2. Installazione
+La configurazione è volutamente centralizzata quanto basta per lavorare dalla root senza dover entrare manualmente nei singoli folder. Per i dettagli specifici di una app, fare riferimento al relativo `README.md`.
 
-Dalla cartella principale del progetto, scarica tutte le dipendenze:
+## Installazione
 
 ```bash
 pnpm install
 ```
 
-### 3. Sviluppo
-
-Per avviare tutti i progetti contemporaneamente:
+## Sviluppo
 
 ```bash
-pnpm dev
+pnpm app
+pnpm web
+pnpm dev-dashboard
+pnpm android
+pnpm ios
 ```
 
----
+## Comandi dalla root
 
-## ⌨️ Comandi Utili (Dalla Root)
+| Comando                    | Descrizione                                      |
+| -------------------------- | ------------------------------------------------ |
+| `pnpm app`                 | Avvia l'app Expo                                 |
+| `pnpm web`                 | Avvia l'app Expo in modalità web                 |
+| `pnpm dev`                 | Alias per `pnpm app`                             |
+| `pnpm dev-dashboard`       | Avvia la dashboard interna                       |
+| `pnpm android`             | Avvia l'app su Android                           |
+| `pnpm ios`                 | Avvia l'app su iOS                               |
+| `pnpm build`               | Esegue le build principali del monorepo          |
+| `pnpm build:app`           | Build dell'app Expo                              |
+| `pnpm build:web`           | Esporta la versione web dell'app Expo            |
+| `pnpm build:dev-dashboard` | Build della dashboard interna                    |
+| `pnpm lint`                | Esegue i controlli lint configurati              |
+| `pnpm typecheck`           | Esegue il controllo TypeScript                   |
+| `pnpm clean`               | Rimuove dipendenze, cache e output locali        |
 
-| Comando | Descrizione |
-|---|---|
-| `pnpm dev` | Avvia Dashboard e Mobile in parallelo |
-| `pnpm mobile` | Avvia solo l'app Expo (web browser)|
-| `pnpm web` | Avvia solo il sito web Next.js |
-| `pnpm dev-dashboard` | Avvia solo la dashboard Next.js |
-| `pnpm android` | Avvia l'app mobile direttamente su emulatore Android |
-| `pnpm ios` | Avvia l'app mobile direttamente su emulatore iOS |
-| `pnpm build` | Esegue la build di tutto il progetto con caching di Turbo |
-| `pnpm build:web` | Esegue la build del progetto web |
-| `pnpm build:dev-dashboard` | Esegue la build della dashboard|
-| `pnpm build:mobile` | Esegue la build dell'app mobile (genera la versione web dentro /dist)|
-| `pnpm build:android` | Esegue la build dell'app mobile (.apk Android)|
-| `pnpm build:ios` | Esegue la build dell'app mobile (.ipa iOS)|
-| `pnpm clean` | Pulizia cache |
+## Codice condiviso
 
+Il codice condiviso va tenuto in `packages/*` quando serve a più app o rappresenta logica di dominio comune. UI, componenti visuali e configurazioni specifiche restano invece dentro l'app che li usa.
 
----
-
-## 🏗 Condivisione del Codice
-
-Per utilizzare un pacchetto locale (es. `packages/types`) dentro una delle app:
-
-1. Aggiungilo al `package.json` dell'app: `"@atimar/types": "workspace:*"`
-2. Lancia `pnpm install`.
-3. Importalo normalmente nel codice: `import { User } from "@atimar/types"`.
-
----
-
-## 📝 Note per lo Sviluppo
-
-- **SSR su Web:** Per l'app mobile in modalità web, l'SSR è stato disattivato (`output: "single"`) per garantire la compatibilità immediata con Supabase.
-- **Porte:** La dashboard gira solitamente su `localhost:3000`, mentre il Metro bundler di Expo su `localhost:8081`.
+Gli import condivisi sono gestiti tramite alias `@atimar/*` dove necessario.
