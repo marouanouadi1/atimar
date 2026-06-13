@@ -1,5 +1,6 @@
-import { IconSidebar } from '@/components/sidebar/icon-sidebar'
-import { SubSidebar } from '@/components/sidebar/sub-sidebar'
+import { SidebarInset, SidebarProvider } from '@/components/ui/sidebar'
+import { TooltipProvider } from '@/components/ui/tooltip'
+import { AppSidebar } from '@/components/app-sidebar'
 
 export default function DashboardLayout({
   children,
@@ -7,10 +8,11 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
-      <IconSidebar />
-      <SubSidebar />
-      <main className="flex flex-1 flex-col overflow-auto">{children}</main>
-    </div>
+    <TooltipProvider delayDuration={200}>
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>{children}</SidebarInset>
+      </SidebarProvider>
+    </TooltipProvider>
   )
 }

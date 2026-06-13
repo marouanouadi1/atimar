@@ -10,12 +10,28 @@ export async function loginAction(
   const email = formData.get('email') as string
   const password = formData.get('password') as string
 
-  const supabase = await createServerSupabaseClient()
-  const { error } = await supabase.auth.signInWithPassword({ email, password })
+  let error: { message: string } | null = null
+
+  try {
+    const supabase = await createServerSupabaseClient()
+    const result = await supabase.auth.signInWithPassword({ email, password })
+    error = result.error
+  } catch (error) {
+    console.error(error)
+    return getLoginErrorMessage(error)
+  }
 
   if (error) {
     return error.message
   }
 
   redirect('/dashboard')
+}
+
+function getLoginErrorMessage(error: unknown) {
+  if (error instanceof Error && error.message.includes('Supabase')) {
+    return error.message
+  }
+
+  return 'Impossibile contattare Supabase. Verifica la configurazione e riprova.'
 }
