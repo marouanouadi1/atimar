@@ -1,6 +1,6 @@
 import { appStyles } from "@/styles/styles";
 import { supabase } from "@/utils/supabase";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { View, Alert, TextInput, Text, TouchableOpacity } from "react-native";
 
 // ...
@@ -18,36 +18,37 @@ export default function Account({
   const [avatarUrl, setAvatarUrl] = useState("");
   const styles = appStyles;
 
-  const getProfile = useCallback(async () => {
-    try {
-      setLoading(true);
-
-      let { data, error, status } = await supabase
-        .from("profiles")
-        .select(`username, website, avatar_url`)
-        .eq("id", userId)
-        .single();
-      if (error && status !== 406) {
-        throw error;
-      }
-
-      if (data) {
-        setUsername(data.username);
-        setWebsite(data.website);
-        setAvatarUrl(data.avatar_url);
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        Alert.alert(error.message);
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [userId]);
-
   useEffect(() => {
-    if (userId) getProfile();
-  }, [getProfile, userId]);
+    if (!userId) return;
+
+    let active = true;
+
+    (async () => {
+      try {
+        const { data, error, status } = await supabase
+          .from("profiles")
+          .select(`username, website, avatar_url`)
+          .eq("id", userId)
+          .single();
+        if (!active) return;
+        if (error && status !== 406) throw error;
+        if (data) {
+          setUsername(data.username);
+          setWebsite(data.website);
+          setAvatarUrl(data.avatar_url);
+        }
+      } catch (error) {
+        if (!active) return;
+        if (error instanceof Error) Alert.alert(error.message);
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [userId]);
 
   async function updateProfile({
     username,
