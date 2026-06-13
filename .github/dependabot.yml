@@ -10,12 +10,19 @@ updates:
       interval: "monthly"
     labels:
       - "dependencies"
+
+    ignore:
+      - dependency-name: "eslint"
+        update-types:
+          - "version-update:semver-major"
+
     groups:
       expo:
         patterns:
           - "expo"
           - "expo-*"
           - "@expo/*"
+
       react:
         patterns:
           - "react"
@@ -23,10 +30,12 @@ updates:
           - "react-native"
           - "react-native-*"
           - "@react-navigation/*"
+
       next:
         patterns:
           - "next"
           - "eslint-config-next"
+
       tooling:
         dependency-type: "development"
         patterns:
