@@ -1,7 +1,6 @@
 import { Tabs } from "expo-router";
-import React from "react";
+import React, { type ComponentProps } from "react";
 import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
-import type { BottomTabBarProps } from "@react-navigation/bottom-tabs";
 import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -21,7 +20,9 @@ const TABS: Record<string, TabDef> = {
   profile: { label: "Profilo", active: "person", inactive: "person-outline" },
 };
 
-function TabBar({ state, navigation }: BottomTabBarProps) {
+type TabBarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>["tabBar"]>>[0];
+
+function TabBar({ state, navigation }: TabBarProps) {
   const insets = useSafeAreaInsets();
   return (
     <View
