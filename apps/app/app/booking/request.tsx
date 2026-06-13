@@ -42,7 +42,7 @@ export default function BookingRequest() {
 
   const venue = venueId ? getVenueById(venueId) : undefined;
   const courts = venueId ? getCourtsByVenue(venueId) : [];
-  const dates = useMemo(buildDates, []);
+  const dates = useMemo(() => buildDates(), []);
 
   const [courtSel, setCourtSel] = useState(courtId || courts[0]?.id || "");
   const [dateSel, setDateSel] = useState(dates[0]?.iso ?? "");
