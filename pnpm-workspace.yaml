@@ -1,3 +1,19 @@
 packages:
   - "apps/*"
   - "packages/*"
+
+# Single source of truth for dependencies shared across workspace packages.
+# Reference these in package.json with "catalog:" so versions can never drift
+# (drift produces duplicate copies of e.g. @types/react -> "two different types
+# with this name exist" TS errors that only surface on a clean CI install).
+catalog:
+  react: "19.2.7"
+  react-dom: "19.2.7"
+  next: "16.2.7"
+  "@supabase/supabase-js": "^2.108.1"
+  "@types/node": "^25"
+  "@types/react": "~19.2.17"
+  "@types/react-dom": "~19.2.3"
+  babel-plugin-react-compiler: "1.0.0"
+  eslint: "^9.25.0"
+  typescript: "~6.0.3"
