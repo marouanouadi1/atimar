@@ -23,7 +23,8 @@
       "@atimar/types": ["../../packages/types/src"],
       "@atimar/data": ["../../packages/data/src"],
       "@atimar/utils": ["../../packages/utils/src"],
-      "@atimar/db-types": ["../../packages/db-types/src"]
+      "@atimar/db-types": ["../../packages/db-types/src"],
+      "@atimar/api": ["../../packages/api/src"]
     }
   },
   "include": [
