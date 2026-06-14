@@ -1,0 +1,571 @@
+export type Json =
+  | string
+  | number
+  | boolean
+  | null
+  | { [key: string]: Json | undefined }
+  | Json[]
+
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.5"
+  }
+  public: {
+    Tables: {
+      Campi: {
+        Row: {
+          attivo: boolean
+          created_at: string
+          fk_struttura: number
+          id: number
+          max_giocatori: number | null
+          min_giocatori: number | null
+          nome_campo: string
+          prezzo_orario: number | null
+        }
+        Insert: {
+          attivo: boolean
+          created_at?: string
+          fk_struttura: number
+          id?: number
+          max_giocatori?: number | null
+          min_giocatori?: number | null
+          nome_campo: string
+          prezzo_orario?: number | null
+        }
+        Update: {
+          attivo?: boolean
+          created_at?: string
+          fk_struttura?: number
+          id?: number
+          max_giocatori?: number | null
+          min_giocatori?: number | null
+          nome_campo?: string
+          prezzo_orario?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "Campi_fk_struttura_fkey"
+            columns: ["fk_struttura"]
+            isOneToOne: false
+            referencedRelation: "Strutture"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      Campi_Preferiti: {
+        Row: {
+          created_at: string
+          fk_campo: number
+          fk_profilo: string
+        }
+        Insert: {
+          created_at?: string
+          fk_campo: number
+          fk_profilo: string
+        }
+        Update: {
+          created_at?: string
+          fk_campo?: number
+          fk_profilo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "Campi_Preferiti_fk_campo_fkey"
+            columns: ["fk_campo"]
+            isOneToOne: false
+            referencedRelation: "Campi"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "Campi_Preferiti_fk_profilo_fkey"
+            columns: ["fk_profilo"]
+            isOneToOne: false
+            referencedRelation: "Profili"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      Campi_Sport: {
+        Row: {
+          fk_campo: number
+          fk_sport: number
+        }
+        Insert: {
+          fk_campo: number
+          fk_sport: number
+        }
+        Update: {
+          fk_campo?: number
+          fk_sport?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "Campi_Sport_fk_campo_fkey"
+            columns: ["fk_campo"]
+            isOneToOne: false
+            referencedRelation: "Campi"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "Campi_Sport_fk_sport_fkey"
+            columns: ["fk_sport"]
+            isOneToOne: false
+            referencedRelation: "Sport"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      Foto_Strutture: {
+        Row: {
+          copertina: boolean
+          fk_struttura: number
+          id: number
+          ordine: number
+          testo_alt: string | null
+          url_foto: string
+        }
+        Insert: {
+          copertina: boolean
+          fk_struttura: number
+          id?: number
+          ordine: number
+          testo_alt?: string | null
+          url_foto: string
+        }
+        Update: {
+          copertina?: boolean
+          fk_struttura?: number
+          id?: number
+          ordine?: number
+          testo_alt?: string | null
+          url_foto?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "Foto_Strutture_fk_struttura_fkey"
+            columns: ["fk_struttura"]
+            isOneToOne: false
+            referencedRelation: "Strutture"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      Orari_Strutture: {
+        Row: {
+          chiuso: boolean | null
+          fk_struttura: number
+          giorno_settimana: number
+          note: string | null
+          orario_apertura: string | null
+          orario_chiusura: string | null
+        }
+        Insert: {
+          chiuso?: boolean | null
+          fk_struttura: number
+          giorno_settimana: number
+          note?: string | null
+          orario_apertura?: string | null
+          orario_chiusura?: string | null
+        }
+        Update: {
+          chiuso?: boolean | null
+          fk_struttura?: number
+          giorno_settimana?: number
+          note?: string | null
+          orario_apertura?: string | null
+          orario_chiusura?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "Orari_Strutture_fk_struttura_fkey"
+            columns: ["fk_struttura"]
+            isOneToOne: false
+            referencedRelation: "Strutture"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      Preferenze_Sport_Utente: {
+        Row: {
+          fk_profilo: string
+          fk_sport: number
+        }
+        Insert: {
+          fk_profilo: string
+          fk_sport: number
+        }
+        Update: {
+          fk_profilo?: string
+          fk_sport?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "Preferenze_Sport_Utente_fk_profilo_fkey"
+            columns: ["fk_profilo"]
+            isOneToOne: false
+            referencedRelation: "Profili"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "Preferenze_Sport_Utente_fk_sport_fkey"
+            columns: ["fk_sport"]
+            isOneToOne: false
+            referencedRelation: "Sport"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      Profili: {
+        Row: {
+          aggiornato_il: string | null
+          bio: string | null
+          created_at: string
+          id: string
+          nome_completo: string | null
+          raggio_preferito_km: number | null
+          url_avatar: string | null
+        }
+        Insert: {
+          aggiornato_il?: string | null
+          bio?: string | null
+          created_at?: string
+          id: string
+          nome_completo?: string | null
+          raggio_preferito_km?: number | null
+          url_avatar?: string | null
+        }
+        Update: {
+          aggiornato_il?: string | null
+          bio?: string | null
+          created_at?: string
+          id?: string
+          nome_completo?: string | null
+          raggio_preferito_km?: number | null
+          url_avatar?: string | null
+        }
+        Relationships: []
+      }
+      RecensioniStrutture: {
+        Row: {
+          commento: string | null
+          created_at: string
+          fk_profilo: string
+          fk_struttura: number
+          id: number
+          stelle: number
+        }
+        Insert: {
+          commento?: string | null
+          created_at?: string
+          fk_profilo: string
+          fk_struttura: number
+          id?: number
+          stelle: number
+        }
+        Update: {
+          commento?: string | null
+          created_at?: string
+          fk_profilo?: string
+          fk_struttura?: number
+          id?: number
+          stelle?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "RecensioniStrutture_fk_profilo_fkey"
+            columns: ["fk_profilo"]
+            isOneToOne: false
+            referencedRelation: "Profili"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "RecensioniStrutture_fk_struttura_fkey"
+            columns: ["fk_struttura"]
+            isOneToOne: false
+            referencedRelation: "Strutture"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      Servizi: {
+        Row: {
+          attivo: boolean | null
+          descrizione: string | null
+          id: number
+          nome_icona: string | null
+          nome_servizio: string
+        }
+        Insert: {
+          attivo?: boolean | null
+          descrizione?: string | null
+          id?: number
+          nome_icona?: string | null
+          nome_servizio: string
+        }
+        Update: {
+          attivo?: boolean | null
+          descrizione?: string | null
+          id?: number
+          nome_icona?: string | null
+          nome_servizio?: string
+        }
+        Relationships: []
+      }
+      Sport: {
+        Row: {
+          id: number
+          nome_sport: string
+        }
+        Insert: {
+          id?: number
+          nome_sport: string
+        }
+        Update: {
+          id?: number
+          nome_sport?: string
+        }
+        Relationships: []
+      }
+      Strutture: {
+        Row: {
+          aggiornato_il: string | null
+          attivo: boolean
+          cellulare: string | null
+          comune: string | null
+          created_at: string
+          descrizione: string | null
+          email: string | null
+          id: number
+          indirizzo: string | null
+          latitudine: number | null
+          link_prenotazione_esterno: string | null
+          link_sito_web: string | null
+          longitudine: number | null
+          nome: string
+          paese: string | null
+          posizione: unknown
+          prezzo_orario: number | null
+          provincia: string | null
+          sempre_aperto: boolean | null
+          telefono: string | null
+          verificata: boolean | null
+        }
+        Insert: {
+          aggiornato_il?: string | null
+          attivo: boolean
+          cellulare?: string | null
+          comune?: string | null
+          created_at?: string
+          descrizione?: string | null
+          email?: string | null
+          id?: number
+          indirizzo?: string | null
+          latitudine?: number | null
+          link_prenotazione_esterno?: string | null
+          link_sito_web?: string | null
+          longitudine?: number | null
+          nome: string
+          paese?: string | null
+          posizione?: unknown
+          prezzo_orario?: number | null
+          provincia?: string | null
+          sempre_aperto?: boolean | null
+          telefono?: string | null
+          verificata?: boolean | null
+        }
+        Update: {
+          aggiornato_il?: string | null
+          attivo?: boolean
+          cellulare?: string | null
+          comune?: string | null
+          created_at?: string
+          descrizione?: string | null
+          email?: string | null
+          id?: number
+          indirizzo?: string | null
+          latitudine?: number | null
+          link_prenotazione_esterno?: string | null
+          link_sito_web?: string | null
+          longitudine?: number | null
+          nome?: string
+          paese?: string | null
+          posizione?: unknown
+          prezzo_orario?: number | null
+          provincia?: string | null
+          sempre_aperto?: boolean | null
+          telefono?: string | null
+          verificata?: boolean | null
+        }
+        Relationships: []
+      }
+      Strutture_Servizi: {
+        Row: {
+          fk_servizio: number
+          fk_struttura: number
+        }
+        Insert: {
+          fk_servizio: number
+          fk_struttura: number
+        }
+        Update: {
+          fk_servizio?: number
+          fk_struttura?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "Strutture_Servizi_fk_servizio_fkey"
+            columns: ["fk_servizio"]
+            isOneToOne: false
+            referencedRelation: "Servizi"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "Strutture_Servizi_fk_struttura_fkey"
+            columns: ["fk_struttura"]
+            isOneToOne: false
+            referencedRelation: "Strutture"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
+}
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
+
+export const Constants = {
+  public: {
+    Enums: {},
+  },
+} as const
