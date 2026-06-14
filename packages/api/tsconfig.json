@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "moduleResolution": "bundler",
+    "module": "esnext",
+    "target": "ES2017",
+    "noEmit": true,
+    "types": ["node"],
+    "paths": {
+      "@atimar/db-types": ["../db-types/src"]
+    }
+  },
+  "include": ["src/**/*.ts"]
+}
