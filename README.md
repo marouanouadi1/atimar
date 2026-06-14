@@ -60,6 +60,16 @@ pnpm ios
 | `pnpm typecheck`           | Esegue il controllo TypeScript                   |
 | `pnpm clean`               | Rimuove dipendenze, cache e output locali        |
 
+## Supabase
+
+### Generare i tipi dal database
+
+```bash
+supabase gen types typescript --linked > packages/db-types/src/index.ts
+```
+
+Da eseguire ogni volta che lo schema del DB cambia. Richiede `supabase link` già eseguito.
+
 ## Codice condiviso
 
 Il codice condiviso va tenuto in `packages/*` quando serve a più app o rappresenta logica di dominio comune. UI, componenti visuali e configurazioni specifiche restano invece dentro l'app che li usa.
