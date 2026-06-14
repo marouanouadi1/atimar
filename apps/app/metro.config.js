@@ -21,6 +21,8 @@ config.resolver.extraNodeModules = {
   "@atimar/data": path.resolve(packagesRoot, "data/src"),
   "@atimar/types": path.resolve(packagesRoot, "types/src"),
   "@atimar/utils": path.resolve(packagesRoot, "utils/src"),
+  "@atimar/db-types": path.resolve(packagesRoot, "db-types/src"),
+  "@atimar/api": path.resolve(packagesRoot, "api/src"),
 };
 
 module.exports = config;
