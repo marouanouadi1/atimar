@@ -56,7 +56,6 @@ export function DataTable<T>({ data, columns, searchPlaceholder = 'Cerca...', ac
   const [pageSize, setPageSize] = useState(10)
 
   const visibleColumns = columns.filter((c) => !hiddenKeys.has(c.key))
-  const searchableCols = visibleColumns.filter((c) => c.searchValue)
 
   const filtered = useMemo(() => {
     if (!search.trim()) return data

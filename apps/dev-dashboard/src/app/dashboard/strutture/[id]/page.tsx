@@ -23,10 +23,6 @@ function Section({ title, action, children }: { title: string; action?: React.Re
   )
 }
 
-function InfoGrid({ children }: { children: React.ReactNode }) {
-  return <div className="grid grid-cols-2 gap-x-8 gap-y-3 md:grid-cols-3">{children}</div>
-}
-
 function InfoField({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-0.5">
@@ -36,14 +32,6 @@ function InfoField({ label, value }: { label: string; value: React.ReactNode }) 
   )
 }
 
-function Row({ label, value }: { label: string; value: React.ReactNode }) {
-  return (
-    <div className="flex flex-col gap-0.5 px-4 py-3">
-      <span className="text-xs text-muted-foreground">{label}</span>
-      <span className="text-sm">{value ?? <span className="text-muted-foreground">—</span>}</span>
-    </div>
-  )
-}
 
 export default async function StrutturaDetailPage({ params }: Props) {
   const { id } = await params

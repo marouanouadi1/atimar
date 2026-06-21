@@ -101,12 +101,12 @@ export function CampiTable({ data, strutture, sport, action }: Props) {
           campo={{
             id: c.id,
             nome_campo: c.nome_campo,
-            fk_struttura: c.fk_struttura,
+            fk_struttura: c.fk_struttura ?? 0,
             tipo_superficie: c.tipo_superficie,
             prezzo_orario: c.prezzo_orario ? Number(c.prezzo_orario) : null,
             min_giocatori: c.min_giocatori,
             max_giocatori: c.max_giocatori,
-            attivo: c.attivo,
+            attivo: c.attivo ?? false,
             coperto: c.coperto,
             sport_ids: c.Campi_Sport?.map((cs) => cs.fk_sport) ?? [],
           }}

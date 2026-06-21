@@ -18,7 +18,7 @@ export default async function CampiPage() {
           <p className="text-sm text-destructive mb-4">{error.message}</p>
         )}
         <CampiTable
-          data={(campi ?? []) as any}
+          data={(campi ?? []) as Parameters<typeof CampiTable>[0]['data']}
           strutture={strutture ?? []}
           sport={sport ?? []}
           action={<CreaCampoDialog strutture={strutture ?? []} sport={sport ?? []} />}

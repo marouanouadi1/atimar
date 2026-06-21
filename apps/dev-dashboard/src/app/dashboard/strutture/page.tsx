@@ -20,7 +20,7 @@ export default async function StrutturePage() {
           <p className="text-sm text-destructive mb-4">{error.message}</p>
         )}
         <StrutturTable
-          data={strutture ?? [] as any}
+          data={(strutture ?? []) as Parameters<typeof StrutturTable>[0]['data']}
           cittaMap={cittaMap}
           sport={sport ?? []}
           action={<CreaStrutturaDialog citta={citta ?? []} />}
