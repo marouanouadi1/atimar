@@ -10,7 +10,7 @@ export function getStruttureServizi() {
 export function getServiziByStruttura(fkStruttura: number) {
   return supabase
     .from("Strutture_Servizi")
-    .select("*")
+    .select("fk_servizio, Servizi(id, nome_servizio, descrizione)")
     .eq("fk_struttura", fkStruttura);
 }
 

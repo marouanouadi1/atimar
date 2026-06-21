@@ -11,7 +11,7 @@ export default function DashboardLayout({
     <TooltipProvider delayDuration={200}>
       <SidebarProvider>
         <AppSidebar />
-        <SidebarInset>{children}</SidebarInset>
+        <SidebarInset className="overflow-hidden">{children}</SidebarInset>
       </SidebarProvider>
     </TooltipProvider>
   )

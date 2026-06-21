@@ -1,4 +1,5 @@
 export { supabase } from "./client";
+export * from "./controllers/citta";
 export * from "./controllers/strutture";
 export * from "./controllers/servizi";
 export * from "./controllers/strutture_servizi";

@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useSyncExternalStore } from 'react'
-import { Building2, ChevronRight, LogOut, Moon, Settings, Sun, User, Volleyball, Zap } from 'lucide-react'
+import { Building2, ChevronRight, ConciergeBell, LogOut, Moon, Settings, Sun, Trophy, User, Volleyball, Zap } from 'lucide-react'
 import { Collapsible } from 'radix-ui'
 
 import {
@@ -35,32 +35,35 @@ const NAV = [
     label: 'Strutture Sportive',
     Icon: Building2,
     href: '/dashboard/strutture',
-    sub: [
-      { label: 'Lista strutture', href: '/dashboard/strutture' },
-      { label: 'Aggiungi struttura', href: '/dashboard/strutture/aggiungi' },
-      { label: 'Categorie', href: '/dashboard/strutture/categorie' },
-    ],
+    sub: [] as { label: string; href: string }[],
   },
   {
     id: 'campi',
     label: 'Campi Sportivi',
     Icon: Volleyball,
     href: '/dashboard/campi',
-    sub: [
-      { label: 'Lista campi', href: '/dashboard/campi' },
-      { label: 'Aggiungi campo', href: '/dashboard/campi/aggiungi' },
-      { label: 'Sport', href: '/dashboard/campi/sport' },
-    ],
+    sub: [] as { label: string; href: string }[],
+  },
+  {
+    id: 'sport',
+    label: 'Sport',
+    Icon: Trophy,
+    href: '/dashboard/sport',
+    sub: [] as { label: string; href: string }[],
+  },
+  {
+    id: 'servizi',
+    label: 'Servizi',
+    Icon: ConciergeBell,
+    href: '/dashboard/servizi',
+    sub: [] as { label: string; href: string }[],
   },
   {
     id: 'utenti',
     label: 'Utenti',
     Icon: User,
     href: '/dashboard/utenti',
-    sub: [
-      { label: 'Lista utenti', href: '/dashboard/utenti' },
-      { label: 'Aggiungi utente', href: '/dashboard/utenti/aggiungi' },
-    ],
+    sub: [] as { label: string; href: string }[],
   },
 ]
 
