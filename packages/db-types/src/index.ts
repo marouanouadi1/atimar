@@ -16,7 +16,9 @@ export type Database = {
     Tables: {
       Campi: {
         Row: {
+          aggiornato_il: string
           attivo: boolean
+          coperto: boolean | null
           created_at: string
           fk_struttura: number
           id: number
@@ -24,9 +26,12 @@ export type Database = {
           min_giocatori: number | null
           nome_campo: string
           prezzo_orario: number | null
+          tipo_superficie: string | null
         }
         Insert: {
+          aggiornato_il?: string
           attivo: boolean
+          coperto?: boolean | null
           created_at?: string
           fk_struttura: number
           id?: number
@@ -34,9 +39,12 @@ export type Database = {
           min_giocatori?: number | null
           nome_campo: string
           prezzo_orario?: number | null
+          tipo_superficie?: string | null
         }
         Update: {
+          aggiornato_il?: string
           attivo?: boolean
+          coperto?: boolean | null
           created_at?: string
           fk_struttura?: number
           id?: number
@@ -44,6 +52,7 @@ export type Database = {
           min_giocatori?: number | null
           nome_campo?: string
           prezzo_orario?: number | null
+          tipo_superficie?: string | null
         }
         Relationships: [
           {
@@ -57,16 +66,19 @@ export type Database = {
       }
       Campi_Preferiti: {
         Row: {
+          aggiornato_il: string
           created_at: string
           fk_campo: number
           fk_profilo: string
         }
         Insert: {
+          aggiornato_il?: string
           created_at?: string
           fk_campo: number
           fk_profilo: string
         }
         Update: {
+          aggiornato_il?: string
           created_at?: string
           fk_campo?: number
           fk_profilo?: string
@@ -90,14 +102,17 @@ export type Database = {
       }
       Campi_Sport: {
         Row: {
+          aggiornato_il: string
           fk_campo: number
           fk_sport: number
         }
         Insert: {
+          aggiornato_il?: string
           fk_campo: number
           fk_sport: number
         }
         Update: {
+          aggiornato_il?: string
           fk_campo?: number
           fk_sport?: number
         }
@@ -118,8 +133,88 @@ export type Database = {
           },
         ]
       }
+      Citta: {
+        Row: {
+          aggiornato_il: string
+          capoluogo: boolean
+          codice_catastale: string | null
+          codice_istat: string
+          fk_provincia: number
+          id: number
+          nome: string
+        }
+        Insert: {
+          aggiornato_il?: string
+          capoluogo?: boolean
+          codice_catastale?: string | null
+          codice_istat: string
+          fk_provincia: number
+          id: number
+          nome: string
+        }
+        Update: {
+          aggiornato_il?: string
+          capoluogo?: boolean
+          codice_catastale?: string | null
+          codice_istat?: string
+          fk_provincia?: number
+          id?: number
+          nome?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "Citta_fk_provincia_fkey"
+            columns: ["fk_provincia"]
+            isOneToOne: false
+            referencedRelation: "Province"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      Foto_Campi: {
+        Row: {
+          aggiornato_il: string
+          copertina: boolean
+          created_at: string
+          fk_campo: number
+          id: number
+          ordine: number
+          testo_alt: string | null
+          url_foto: string
+        }
+        Insert: {
+          aggiornato_il?: string
+          copertina: boolean
+          created_at?: string
+          fk_campo: number
+          id?: number
+          ordine: number
+          testo_alt?: string | null
+          url_foto: string
+        }
+        Update: {
+          aggiornato_il?: string
+          copertina?: boolean
+          created_at?: string
+          fk_campo?: number
+          id?: number
+          ordine?: number
+          testo_alt?: string | null
+          url_foto?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "Foto_Campi_fk_campo_fkey"
+            columns: ["fk_campo"]
+            isOneToOne: false
+            referencedRelation: "Campi"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       Foto_Strutture: {
         Row: {
+          aggiornato_il: string
           copertina: boolean
           fk_struttura: number
           id: number
@@ -128,6 +223,7 @@ export type Database = {
           url_foto: string
         }
         Insert: {
+          aggiornato_il?: string
           copertina: boolean
           fk_struttura: number
           id?: number
@@ -136,6 +232,7 @@ export type Database = {
           url_foto: string
         }
         Update: {
+          aggiornato_il?: string
           copertina?: boolean
           fk_struttura?: number
           id?: number
@@ -155,6 +252,7 @@ export type Database = {
       }
       Orari_Strutture: {
         Row: {
+          aggiornato_il: string
           chiuso: boolean | null
           fk_struttura: number
           giorno_settimana: number
@@ -163,6 +261,7 @@ export type Database = {
           orario_chiusura: string | null
         }
         Insert: {
+          aggiornato_il?: string
           chiuso?: boolean | null
           fk_struttura: number
           giorno_settimana: number
@@ -171,6 +270,7 @@ export type Database = {
           orario_chiusura?: string | null
         }
         Update: {
+          aggiornato_il?: string
           chiuso?: boolean | null
           fk_struttura?: number
           giorno_settimana?: number
@@ -188,16 +288,43 @@ export type Database = {
           },
         ]
       }
+      Paesi: {
+        Row: {
+          aggiornato_il: string
+          codice_iso2: string
+          codice_iso3: string
+          id: number
+          nome: string
+        }
+        Insert: {
+          aggiornato_il?: string
+          codice_iso2: string
+          codice_iso3: string
+          id: number
+          nome: string
+        }
+        Update: {
+          aggiornato_il?: string
+          codice_iso2?: string
+          codice_iso3?: string
+          id?: number
+          nome?: string
+        }
+        Relationships: []
+      }
       Preferenze_Sport_Utente: {
         Row: {
+          aggiornato_il: string
           fk_profilo: string
           fk_sport: number
         }
         Insert: {
+          aggiornato_il?: string
           fk_profilo: string
           fk_sport: number
         }
         Update: {
+          aggiornato_il?: string
           fk_profilo?: string
           fk_sport?: number
         }
@@ -220,7 +347,7 @@ export type Database = {
       }
       Profili: {
         Row: {
-          aggiornato_il: string | null
+          aggiornato_il: string
           bio: string | null
           created_at: string
           id: string
@@ -229,7 +356,7 @@ export type Database = {
           url_avatar: string | null
         }
         Insert: {
-          aggiornato_il?: string | null
+          aggiornato_il?: string
           bio?: string | null
           created_at?: string
           id: string
@@ -238,7 +365,7 @@ export type Database = {
           url_avatar?: string | null
         }
         Update: {
-          aggiornato_il?: string | null
+          aggiornato_il?: string
           bio?: string | null
           created_at?: string
           id?: string
@@ -248,8 +375,47 @@ export type Database = {
         }
         Relationships: []
       }
+      Province: {
+        Row: {
+          aggiornato_il: string
+          codice_istat: string
+          fk_regione: number
+          id: number
+          nome: string
+          sigla: string | null
+          tipologia: string | null
+        }
+        Insert: {
+          aggiornato_il?: string
+          codice_istat: string
+          fk_regione: number
+          id: number
+          nome: string
+          sigla?: string | null
+          tipologia?: string | null
+        }
+        Update: {
+          aggiornato_il?: string
+          codice_istat?: string
+          fk_regione?: number
+          id?: number
+          nome?: string
+          sigla?: string | null
+          tipologia?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "Province_fk_regione_fkey"
+            columns: ["fk_regione"]
+            isOneToOne: false
+            referencedRelation: "Regioni"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       RecensioniStrutture: {
         Row: {
+          aggiornato_il: string
           commento: string | null
           created_at: string
           fk_profilo: string
@@ -258,6 +424,7 @@ export type Database = {
           stelle: number
         }
         Insert: {
+          aggiornato_il?: string
           commento?: string | null
           created_at?: string
           fk_profilo: string
@@ -266,6 +433,7 @@ export type Database = {
           stelle: number
         }
         Update: {
+          aggiornato_il?: string
           commento?: string | null
           created_at?: string
           fk_profilo?: string
@@ -290,40 +458,75 @@ export type Database = {
           },
         ]
       }
+      Regioni: {
+        Row: {
+          aggiornato_il: string
+          codice_istat: string
+          fk_paese: number
+          id: number
+          nome: string
+        }
+        Insert: {
+          aggiornato_il?: string
+          codice_istat: string
+          fk_paese: number
+          id: number
+          nome: string
+        }
+        Update: {
+          aggiornato_il?: string
+          codice_istat?: string
+          fk_paese?: number
+          id?: number
+          nome?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "Regioni_fk_paese_fkey"
+            columns: ["fk_paese"]
+            isOneToOne: false
+            referencedRelation: "Paesi"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       Servizi: {
         Row: {
+          aggiornato_il: string
           attivo: boolean | null
           descrizione: string | null
           id: number
-          nome_icona: string | null
           nome_servizio: string
         }
         Insert: {
+          aggiornato_il?: string
           attivo?: boolean | null
           descrizione?: string | null
           id?: number
-          nome_icona?: string | null
           nome_servizio: string
         }
         Update: {
+          aggiornato_il?: string
           attivo?: boolean | null
           descrizione?: string | null
           id?: number
-          nome_icona?: string | null
           nome_servizio?: string
         }
         Relationships: []
       }
       Sport: {
         Row: {
+          aggiornato_il: string
           id: number
           nome_sport: string
         }
         Insert: {
+          aggiornato_il?: string
           id?: number
           nome_sport: string
         }
         Update: {
+          aggiornato_il?: string
           id?: number
           nome_sport?: string
         }
@@ -331,13 +534,13 @@ export type Database = {
       }
       Strutture: {
         Row: {
-          aggiornato_il: string | null
+          aggiornato_il: string
           attivo: boolean
           cellulare: string | null
-          comune: string | null
           created_at: string
           descrizione: string | null
           email: string | null
+          fk_citta: number
           id: number
           indirizzo: string | null
           latitudine: number | null
@@ -345,22 +548,20 @@ export type Database = {
           link_sito_web: string | null
           longitudine: number | null
           nome: string
-          paese: string | null
           posizione: unknown
           prezzo_orario: number | null
-          provincia: string | null
           sempre_aperto: boolean | null
           telefono: string | null
           verificata: boolean | null
         }
         Insert: {
-          aggiornato_il?: string | null
+          aggiornato_il?: string
           attivo: boolean
           cellulare?: string | null
-          comune?: string | null
           created_at?: string
           descrizione?: string | null
           email?: string | null
+          fk_citta: number
           id?: number
           indirizzo?: string | null
           latitudine?: number | null
@@ -368,22 +569,20 @@ export type Database = {
           link_sito_web?: string | null
           longitudine?: number | null
           nome: string
-          paese?: string | null
           posizione?: unknown
           prezzo_orario?: number | null
-          provincia?: string | null
           sempre_aperto?: boolean | null
           telefono?: string | null
           verificata?: boolean | null
         }
         Update: {
-          aggiornato_il?: string | null
+          aggiornato_il?: string
           attivo?: boolean
           cellulare?: string | null
-          comune?: string | null
           created_at?: string
           descrizione?: string | null
           email?: string | null
+          fk_citta?: number
           id?: number
           indirizzo?: string | null
           latitudine?: number | null
@@ -391,26 +590,35 @@ export type Database = {
           link_sito_web?: string | null
           longitudine?: number | null
           nome?: string
-          paese?: string | null
           posizione?: unknown
           prezzo_orario?: number | null
-          provincia?: string | null
           sempre_aperto?: boolean | null
           telefono?: string | null
           verificata?: boolean | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "Strutture_fk_citta_fkey"
+            columns: ["fk_citta"]
+            isOneToOne: false
+            referencedRelation: "Citta"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       Strutture_Servizi: {
         Row: {
+          aggiornato_il: string
           fk_servizio: number
           fk_struttura: number
         }
         Insert: {
+          aggiornato_il?: string
           fk_servizio: number
           fk_struttura: number
         }
         Update: {
+          aggiornato_il?: string
           fk_servizio?: number
           fk_struttura?: number
         }

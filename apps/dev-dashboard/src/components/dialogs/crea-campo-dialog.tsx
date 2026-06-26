@@ -1,0 +1,200 @@
+'use client'
+
+import { useState, useMemo, useTransition } from 'react'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { MultiStepDialog } from '@/components/custom/multistep-dialog'
+import { createCampoAction } from '@/app/dashboard/campi/actions'
+import { toast } from 'sonner'
+
+type Struttura = { id: number; nome: string }
+type Sport = { id: number; nome_sport: string }
+
+function Field({ id, label, children }: { id: string; label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <Label htmlFor={id}>{label}</Label>
+      {children}
+    </div>
+  )
+}
+
+function Checkbox({ id, label, checked, onChange }: {
+  id: string
+  label: string
+  checked: boolean
+  onChange: (v: boolean) => void
+}) {
+  return (
+    <div className="flex items-center gap-2">
+      <input id={id} type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="h-4 w-4" />
+      <Label htmlFor={id}>{label}</Label>
+    </div>
+  )
+}
+
+type FormState = {
+  fk_struttura: string
+  nome_campo: string
+  tipo_superficie: string
+  prezzo_orario: string
+  min_giocatori: string
+  max_giocatori: string
+  attivo: boolean
+  coperto: boolean
+  sport_ids: number[]
+}
+
+const emptyForm = (): FormState => ({
+  fk_struttura: '',
+  nome_campo: '',
+  tipo_superficie: '',
+  prezzo_orario: '',
+  min_giocatori: '',
+  max_giocatori: '',
+  attivo: true,
+  coperto: false,
+  sport_ids: [],
+})
+
+export function CreaCampoDialog({ strutture, sport, fixedStrutturaId, trigger }: { strutture: Struttura[]; sport: Sport[]; fixedStrutturaId?: number; trigger?: React.ReactNode }) {
+  const [form, setForm] = useState<FormState>(() => ({ ...emptyForm(), fk_struttura: fixedStrutturaId ? String(fixedStrutturaId) : '' }))
+  const [error, setError] = useState<string | null>(null)
+  const [isPending, startTransition] = useTransition()
+
+  function set<K extends keyof FormState>(key: K, value: FormState[K]) {
+    setForm((f) => ({ ...f, [key]: value }))
+  }
+
+  async function handleComplete() {
+    return new Promise<void>((resolve) => {
+      startTransition(async () => {
+        const result = await createCampoAction({
+          fk_struttura: fixedStrutturaId ?? Number(form.fk_struttura),
+          nome_campo: form.nome_campo,
+          tipo_superficie: form.tipo_superficie || null,
+          prezzo_orario: form.prezzo_orario ? Number(form.prezzo_orario) : null,
+          min_giocatori: form.min_giocatori ? Number(form.min_giocatori) : null,
+          max_giocatori: form.max_giocatori ? Number(form.max_giocatori) : null,
+          attivo: form.attivo,
+          coperto: form.coperto,
+        }, form.sport_ids)
+        if (result.error) {
+          setError(result.error)
+          toast.error('Errore durante la creazione', { description: result.error })
+        } else {
+          setError(null)
+          setForm(emptyForm())
+          toast.success('Campo creato con successo')
+        }
+        resolve()
+      })
+    })
+  }
+
+  const steps = useMemo(() => [
+    {
+      title: 'Informazioni base',
+      description: 'Nome e struttura di appartenenza',
+      content: (
+        <div className="flex flex-col gap-4">
+          <div className="grid grid-cols-2 gap-4">
+            {!fixedStrutturaId && (
+              <div className="flex flex-col gap-1.5">
+                <Label>Struttura *</Label>
+                <Select value={form.fk_struttura} onValueChange={(v) => set('fk_struttura', v)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleziona una struttura" />
+                  </SelectTrigger>
+                  <SelectContent position="popper">
+                    {strutture.map((s) => (
+                      <SelectItem key={s.id} value={String(s.id)}>{s.nome}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            <Field id="nome_campo" label="Nome campo *">
+              <Input id="nome_campo" value={form.nome_campo} onChange={(e) => set('nome_campo', e.target.value)} required />
+            </Field>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <Field id="tipo_superficie" label="Tipo superficie">
+              <Input id="tipo_superficie" value={form.tipo_superficie} onChange={(e) => set('tipo_superficie', e.target.value)} placeholder="Es. Erba sintetica" />
+            </Field>
+            <Field id="prezzo_orario" label="Prezzo orario (€)">
+              <Input id="prezzo_orario" type="number" step="0.01" min="0" value={form.prezzo_orario} onChange={(e) => set('prezzo_orario', e.target.value)} />
+            </Field>
+          </div>
+        </div>
+      ),
+    },
+    {
+      title: 'Dettagli',
+      description: 'Giocatori e impostazioni del campo',
+      content: (
+        <div className="flex flex-col gap-4">
+          <div className="grid grid-cols-2 gap-4">
+            <Field id="min_giocatori" label="Min giocatori">
+              <Input id="min_giocatori" type="number" min="1" value={form.min_giocatori} onChange={(e) => set('min_giocatori', e.target.value)} />
+            </Field>
+            <Field id="max_giocatori" label="Max giocatori">
+              <Input id="max_giocatori" type="number" min="1" value={form.max_giocatori} onChange={(e) => set('max_giocatori', e.target.value)} />
+            </Field>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <Label>Sport</Label>
+            <div className="flex flex-wrap gap-2">
+              {sport.map((s) => {
+                const selected = form.sport_ids.includes(s.id)
+                return (
+                  <button
+                    key={s.id}
+                    type="button"
+                    onClick={() =>
+                      set('sport_ids', selected
+                        ? form.sport_ids.filter((id) => id !== s.id)
+                        : [...form.sport_ids, s.id]
+                      )
+                    }
+                    className={`px-3 py-1 rounded-full border text-sm transition-colors ${
+                      selected
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'bg-background text-foreground border-input hover:bg-muted'
+                    }`}
+                  >
+                    {s.nome_sport}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+          <div className="flex flex-col gap-2">
+            <Checkbox id="attivo" label="Attivo" checked={form.attivo} onChange={(v) => set('attivo', v)} />
+            <Checkbox id="coperto" label="Coperto" checked={form.coperto} onChange={(v) => set('coperto', v)} />
+          </div>
+          {error && <p className="text-sm text-destructive">{error}</p>}
+        </div>
+      ),
+    },
+  ], [form, sport, strutture, error, fixedStrutturaId])
+
+  return (
+    <MultiStepDialog
+      trigger={trigger ?? <Button size="sm">+ Aggiungi</Button>}
+      steps={steps}
+      onComplete={handleComplete}
+      onClose={() => { setForm(emptyForm()); setError(null) }}
+      isSubmitting={isPending}
+      submitLabel="Crea campo"
+    />
+  )
+}
