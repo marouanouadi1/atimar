@@ -52,13 +52,13 @@ export async function proxy(request: NextRequest) {
     console.error(error)
   }
 
-  // if (!isAuthenticated && isDashboard) {
-  //   return NextResponse.redirect(new URL('/login', request.url))
-  // }
+   if (!isAuthenticated && isDashboard) {
+     return NextResponse.redirect(new URL('/login', request.url))
+   }
 
-  // if (isAuthenticated && isLogin) {
-  //   return NextResponse.redirect(new URL('/dashboard', request.url))
-  // }
+   if (isAuthenticated && isLogin) {
+     return NextResponse.redirect(new URL('/dashboard', request.url))
+   }
 
   return response
 }

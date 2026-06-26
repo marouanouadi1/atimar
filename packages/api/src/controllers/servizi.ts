@@ -5,7 +5,7 @@ type ServizioInsert = Database["public"]["Tables"]["Servizi"]["Insert"];
 type ServizioUpdate = Database["public"]["Tables"]["Servizi"]["Update"];
 
 export function getServizi() {
-  return supabase.from("Servizi").select("*").eq("attivo", true);
+  return supabase.from("Servizi").select("*");
 }
 
 export function getServizioById(id: number) {
