@@ -5,11 +5,20 @@ import { notFound } from 'next/navigation'
 import { ModificaStrutturaDialog } from '@/components/dialogs/modifica-struttura-dialog'
 import { AggiungiServizioDialog } from '@/components/dialogs/aggiungi-servizio-dialog'
 import { CreaCampoDialog } from '@/components/dialogs/crea-campo-dialog'
+import { FotoCampoDialog } from '@/components/dialogs/foto-campo-dialog'
 import { FotoStruttura } from './foto-struttura'
 import { Button } from '@/components/ui/button'
-import { Plus } from 'lucide-react'
+import { Images, Plus } from 'lucide-react'
 
 type Props = { params: Promise<{ id: string }> }
+
+type FotoCampo = {
+  id: number
+  url_foto: string
+  testo_alt: string | null
+  ordine: number
+  copertina: boolean
+}
 
 function Section({ title, action, children }: { title: string; action?: React.ReactNode; children: React.ReactNode }) {
   return (
@@ -126,28 +135,46 @@ export default async function StrutturaDetailPage({ params }: Props) {
                     <th className="text-left px-4 py-2 font-medium">Giocatori</th>
                     <th className="text-left px-4 py-2 font-medium">Prezzo/ora</th>
                     <th className="text-left px-4 py-2 font-medium">Stato</th>
+                    <th className="text-left px-4 py-2 font-medium">Foto</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {campi.map((c) => (
-                    <tr key={c.id} className="border-t">
-                      <td className="px-4 py-2 font-medium">{c.nome_campo}</td>
-                      <td className="px-4 py-2">{c.tipo_superficie ?? '—'}</td>
-                      <td className="px-4 py-2">
-                        {c.min_giocatori && c.max_giocatori
-                          ? `${c.min_giocatori} – ${c.max_giocatori}`
-                          : '—'}
-                      </td>
-                      <td className="px-4 py-2">
-                        {c.prezzo_orario != null ? `€${c.prezzo_orario}` : '—'}
-                      </td>
-                      <td className="px-4 py-2">
-                        <Badge className={c.attivo ? 'bg-green-500 text-white hover:bg-green-600' : ''} variant={c.attivo ? 'default' : 'secondary'}>
-                          {c.attivo ? 'Attivo' : 'Inattivo'}
-                        </Badge>
-                      </td>
-                    </tr>
-                  ))}
+                  {campi.map((c) => {
+                    const fotoCampo = ((c as typeof c & { Foto_Campi?: FotoCampo[] | null }).Foto_Campi ?? [])
+                    return (
+                      <tr key={c.id} className="border-t">
+                        <td className="px-4 py-2 font-medium">{c.nome_campo}</td>
+                        <td className="px-4 py-2">{c.tipo_superficie ?? '—'}</td>
+                        <td className="px-4 py-2">
+                          {c.min_giocatori && c.max_giocatori
+                            ? `${c.min_giocatori} – ${c.max_giocatori}`
+                            : '—'}
+                        </td>
+                        <td className="px-4 py-2">
+                          {c.prezzo_orario != null ? `€${c.prezzo_orario}` : '—'}
+                        </td>
+                        <td className="px-4 py-2">
+                          <Badge className={c.attivo ? 'bg-green-500 text-white hover:bg-green-600' : ''} variant={c.attivo ? 'default' : 'secondary'}>
+                            {c.attivo ? 'Attivo' : 'Inattivo'}
+                          </Badge>
+                        </td>
+                        <td className="px-4 py-2">
+                          <FotoCampoDialog
+                            campoId={c.id}
+                            campoNome={c.nome_campo}
+                            strutturaId={strutturaId}
+                            foto={fotoCampo}
+                            trigger={
+                              <Button size="sm" variant="outline">
+                                <Images className="w-4 h-4" />
+                                {fotoCampo.length}
+                              </Button>
+                            }
+                          />
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </div>

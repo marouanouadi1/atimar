@@ -1,11 +1,16 @@
 'use server'
 
-import { createCampo, updateCampo, deleteCampo, addSportACampo, removeSportDaCampo, getSportByCampo } from '@atimar/api'
+import { createCampo, updateCampo, deleteCampo, addSportACampo, removeSportDaCampo, getSportByCampo, createFotoCampo, deleteFotoCampo, setCopertinaFotoCampo } from '@atimar/api'
 import type { Database } from '@atimar/db-types'
 import { revalidatePath } from 'next/cache'
 
 type CampoInsert = Database['public']['Tables']['Campi']['Insert']
 type CampoUpdate = Database['public']['Tables']['Campi']['Update']
+
+function revalidateCampoFotoPaths(strutturaId?: number) {
+  revalidatePath('/dashboard/campi')
+  if (strutturaId) revalidatePath(`/dashboard/strutture/${strutturaId}`)
+}
 
 export async function createCampoAction(data: CampoInsert, sportIds: number[]) {
   const { data: campo, error } = await createCampo(data)
@@ -47,5 +52,26 @@ export async function updateCampoAction(id: number, data: CampoUpdate, sportIds:
   }
 
   revalidatePath('/dashboard/campi')
+  return { error: null }
+}
+
+export async function addFotoCampoAction(campoId: number, url: string, ordine: number, copertina: boolean, strutturaId?: number) {
+  const { error } = await createFotoCampo({ fk_campo: campoId, url_foto: url, ordine, copertina })
+  if (error) return { error: error.message }
+  revalidateCampoFotoPaths(strutturaId)
+  return { error: null }
+}
+
+export async function deleteFotoCampoAction(fotoId: number, strutturaId?: number) {
+  const { error } = await deleteFotoCampo(fotoId)
+  if (error) return { error: error.message }
+  revalidateCampoFotoPaths(strutturaId)
+  return { error: null }
+}
+
+export async function setCopertinaCampoAction(fotoId: number, campoId: number, strutturaId?: number) {
+  const { error } = await setCopertinaFotoCampo(fotoId, campoId)
+  if (error) return { error: error.message }
+  revalidateCampoFotoPaths(strutturaId)
   return { error: null }
 }

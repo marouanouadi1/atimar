@@ -9,6 +9,7 @@ export * from "./controllers/campi_sport";
 export * from "./controllers/sport";
 export * from "./controllers/profili";
 export * from "./controllers/preferenze_sport_utente";
+export * from "./controllers/foto_campi";
 export * from "./controllers/foto_strutture";
 export * from "./controllers/orari_strutture";
 export * from "./controllers/recensioni_strutture";

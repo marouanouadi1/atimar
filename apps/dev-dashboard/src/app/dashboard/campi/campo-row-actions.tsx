@@ -19,13 +19,21 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
-import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
+import { Images, MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
 import { ModificaCampoDialog } from '@/components/dialogs/modifica-campo-dialog'
+import { FotoCampoDialog } from '@/components/dialogs/foto-campo-dialog'
 import { deleteCampoAction } from './actions'
 import { toast } from 'sonner'
 
 type Struttura = { id: number; nome: string; }
 type Sport = { id: number; nome_sport: string }
+type Foto = {
+  id: number
+  url_foto: string
+  testo_alt: string | null
+  ordine: number
+  copertina: boolean
+}
 type Campo = {
   id: number
   nome_campo: string
@@ -37,6 +45,7 @@ type Campo = {
   attivo: boolean
   coperto: boolean | null
   sport_ids: number[]
+  foto: Foto[]
 }
 
 export function CampoRowActions({ campo, strutture, sport }: {
@@ -74,6 +83,18 @@ export function CampoRowActions({ campo, strutture, sport }: {
               <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
                 <Pencil className="w-4 h-4 mr-2" />
                 Modifica
+              </DropdownMenuItem>
+            }
+          />
+          <FotoCampoDialog
+            campoId={campo.id}
+            campoNome={campo.nome_campo}
+            strutturaId={campo.fk_struttura}
+            foto={campo.foto}
+            trigger={
+              <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                <Images className="w-4 h-4 mr-2" />
+                Foto
               </DropdownMenuItem>
             }
           />

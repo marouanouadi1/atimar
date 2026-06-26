@@ -16,6 +16,13 @@ type Campo = {
   coperto: boolean | null
   Strutture: { nome: string } | null
   Campi_Sport: { fk_sport: number; Sport: { nome_sport: string } | null }[] | null
+  Foto_Campi: {
+    id: number
+    url_foto: string
+    testo_alt: string | null
+    ordine: number
+    copertina: boolean
+  }[] | null
 }
 
 type Struttura = { id: number; nome: string }
@@ -109,6 +116,7 @@ export function CampiTable({ data, strutture, sport, action }: Props) {
             attivo: c.attivo ?? false,
             coperto: c.coperto,
             sport_ids: c.Campi_Sport?.map((cs) => cs.fk_sport) ?? [],
+            foto: c.Foto_Campi ?? [],
           }}
           strutture={strutture}
           sport={sport}

@@ -5,11 +5,13 @@ type CampoInsert = Database["public"]["Tables"]["Campi"]["Insert"];
 type CampoUpdate = Database["public"]["Tables"]["Campi"]["Update"];
 
 export function getCampi() {
-  return supabase.from("Campi").select("*, Strutture(nome), Campi_Sport(fk_sport, Sport(nome_sport))")
+  return supabase
+    .from("Campi")
+    .select("*, Strutture(nome), Campi_Sport(fk_sport, Sport(nome_sport)), Foto_Campi(*)")
 }
 
 export function getCampiByStruttura(fkStruttura: number) {
-  return supabase.from("Campi").select("*").eq("fk_struttura", fkStruttura);
+  return supabase.from("Campi").select("*, Foto_Campi(*)").eq("fk_struttura", fkStruttura);
 }
 
 export function getCampoById(id: number) {
