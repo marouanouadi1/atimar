@@ -1,5 +1,5 @@
-import { supabase } from "../client";
+import { getSupabaseClient } from '../client';
 
 export function getCitta() {
-  return supabase.from("Citta").select("id, nome").order("nome");
+  return getSupabaseClient().from('Citta').select('id, nome').order('nome');
 }
