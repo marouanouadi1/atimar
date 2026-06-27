@@ -5,6 +5,7 @@
 
 import React from "react";
 import {
+  ActivityIndicator,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -61,6 +62,7 @@ export interface ButtonProps {
   onPress?: () => void;
   variant?: ButtonVariant;
   disabled?: boolean;
+  loading?: boolean;
   /** Show a trailing chevron (primary CTA style). */
   icon?: boolean;
   /** Optional leading Ionicons name. */
@@ -75,6 +77,7 @@ export function Button({
   onPress,
   variant = "primary",
   disabled = false,
+  loading = false,
   icon = false,
   leadingIcon,
   fullWidth = true,
@@ -85,13 +88,14 @@ export function Button({
   const bg = spec.bg ? resolveColor(spec.bg) : "transparent";
   const fg = resolveColor(spec.fg);
   const shadow = spec.shadow ? theme.shadows[spec.shadow] : undefined;
+  const isDisabled = disabled || loading;
 
   return (
     <Pressable
       testID={testID}
       accessibilityRole="button"
-      disabled={disabled}
-      onPress={disabled ? undefined : onPress}
+      disabled={isDisabled}
+      onPress={isDisabled ? undefined : onPress}
       style={({ pressed }) => [
         styles.btn,
         fullWidth && styles.btnFull,
@@ -101,21 +105,27 @@ export function Button({
           borderRadius: theme.radius.pill,
           opacity: pressed ? 0.92 : 1,
         },
-        !disabled && shadow,
+        !isDisabled && shadow,
         style,
       ]}
     >
-      {leadingIcon ? (
-        <Icon name={leadingIcon} size={theme.iconSizes.md} color={spec.fg} />
-      ) : null}
-      <Text style={[styles.btnLabel, { color: fg }]}>{children}</Text>
-      {icon ? (
-        <Icon
-          name="chevron-forward"
-          size={theme.iconSizes.lg}
-          color={spec.fg}
-        />
-      ) : null}
+      {loading ? (
+        <ActivityIndicator size="small" color={fg} />
+      ) : (
+        <>
+          {leadingIcon ? (
+            <Icon name={leadingIcon} size={theme.iconSizes.md} color={spec.fg} />
+          ) : null}
+          <Text style={[styles.btnLabel, { color: fg }]}>{children}</Text>
+          {icon ? (
+            <Icon
+              name="chevron-forward"
+              size={theme.iconSizes.lg}
+              color={spec.fg}
+            />
+          ) : null}
+        </>
+      )}
     </Pressable>
   );
 }

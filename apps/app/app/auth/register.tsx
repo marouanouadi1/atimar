@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useRouter } from "expo-router";
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { theme } from "@/theme/tokens";
 import { AuthLayout, Button, FormInput, textStyle } from "@/ui";
@@ -48,12 +48,8 @@ export default function Register() {
       socialError={googleError}
       footer={
         <View style={styles.footer}>
-          <Button icon onPress={onSubmit} disabled={loading}>
-            {loading ? (
-              <ActivityIndicator size="small" color={theme.colors.surface} />
-            ) : (
-              "Registrati"
-            )}
+          <Button icon loading={loading} onPress={onSubmit} disabled={loading}>
+            Registrati
           </Button>
           <View style={styles.switchRow}>
             <Text style={textStyle("caption", "muted")}>
