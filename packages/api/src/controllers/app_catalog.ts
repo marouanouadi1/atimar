@@ -77,6 +77,7 @@ export async function fetchStrutturaById(id: string): Promise<Struttura | null> 
        Foto_Strutture ( url_foto, copertina, ordine )`,
     )
     .eq('id', Number(id))
+    .eq('attivo', true)
     .single();
 
   if (error || !data) return null;
