@@ -1,98 +1,82 @@
 /**
- * Composite card / row components built on the primitives + chips.
- * All visuals come from @/theme/tokens; product shapes from @atimar/types.
+ * Componenti card/riga composti — costruiti sui primitivi + chip.
+ * Tutta la grafica viene da @/theme/tokens; le shape di prodotto da @atimar/types.
  */
 
 import React from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import type { StyleProp, ViewStyle } from "react-native";
-import { sportColor, theme } from "@/theme/tokens";
+import { theme } from "@/theme/tokens";
 import type {
-  Booking,
-  BookingStatus,
-  CourtListItem,
-  HeroKind,
-  Venue,
+  CampoInLista,
+  TipoHero,
+  Struttura,
 } from "@atimar/types";
 import { pluralize } from "@atimar/utils";
 import { Card, Icon, IconButton } from "./primitives";
 import { AvailabilityBadge, IconBadge, PriceTag, RatingBadge } from "./chips";
 import { textStyle } from "./theme";
+import { MediaStruttura } from "./media";
 
 /* ------------------------------------------------------------------ *
- * CourtHero — graphic placeholder for a court/venue (no external images)
+ * CampoHero — grafica hero per un campo/struttura (nessuna immagine esterna)
  * ------------------------------------------------------------------ */
 
-const HERO_ICON: Record<HeroKind, string> = {
-  "tennis-clay": "tennisball",
-  "padel-green": "tennisball",
-  "padel-blue": "tennisball",
-  beach: "sunny",
-  soccer: "football",
-};
-
-export interface CourtHeroProps {
-  heroKind: HeroKind;
-  sportId: string;
+export interface CampoHeroProps {
+  tipoHero: TipoHero;
+  idSport: string;
+  photoUrl?: string | null;
   height?: number;
   rounded?: boolean;
   children?: React.ReactNode;
   style?: StyleProp<ViewStyle>;
 }
 
-export function CourtHero({
-  heroKind,
-  sportId,
+export function CampoHero({
+  idSport,
+  photoUrl,
   height,
   rounded = true,
   children,
   style,
-}: CourtHeroProps) {
+}: CampoHeroProps) {
   return (
-    <View
-      style={[
-        styles.hero,
-        {
-          height: height ?? theme.layout.cardHeroHeight,
-          borderRadius: rounded ? theme.radius.card : 0,
-        },
-        style,
-      ]}
+    <MediaStruttura
+      photoUrl={photoUrl}
+      sportId={idSport}
+      height={height}
+      rounded={rounded}
+      style={style}
     >
-      <Icon
-        name={HERO_ICON[heroKind]}
-        size={theme.iconSizes.hero}
-        color={sportColor(sportId)}
-      />
       {children}
-    </View>
+    </MediaStruttura>
   );
 }
 
 /* ------------------------------------------------------------------ *
- * CourtCard — large (hero on top) | compact (horizontal row)
+ * CampoCard — grande (hero in alto) | compatta (riga orizzontale)
  * ------------------------------------------------------------------ */
 
-export interface CourtCardProps {
-  court: CourtListItem;
+export interface CampoCardProps {
+  campo: CampoInLista;
   variant?: "large" | "compact";
   onPress?: () => void;
   onFav?: () => void;
   isFav?: boolean;
-  /** Fixed width for horizontal carousels (large variant). */
+  /** Larghezza fissa per caroselli orizzontali (variante large). */
   width?: number;
   style?: StyleProp<ViewStyle>;
 }
 
-export function CourtCard({
-  court,
+export function CampoCard({
+  campo,
   variant = "large",
   onPress,
   onFav,
   isFav = false,
   width,
   style,
-}: CourtCardProps) {
+}: CampoCardProps) {
   if (variant === "compact") {
     return (
       <Pressable
@@ -103,22 +87,24 @@ export function CourtCard({
           style,
         ]}
       >
-        <CourtHero
-          heroKind={court.heroKind}
-          sportId={court.sportId}
+        <CampoHero
+          tipoHero={campo.tipoHero}
+          idSport={campo.idSport}
+          photoUrl={campo.urlFotoCopertina}
           height={76}
           style={styles.compactThumb}
         />
         <View style={styles.compactBody}>
           <Text style={textStyle("bodyStrong", "ink")} numberOfLines={1}>
-            {court.venueName}
+            {campo.nomeStruttura}
           </Text>
           <Text style={textStyle("caption", "muted")} numberOfLines={1}>
-            {court.sport} · {court.distance}
+            {campo.nomeSport}
+            {campo.distanza ? ` · ${campo.distanza}` : ""}
           </Text>
           <View style={styles.rowGapSm}>
-            <RatingBadge value={court.rating} />
-            <Text style={textStyle("caption", "primary")}>{court.price}</Text>
+            <RatingBadge value={campo.mediaVoti} />
+            <Text style={textStyle("caption", "primary")}>{campo.prezzoLabel}</Text>
           </View>
         </View>
         <Icon name="chevron-forward" size={theme.iconSizes.md} color="subtle" />
@@ -136,11 +122,15 @@ export function CourtCard({
         style,
       ]}
     >
-      <CourtHero heroKind={court.heroKind} sportId={court.sportId}>
+      <CampoHero
+        tipoHero={campo.tipoHero}
+        idSport={campo.idSport}
+        photoUrl={campo.urlFotoCopertina}
+      >
         <View style={styles.heroTopRow}>
           <AvailabilityBadge
-            state={court.open ? "open" : "closed"}
-            label={court.open ? "Aperto" : "Chiuso"}
+            state={campo.aperto ? "open" : "closed"}
+            label={campo.aperto ? "Aperto" : "Chiuso"}
           />
           <IconButton
             name={isFav ? "heart" : "heart-outline"}
@@ -153,20 +143,21 @@ export function CourtCard({
           />
         </View>
         <View style={styles.heroBottomRow}>
-          <PriceTag label={court.price} />
+          <PriceTag label={campo.prezzoLabel} />
         </View>
-      </CourtHero>
+      </CampoHero>
       <View style={styles.largeBody}>
         <Text style={textStyle("bodyStrong", "ink")} numberOfLines={1}>
-          {court.venueName}
+          {campo.nomeStruttura}
         </Text>
         <View style={styles.rowBetween}>
           <Text style={textStyle("caption", "muted")} numberOfLines={1}>
-            {court.sport} · {court.surface}
+            {campo.nomeSport}
+            {campo.superficie ? ` · ${campo.superficie}` : ""}
           </Text>
           <RatingBadge
-            value={court.rating}
-            count={court.reviewsCount}
+            value={campo.mediaVoti}
+            count={campo.numeroRecensioni}
             showCount
           />
         </View>
@@ -177,7 +168,9 @@ export function CourtCard({
             color="subtle"
           />
           <Text style={textStyle("caption", "muted")} numberOfLines={1}>
-            {court.distance} · {court.address}
+            {campo.distanza
+              ? `${campo.distanza} · ${campo.indirizzo}`
+              : campo.indirizzo}
           </Text>
         </View>
       </View>
@@ -186,26 +179,26 @@ export function CourtCard({
 }
 
 /* ------------------------------------------------------------------ *
- * VenueCard — secondary context (structure with N courts)
+ * StrutturaCard — contesto secondario (struttura con N campi)
  * ------------------------------------------------------------------ */
 
-export interface VenueCardProps {
-  venue: Venue;
-  courtCount?: number;
+export interface StrutturaCardProps {
+  struttura: Struttura;
+  numeroCampi?: number;
   onPress?: () => void;
   onFav?: () => void;
   isFav?: boolean;
   style?: StyleProp<ViewStyle>;
 }
 
-export function VenueCard({
-  venue,
-  courtCount,
+export function StrutturaCard({
+  struttura,
+  numeroCampi,
   onPress,
   onFav,
   isFav = false,
   style,
-}: VenueCardProps) {
+}: StrutturaCardProps) {
   return (
     <Pressable
       onPress={onPress}
@@ -215,25 +208,30 @@ export function VenueCard({
         style,
       ]}
     >
-      <CourtHero
-        heroKind={venue.heroKind}
-        sportId={venue.sportIds[0] ?? "padel"}
+      <CampoHero
+        tipoHero={struttura.tipoHero}
+        idSport={struttura.idSport[0] ?? "padel"}
+        photoUrl={struttura.urlFotoCopertina}
         height={76}
         style={styles.compactThumb}
       />
       <View style={styles.compactBody}>
         <Text style={textStyle("bodyStrong", "ink")} numberOfLines={1}>
-          {venue.name}
+          {struttura.nome}
         </Text>
         <Text style={textStyle("caption", "muted")} numberOfLines={1}>
-          {venue.distance}
-          {courtCount != null
-            ? ` · ${pluralize(courtCount, "campo", "campi")}`
+          {struttura.distanza
+            ? struttura.distanza +
+              (numeroCampi != null
+                ? ` · ${pluralize(numeroCampi, "campo", "campi")}`
+                : "")
+            : numeroCampi != null
+            ? pluralize(numeroCampi, "campo", "campi")
             : ""}
         </Text>
         <RatingBadge
-          value={venue.rating}
-          count={venue.reviewsCount}
+          value={struttura.mediaVoti}
+          count={struttura.numeroRecensioni}
           showCount
         />
       </View>
@@ -255,96 +253,7 @@ export function VenueCard({
 }
 
 /* ------------------------------------------------------------------ *
- * BookingCard — a request/booking summary row
- * ------------------------------------------------------------------ */
-
-const BOOKING_STATUS: Record<
-  BookingStatus,
-  { label: string; fg: string; bg: string }
-> = {
-  requested: {
-    label: "In attesa",
-    fg: theme.colors.muted,
-    bg: theme.tints.inkTint,
-  },
-  confirmed: {
-    label: "Confermata",
-    fg: theme.colors.success,
-    bg: theme.tints.successTint,
-  },
-  declined: {
-    label: "Rifiutata",
-    fg: theme.semantic.danger,
-    bg: theme.tints.heartTint,
-  },
-  cancelled: {
-    label: "Annullata",
-    fg: theme.colors.muted,
-    bg: theme.tints.inkTint,
-  },
-};
-
-export interface BookingCardProps {
-  booking: Booking;
-  venueName?: string;
-  courtName?: string;
-  sport?: string;
-  onPress?: () => void;
-  style?: StyleProp<ViewStyle>;
-}
-
-export function BookingCard({
-  booking,
-  venueName,
-  courtName,
-  sport,
-  onPress,
-  style,
-}: BookingCardProps) {
-  const s = BOOKING_STATUS[booking.status];
-  return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [pressed && styles.pressed, style]}
-    >
-      <Card style={{ gap: theme.spacing.sm }}>
-        <View style={styles.rowBetween}>
-          <Text style={textStyle("bodyStrong", "ink")} numberOfLines={1}>
-            {venueName ?? "Struttura"}
-          </Text>
-          <View style={[styles.statusPill, { backgroundColor: s.bg }]}>
-            <Text style={[textStyle("micro"), { color: s.fg }]}>{s.label}</Text>
-          </View>
-        </View>
-        <View style={styles.rowGapSm}>
-          <Icon
-            name="calendar-outline"
-            size={theme.iconSizes.sm}
-            color="subtle"
-          />
-          <Text style={textStyle("caption", "muted")}>
-            {booking.date} · {booking.slot.start}–{booking.slot.end}
-          </Text>
-        </View>
-        {courtName || sport ? (
-          <View style={styles.rowGapSm}>
-            <Icon
-              name="tennisball-outline"
-              size={theme.iconSizes.sm}
-              color="subtle"
-            />
-            <Text style={textStyle("caption", "muted")}>
-              {[courtName, sport].filter(Boolean).join(" · ")}
-            </Text>
-          </View>
-        ) : null}
-      </Card>
-    </Pressable>
-  );
-}
-
-/* ------------------------------------------------------------------ *
- * SportSelectCard — setup sport selection
+ * SportSelectCard — selezione sport nel setup
  * ------------------------------------------------------------------ */
 
 export interface SportSelectCardProps {
@@ -393,7 +302,7 @@ export function SportSelectCard({
 }
 
 /* ------------------------------------------------------------------ *
- * TimeOfDayCard — availability time-of-day selection
+ * TimeOfDayCard — selezione fascia oraria disponibilità
  * ------------------------------------------------------------------ */
 
 export interface TimeOfDayCardProps {
@@ -439,7 +348,7 @@ export function TimeOfDayCard({
 }
 
 /* ------------------------------------------------------------------ *
- * OptionRow — level selection row (kept for future 5-step setup)
+ * OptionRow — riga selezione livello (per il futuro setup a 5 step)
  * ------------------------------------------------------------------ */
 
 export interface OptionRowProps {
@@ -486,7 +395,7 @@ export function OptionRow({
 }
 
 /* ------------------------------------------------------------------ *
- * BenefitRow — icon badge + title + desc
+ * BenefitRow — badge icona + titolo + descrizione
  * ------------------------------------------------------------------ */
 
 export interface BenefitRowProps {
@@ -578,7 +487,7 @@ export function ProfileMenuItem({
 }
 
 /* ------------------------------------------------------------------ *
- * DetailStat — a small labeled stat
+ * DetailStat — stat con etichetta piccola
  * ------------------------------------------------------------------ */
 
 export interface DetailStatProps {
@@ -599,7 +508,7 @@ export function DetailStat({ icon, value, label, style }: DetailStatProps) {
 }
 
 /* ------------------------------------------------------------------ *
- * InfoBanner — neutral info row
+ * InfoBanner — riga informativa neutrale
  * ------------------------------------------------------------------ */
 
 export interface InfoBannerProps {
@@ -668,7 +577,7 @@ export function EmptyState({ icon, title, desc, cta, style }: EmptyStateProps) {
 }
 
 /* ------------------------------------------------------------------ *
- * CheckBadge — success check disc (summary / booking confirm)
+ * CheckBadge — disco di successo (sommario / conferma prenotazione)
  * ------------------------------------------------------------------ */
 
 export interface CheckBadgeProps {
@@ -716,12 +625,6 @@ const styles = StyleSheet.create({
   },
   textCenter: { textAlign: "center" },
 
-  hero: {
-    backgroundColor: theme.colors.chip,
-    alignItems: "center",
-    justifyContent: "center",
-    overflow: "hidden",
-  },
   heroTopRow: {
     position: "absolute",
     top: theme.spacing.sm,

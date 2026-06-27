@@ -1,10 +1,11 @@
 /**
- * Global app state — court-first, persisted to AsyncStorage.
+ * Stato globale dell'app — persistito in AsyncStorage, con sessione Supabase
+ * e preferiti basati su React Query.
  *
- * Mirrors the prototype's single localStorage-backed store, adapted to React
- * Context. The shape is mock-friendly but stable: swapping the data layer for
- * Supabase later only changes how `prefs`/`bookings` are seeded/synced, not the
- * screens that consume `useAppState()`.
+ * Auth (user / profileId) è derivato dalla sessione Supabase, quindi sopravvive
+ * ai reload senza round-trip aggiuntivi.
+ * I preferiti dei campi sono in Campi_Preferiti (per utenti loggati).
+ * Prefs, filtri e stato onboarding rimangono locali (AsyncStorage).
  */
 
 import React, {
@@ -16,190 +17,304 @@ import React, {
   useRef,
   useState,
 } from "react";
-import {
-  DEFAULT_FAVORITES,
-  DEFAULT_FILTERS,
-  DEFAULT_PREFS,
-} from "@atimar/data";
-import { withActiveCount } from "@atimar/utils";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import type { Session } from "@supabase/supabase-js";
+import { DEFAULT_FILTERS, DEFAULT_PREFS } from "@atimar/data";
+import { conConteggioAttivo } from "@atimar/utils";
 import type {
-  Booking,
-  Favorites,
-  Filters,
+  Filtri,
+  Preferiti,
   User,
   UserPrefs,
 } from "@atimar/types";
 import { clearPersisted, loadPersisted, savePersisted } from "./storage";
 import type { LoginInput, RegisterInput } from "./auth";
-import { validateLogin, validateRegister } from "./auth";
-import type { AuthResult } from "./auth";
+import { signIn, signOut, signUp, signInWithGoogle } from "./auth";
+import type { AuthResult, OAuthResult } from "./auth";
+import { supabase } from "@/data/client";
+import { QUERY_KEYS } from "@/data/keys";
+import {
+  fetchFavorites,
+  addFavorite,
+  removeFavorite,
+} from "@atimar/api";
+import type { FavoriteRow } from "@atimar/api";
 
 /* ------------------------------------------------------------------ *
- * Persisted shape
+ * Stato persistito                                                    *
  * ------------------------------------------------------------------ */
 
 interface PersistedState {
   onboarded: boolean;
-  user: User | null;
   prefs: UserPrefs;
-  favorites: Favorites;
-  filters: Filters;
-  bookings: Booking[];
+  filters: Filtri;
 }
 
-const INITIAL: PersistedState = {
+const INITIAL_PERSISTED: PersistedState = {
   onboarded: false,
-  user: null,
   prefs: DEFAULT_PREFS,
-  favorites: DEFAULT_FAVORITES,
   filters: DEFAULT_FILTERS,
-  bookings: [],
 };
 
 /* ------------------------------------------------------------------ *
- * Context value
+ * Valore del context                                                  *
  * ------------------------------------------------------------------ */
 
-interface AppStateValue extends PersistedState {
-  /** False until the persisted state has hydrated (gate the splash on this). */
+interface AppStateValue {
   ready: boolean;
+  user: User | null;
+  /** Supabase auth.users UUID — null quando non loggato. */
+  profileId: string | null;
+  onboarded: boolean;
+  prefs: UserPrefs;
+  preferiti: Preferiti;
+  filtri: Filtri;
   completeOnboarding: (prefs?: UserPrefs) => void;
   setPrefs: (patch: Partial<UserPrefs>) => void;
-  register: (input: RegisterInput) => AuthResult;
-  login: (input: LoginInput) => AuthResult;
+  register: (input: RegisterInput) => Promise<AuthResult>;
+  login: (input: LoginInput) => Promise<AuthResult>;
+  loginWithGoogle: () => Promise<OAuthResult>;
   logout: () => void;
-  toggleFavCourt: (courtId: string) => void;
-  toggleFavVenue: (venueId: string) => void;
-  isFavCourt: (courtId: string) => boolean;
-  isFavVenue: (venueId: string) => boolean;
-  setFilters: (filters: Filters) => void;
-  resetFilters: () => void;
-  addBooking: (booking: Booking) => void;
+  togglePreferitoCampo: (campoId: string) => Promise<void>;
+  isPreferitoCampo: (campoId: string) => boolean;
+  setFiltri: (filtri: Filtri) => void;
+  resetFiltri: () => void;
 }
 
 const AppStateContext = createContext<AppStateValue | null>(null);
 
 /* ------------------------------------------------------------------ *
- * Provider
+ * Provider                                                            *
  * ------------------------------------------------------------------ */
 
 export function AppStateProvider({ children }: { children: React.ReactNode }) {
-  const [state, setState] = useState<PersistedState>(INITIAL);
-  const [ready, setReady] = useState(false);
-  const hydrated = useRef(false);
+  const [persisted, setPersisted] = useState<PersistedState>(INITIAL_PERSISTED);
+  const [persistedReady, setPersistedReady] = useState(false);
+  const [session, setSession] = useState<Session | null>(null);
+  const [sessionReady, setSessionReady] = useState(false);
+  const hydratedRef = useRef(false);
+  const queryClient = useQueryClient();
 
-  // Hydrate once on mount.
+  const ready = persistedReady && sessionReady;
+
+  // ── Idratazione stato persistito ────────────────────────────────────
   useEffect(() => {
     let active = true;
     loadPersisted<Partial<PersistedState>>().then((saved) => {
       if (!active) return;
-      if (saved) setState((prev) => ({ ...prev, ...saved }));
-      hydrated.current = true;
-      setReady(true);
+      if (saved) setPersisted((prev) => ({ ...prev, ...saved }));
+      hydratedRef.current = true;
+      setPersistedReady(true);
     });
     return () => {
       active = false;
     };
   }, []);
 
-  // Persist after hydration on every change.
+  // ── Persistenza ad ogni cambio dopo l'idratazione ───────────────────
   useEffect(() => {
-    if (!hydrated.current) return;
-    void savePersisted(state);
-  }, [state]);
+    if (!hydratedRef.current) return;
+    void savePersisted(persisted);
+  }, [persisted]);
+
+  // ── Sessione Supabase ─────────────────────────────────────────────
+  useEffect(() => {
+    // Carica sessione esistente
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      setSessionReady(true);
+    });
+
+    // Ascolta cambi di stato auth
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, s) => {
+      setSession(s);
+      if (!s) {
+        // Logout — svuota cache preferiti
+        queryClient.removeQueries({ queryKey: ["preferiti"] });
+        return;
+      }
+      if (event === "SIGNED_IN") {
+        // Crea riga Profili per nuovi utenti (ignoreDuplicates = no-op per utenti già esistenti)
+        const meta = s.user.user_metadata as Record<string, unknown>;
+        const nome_completo =
+          (meta?.full_name as string | undefined) ??
+          (meta?.name as string | undefined) ??
+          s.user.email?.split("@")[0] ??
+          "Atleta";
+        void supabase
+          .from("Profili")
+          .upsert({ id: s.user.id, nome_completo }, { onConflict: "id", ignoreDuplicates: true })
+          .then(({ error }) => {
+            if (error) console.error("[Profili] upsert error:", error);
+          });
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [queryClient]);
+
+  // ── User derivato dalla sessione ────────────────────────────────────
+  const profileId = session?.user?.id ?? null;
+  const user: User | null = session?.user
+    ? {
+        name:
+          session.user.user_metadata?.full_name ??
+          session.user.user_metadata?.name ??
+          session.user.email?.split("@")[0] ??
+          "Atleta",
+        email: session.user.email ?? "",
+      }
+    : null;
+
+  // ── Preferiti da Supabase ────────────────────────────────────────────
+  const { data: dbFavs } = useQuery<FavoriteRow[]>({
+    queryKey: QUERY_KEYS.preferiti(profileId),
+    queryFn: () => fetchFavorites(profileId!),
+    enabled: !!profileId,
+    staleTime: 30_000,
+  });
+
+  const favCampoIds: string[] = useMemo(
+    () => (dbFavs ?? []).map((f) => String(f.fk_campo)),
+    [dbFavs]
+  );
+
+  // ── Azioni ──────────────────────────────────────────────────────────
 
   const completeOnboarding = useCallback((prefs?: UserPrefs) => {
-    setState((s) => ({ ...s, onboarded: true, prefs: prefs ?? s.prefs }));
+    setPersisted((s) => ({ ...s, onboarded: true, prefs: prefs ?? s.prefs }));
   }, []);
 
   const setPrefs = useCallback((patch: Partial<UserPrefs>) => {
-    setState((s) => ({ ...s, prefs: { ...s.prefs, ...patch } }));
+    setPersisted((s) => ({ ...s, prefs: { ...s.prefs, ...patch } }));
   }, []);
 
-  const register = useCallback((input: RegisterInput): AuthResult => {
-    const result = validateRegister(input);
-    if (result.ok && result.user) {
-      setState((s) => ({ ...s, user: result.user! }));
-    }
-    return result;
+  const register = useCallback(
+    async (input: RegisterInput): Promise<AuthResult> => {
+      return signUp(input);
+      // session update comes via onAuthStateChange
+    },
+    []
+  );
+
+  const login = useCallback(async (input: LoginInput): Promise<AuthResult> => {
+    return signIn(input);
+    // session update comes via onAuthStateChange
   }, []);
 
-  const login = useCallback((input: LoginInput): AuthResult => {
-    const result = validateLogin(input);
-    if (result.ok && result.user) {
-      setState((s) => ({ ...s, user: result.user! }));
-    }
-    return result;
+  const loginWithGoogle = useCallback(async (): Promise<OAuthResult> => {
+    return signInWithGoogle();
+    // session update comes via onAuthStateChange
   }, []);
 
   const logout = useCallback(() => {
-    setState((s) => ({ ...s, user: null }));
+    signOut(); // fire-and-forget; onAuthStateChange svuota la sessione
     void clearPersisted();
   }, []);
 
-  const toggleFavCourt = useCallback((courtId: string) => {
-    setState((s) => {
-      const has = s.favorites.courtIds.includes(courtId);
-      const courtIds = has
-        ? s.favorites.courtIds.filter((id) => id !== courtId)
-        : [...s.favorites.courtIds, courtId];
-      return { ...s, favorites: { ...s.favorites, courtIds } };
-    });
+  const togglePreferitoCampo = useCallback(
+    async (campoId: string) => {
+      if (!profileId) return; // il chiamante deve reindirizzare al login
+      const campoIdNum = Number(campoId);
+      const isFav = (dbFavs ?? []).some((f) => f.fk_campo === campoIdNum);
+      const key = QUERY_KEYS.preferiti(profileId);
+
+      // Aggiornamento ottimistico
+      const prev = queryClient.getQueryData<FavoriteRow[]>(key) ?? [];
+      queryClient.setQueryData<FavoriteRow[]>(
+        key,
+        isFav
+          ? prev.filter((f) => f.fk_campo !== campoIdNum)
+          : [
+              ...prev,
+              {
+                fk_campo: campoIdNum,
+                fk_profilo: profileId,
+                created_at: new Date().toISOString(),
+                aggiornato_il: new Date().toISOString(),
+              },
+            ]
+      );
+
+      try {
+        if (isFav) {
+          await removeFavorite(profileId, campoIdNum);
+        } else {
+          await addFavorite(profileId, campoIdNum);
+        }
+      } catch (err) {
+        console.error("[togglePreferitoCampo] Supabase error:", err);
+        queryClient.setQueryData(key, prev); // ripristino
+      } finally {
+        queryClient.invalidateQueries({ queryKey: key });
+      }
+    },
+    [profileId, dbFavs, queryClient]
+  );
+
+  const isPreferitoCampo = useCallback(
+    (id: string) => {
+      const campoIdNum = Number(id);
+      return (dbFavs ?? []).some((f) => f.fk_campo === campoIdNum);
+    },
+    [dbFavs]
+  );
+
+  const setFiltri = useCallback((filtri: Filtri) => {
+    setPersisted((s) => ({ ...s, filters: conConteggioAttivo(filtri) }));
   }, []);
 
-  const toggleFavVenue = useCallback((venueId: string) => {
-    setState((s) => {
-      const has = s.favorites.venueIds.includes(venueId);
-      const venueIds = has
-        ? s.favorites.venueIds.filter((id) => id !== venueId)
-        : [...s.favorites.venueIds, venueId];
-      return { ...s, favorites: { ...s.favorites, venueIds } };
-    });
+  const resetFiltri = useCallback(() => {
+    setPersisted((s) => ({ ...s, filters: DEFAULT_FILTERS }));
   }, []);
 
-  const setFilters = useCallback((filters: Filters) => {
-    setState((s) => ({ ...s, filters: withActiveCount(filters) }));
-  }, []);
-
-  const resetFilters = useCallback(() => {
-    setState((s) => ({ ...s, filters: DEFAULT_FILTERS }));
-  }, []);
-
-  const addBooking = useCallback((booking: Booking) => {
-    setState((s) => ({ ...s, bookings: [booking, ...s.bookings] }));
-  }, []);
+  // ── Preferiti (solo campi) ───────────────────────────────────────────
+  const preferiti: Preferiti = useMemo(
+    () => ({ campoIds: favCampoIds }),
+    [favCampoIds]
+  );
 
   const value = useMemo<AppStateValue>(
     () => ({
-      ...state,
       ready,
+      user,
+      profileId,
+      onboarded: persisted.onboarded,
+      prefs: persisted.prefs,
+      preferiti,
+      filtri: persisted.filters,
       completeOnboarding,
       setPrefs,
       register,
       login,
+      loginWithGoogle,
       logout,
-      toggleFavCourt,
-      toggleFavVenue,
-      isFavCourt: (id) => state.favorites.courtIds.includes(id),
-      isFavVenue: (id) => state.favorites.venueIds.includes(id),
-      setFilters,
-      resetFilters,
-      addBooking,
+      togglePreferitoCampo,
+      isPreferitoCampo,
+      setFiltri,
+      resetFiltri,
     }),
     [
-      state,
       ready,
+      user,
+      profileId,
+      persisted.onboarded,
+      persisted.prefs,
+      persisted.filters,
+      preferiti,
       completeOnboarding,
       setPrefs,
       register,
       login,
+      loginWithGoogle,
       logout,
-      toggleFavCourt,
-      toggleFavVenue,
-      setFilters,
-      resetFilters,
-      addBooking,
-    ],
+      togglePreferitoCampo,
+      isPreferitoCampo,
+      setFiltri,
+      resetFiltri,
+    ]
   );
 
   return (
@@ -210,12 +325,12 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 }
 
 /* ------------------------------------------------------------------ *
- * Hook
+ * Hook                                                                *
  * ------------------------------------------------------------------ */
 
 export function useAppState(): AppStateValue {
   const ctx = useContext(AppStateContext);
   if (!ctx)
-    throw new Error("useAppState must be used within <AppStateProvider>");
+    throw new Error("useAppState deve essere usato dentro <AppStateProvider>");
   return ctx;
 }

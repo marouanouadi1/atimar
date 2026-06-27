@@ -6,6 +6,7 @@ import { SportRowActions } from './sport-row-actions'
 type Sport = {
   id: number
   nome_sport: string
+  slug: string
   aggiornato_il: string
 }
 
@@ -35,9 +36,16 @@ export function SportTable({ data, action }: Props) {
       ),
     },
     {
+      key: 'slug',
+      header: 'Slug',
+      sortable: true,
+      searchValue: (s) => s.slug ?? '',
+      cell: (s) => <span className="font-mono text-xs text-muted-foreground">{s.slug}</span>,
+    },
+    {
       key: 'actions',
       header: '',
-      cell: (s) => <SportRowActions id={s.id} nome={s.nome_sport} />,
+      cell: (s) => <SportRowActions id={s.id} nome={s.nome_sport} slug={s.slug} />,
     },
   ]
 

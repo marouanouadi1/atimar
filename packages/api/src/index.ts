@@ -21,3 +21,5 @@ export * from './controllers/foto_campi';
 export * from './controllers/foto_strutture';
 export * from './controllers/orari_strutture';
 export * from './controllers/recensioni_strutture';
+export * from './controllers/app_catalog';
+export * from './mappers';

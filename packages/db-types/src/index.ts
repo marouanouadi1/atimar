@@ -18,7 +18,7 @@ export type Database = {
         Row: {
           aggiornato_il: string
           attivo: boolean
-          coperto: boolean | null
+          coperto: boolean
           created_at: string
           fk_struttura: number
           id: number
@@ -31,7 +31,7 @@ export type Database = {
         Insert: {
           aggiornato_il?: string
           attivo: boolean
-          coperto?: boolean | null
+          coperto?: boolean
           created_at?: string
           fk_struttura: number
           id?: number
@@ -44,7 +44,7 @@ export type Database = {
         Update: {
           aggiornato_il?: string
           attivo?: boolean
-          coperto?: boolean | null
+          coperto?: boolean
           created_at?: string
           fk_struttura?: number
           id?: number
@@ -493,21 +493,21 @@ export type Database = {
       Servizi: {
         Row: {
           aggiornato_il: string
-          attivo: boolean | null
+          attivo: boolean
           descrizione: string | null
           id: number
           nome_servizio: string
         }
         Insert: {
           aggiornato_il?: string
-          attivo?: boolean | null
+          attivo?: boolean
           descrizione?: string | null
           id?: number
           nome_servizio: string
         }
         Update: {
           aggiornato_il?: string
-          attivo?: boolean | null
+          attivo?: boolean
           descrizione?: string | null
           id?: number
           nome_servizio?: string
@@ -519,16 +519,19 @@ export type Database = {
           aggiornato_il: string
           id: number
           nome_sport: string
+          slug: string
         }
         Insert: {
           aggiornato_il?: string
           id?: number
           nome_sport: string
+          slug: string
         }
         Update: {
           aggiornato_il?: string
           id?: number
           nome_sport?: string
+          slug?: string
         }
         Relationships: []
       }
@@ -542,17 +545,17 @@ export type Database = {
           email: string | null
           fk_citta: number
           id: number
-          indirizzo: string | null
-          latitudine: number | null
+          indirizzo: string
+          latitudine: number
           link_prenotazione_esterno: string | null
           link_sito_web: string | null
-          longitudine: number | null
+          longitudine: number
           nome: string
           posizione: unknown
           prezzo_orario: number | null
-          sempre_aperto: boolean | null
+          sempre_aperto: boolean
           telefono: string | null
-          verificata: boolean | null
+          verificata: boolean
         }
         Insert: {
           aggiornato_il?: string
@@ -563,17 +566,17 @@ export type Database = {
           email?: string | null
           fk_citta: number
           id?: number
-          indirizzo?: string | null
-          latitudine?: number | null
+          indirizzo: string
+          latitudine: number
           link_prenotazione_esterno?: string | null
           link_sito_web?: string | null
-          longitudine?: number | null
+          longitudine: number
           nome: string
           posizione?: unknown
           prezzo_orario?: number | null
-          sempre_aperto?: boolean | null
+          sempre_aperto?: boolean
           telefono?: string | null
-          verificata?: boolean | null
+          verificata?: boolean
         }
         Update: {
           aggiornato_il?: string
@@ -584,17 +587,17 @@ export type Database = {
           email?: string | null
           fk_citta?: number
           id?: number
-          indirizzo?: string | null
-          latitudine?: number | null
+          indirizzo?: string
+          latitudine?: number
           link_prenotazione_esterno?: string | null
           link_sito_web?: string | null
-          longitudine?: number | null
+          longitudine?: number
           nome?: string
           posizione?: unknown
           prezzo_orario?: number | null
-          sempre_aperto?: boolean | null
+          sempre_aperto?: boolean
           telefono?: string | null
-          verificata?: boolean | null
+          verificata?: boolean
         }
         Relationships: [
           {

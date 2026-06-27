@@ -102,9 +102,9 @@ export function CreaStrutturaDialog({ citta }: { citta: Citta[] }) {
           nome: form.nome,
           email: form.email || null,
           fk_citta: Number(form.fk_citta),
-          indirizzo: form.indirizzo || null,
-          latitudine: form.latitudine ? Number(form.latitudine) : null,
-          longitudine: form.longitudine ? Number(form.longitudine) : null,
+          indirizzo: form.indirizzo,
+          latitudine: Number(form.latitudine),
+          longitudine: Number(form.longitudine),
           prezzo_orario: form.prezzo_orario ? Number(form.prezzo_orario) : null,
           telefono: form.telefono || null,
           cellulare: form.cellulare || null,
@@ -157,16 +157,16 @@ export function CreaStrutturaDialog({ citta }: { citta: Citta[] }) {
                 </SelectContent>
               </Select>
             </div>
-            <Field id="indirizzo" label="Indirizzo">
-              <Input id="indirizzo" value={form.indirizzo} onChange={(e) => set('indirizzo', e.target.value)} />
+            <Field id="indirizzo" label="Indirizzo *">
+              <Input id="indirizzo" value={form.indirizzo} onChange={(e) => set('indirizzo', e.target.value)} required />
             </Field>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <Field id="latitudine" label="Latitudine">
-              <Input id="latitudine" type="number" step="any" value={form.latitudine} onChange={(e) => set('latitudine', e.target.value)} />
+            <Field id="latitudine" label="Latitudine *">
+              <Input id="latitudine" type="number" step="any" value={form.latitudine} onChange={(e) => set('latitudine', e.target.value)} required />
             </Field>
-            <Field id="longitudine" label="Longitudine">
-              <Input id="longitudine" type="number" step="any" value={form.longitudine} onChange={(e) => set('longitudine', e.target.value)} />
+            <Field id="longitudine" label="Longitudine *">
+              <Input id="longitudine" type="number" step="any" value={form.longitudine} onChange={(e) => set('longitudine', e.target.value)} required />
             </Field>
           </div>
         </div>

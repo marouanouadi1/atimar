@@ -55,11 +55,18 @@ export function FormInput({
   style,
 }: FormInputProps) {
   const [hidden, setHidden] = useState(secureTextEntry);
+  const [focused, setFocused] = useState(false);
   const hasError = !!error;
   return (
     <View style={[{ gap: theme.spacing.xs }, style]}>
       {label ? <Text style={textStyle("caption", "text")}>{label}</Text> : null}
-      <View style={[styles.input, hasError && styles.inputError]}>
+      <View
+        style={[
+          styles.input,
+          focused && styles.inputFocused,
+          hasError && styles.inputError,
+        ]}
+      >
         {icon ? (
           <Icon name={icon} size={theme.iconSizes.md} color="subtle" />
         ) : null}
@@ -73,6 +80,8 @@ export function FormInput({
           keyboardType={keyboardType}
           autoCapitalize={autoCapitalize}
           autoComplete={autoComplete}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
         />
         {secureTextEntry ? (
           <Pressable onPress={() => setHidden((h) => !h)} hitSlop={8}>
@@ -275,14 +284,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.lg,
     borderRadius: theme.radius.md,
     backgroundColor: theme.colors.surface,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: theme.colors.line,
+  },
+  inputFocused: {
+    borderColor: theme.colors.primary,
+    backgroundColor: theme.colors.surface,
   },
   inputError: {
     borderColor: theme.semantic.danger,
   },
   inputText: {
     fontSize: theme.typography.body.fontSize,
+    fontFamily: theme.fonts.bodyMedium,
     color: theme.colors.ink,
     paddingVertical: 0,
   },

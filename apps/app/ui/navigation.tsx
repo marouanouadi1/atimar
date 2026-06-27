@@ -4,13 +4,23 @@
  */
 
 import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  KeyboardAvoidingView,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+} from "react-native";
 import type { StyleProp, ViewStyle } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { theme } from "@/theme/tokens";
 import type { ProgressVariant } from "./core";
-import { ScreenContainer, Divider, Icon, IconButton } from "./primitives";
+import { Divider, Icon, IconButton } from "./primitives";
 import { ScreenTitle } from "./typography";
 import { textStyle } from "./theme";
+import { BrandMark } from "./brand";
 
 /* ------------------------------------------------------------------ *
  * StepProgress — pill | dots | bar
@@ -133,14 +143,19 @@ export function SocialButton({ provider, onPress, style }: SocialButtonProps) {
     <Pressable
       onPress={onPress}
       accessibilityRole="button"
-      style={({ pressed }) => [styles.social, pressed && styles.pressed, style]}
+      style={({ pressed }) => [
+        styles.social,
+        !isGoogle && styles.socialApple,
+        pressed && styles.pressed,
+        style,
+      ]}
     >
       <Icon
         name={isGoogle ? "logo-google" : "logo-apple"}
         size={theme.iconSizes.lg}
-        color="ink"
+        color={isGoogle ? "ink" : "surface"}
       />
-      <Text style={textStyle("bodyStrong", "ink")}>
+      <Text style={textStyle("bodyStrong", isGoogle ? "ink" : "surface")}>
         {isGoogle ? "Continua con Google" : "Continua con Apple"}
       </Text>
     </Pressable>
@@ -155,9 +170,45 @@ export interface AuthLayoutProps {
   title: string;
   subtitle?: string;
   onBack?: () => void;
+  /** Called when a social login button is pressed. Providing this prop shows the social buttons. */
   onSocial?: (provider: "google" | "apple") => void;
+  /** Optional error message shown below the social buttons. */
+  socialError?: string;
   children: React.ReactNode;
   footer: React.ReactNode;
+  withHero?: boolean;
+}
+
+function AuthVisual() {
+  const webGradient =
+    process.env.EXPO_OS === "web"
+      ? ({
+          backgroundImage:
+            "radial-gradient(circle at 78% 18%, rgba(217,255,67,.24), transparent 26%), linear-gradient(145deg, #12140F 0%, #20251A 100%)",
+        } as object)
+      : {};
+
+  return (
+    <View style={[styles.authVisual, webGradient]}>
+      <BrandMark inverse size={46} />
+      <View style={styles.authCourt}>
+        <View style={styles.authCourtVertical} />
+        <View style={styles.authCourtHorizontal} />
+        <View style={styles.authBall}>
+          <Icon name="tennisball" size={28} color="ink" />
+        </View>
+      </View>
+      <View style={styles.authVisualCopy}>
+        <Text style={styles.authKicker}>PLAY YOUR CITY</Text>
+        <Text style={styles.authVisualTitle}>
+          Il prossimo campo{"\n"}è più vicino di quanto pensi.
+        </Text>
+        <Text style={styles.authVisualText}>
+          Cerca strutture, confronta campi e torna a giocare.
+        </Text>
+      </View>
+    </View>
+  );
 }
 
 export function AuthLayout({
@@ -165,26 +216,86 @@ export function AuthLayout({
   subtitle,
   onBack,
   onSocial,
+  socialError,
   children,
   footer,
+  withHero,
 }: AuthLayoutProps) {
+  const { width } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
+  const desktop = width >= theme.breakpoints.desktop;
+
   return (
-    <ScreenContainer header={<Header onBack={onBack} />} footer={footer}>
-      <View style={styles.authBody}>
-        <ScreenTitle title={title} subtitle={subtitle} size="h1" />
-        {onSocial ? (
-          <View style={{ gap: theme.spacing.sm }}>
-            <SocialButton
-              provider="google"
-              onPress={() => onSocial("google")}
+    <KeyboardAvoidingView
+      style={styles.authRoot}
+      behavior={process.env.EXPO_OS === "ios" ? "padding" : undefined}
+    >
+      <View style={[styles.authFrame, desktop && styles.authFrameDesktop]}>
+        {withHero && desktop ? <AuthVisual /> : null}
+        <View style={styles.authFormSide}>
+          {onBack ? (
+            <IconButton
+              name="arrow-back"
+              onPress={onBack}
+              tone="surface"
+              accessibilityLabel="Indietro"
+              style={[
+                styles.authBack,
+                { top: Math.max(insets.top, theme.spacing.lg) },
+              ]}
             />
-            <SocialButton provider="apple" onPress={() => onSocial("apple")} />
-          </View>
-        ) : null}
-        <Divider label="oppure" />
-        <View style={{ gap: theme.spacing.md }}>{children}</View>
+          ) : null}
+          <ScrollView
+            contentInsetAdjustmentBehavior="automatic"
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={[
+              styles.authScroll,
+              {
+                paddingTop: desktop
+                  ? theme.spacing.xxxl
+                  : Math.max(insets.top + 72, theme.spacing.xxxl),
+                paddingBottom: insets.bottom + theme.spacing.xxl,
+                justifyContent: desktop ? "center" : "flex-start",
+              },
+            ]}
+          >
+            <View
+              style={[
+                styles.authBody,
+                {
+                  width: desktop
+                    ? theme.layout.maxForm
+                    : Math.max(width - theme.spacing.xl * 2, 0),
+                },
+              ]}
+            >
+              {!desktop ? <BrandMark size={38} /> : null}
+              <ScreenTitle title={title} subtitle={subtitle} size="h1" />
+              {onSocial ? (
+                <>
+                  <View style={{ gap: theme.spacing.sm }}>
+                    <SocialButton
+                      provider="google"
+                      onPress={() => onSocial("google")}
+                    />
+                    {/* Apple Sign In — prossimamente */}
+                  </View>
+                  {socialError ? (
+                    <Text style={[textStyle("caption", "danger"), styles.socialErr]}>
+                      {socialError}
+                    </Text>
+                  ) : null}
+                  <Divider label="oppure" />
+                </>
+              ) : null}
+              <View style={{ gap: theme.spacing.md }}>{children}</View>
+              <View style={styles.authFooter}>{footer}</View>
+            </View>
+          </ScrollView>
+        </View>
       </View>
-    </ScreenContainer>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -231,6 +342,9 @@ const styles = StyleSheet.create({
     paddingTop: theme.spacing.sm,
     paddingBottom: theme.spacing.sm,
     gap: theme.spacing.md,
+    width: "100%",
+    maxWidth: theme.layout.maxContent,
+    alignSelf: "center",
   },
   headerSide: {
     minWidth: theme.layout.iconButton,
@@ -254,9 +368,116 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.colors.line,
   },
+  socialApple: {
+    backgroundColor: theme.colors.ink,
+    borderColor: theme.colors.ink,
+  },
   pressed: { opacity: 0.7 },
+  socialErr: { textAlign: "center" },
+  authRoot: {
+    flex: 1,
+    backgroundColor: theme.colors.bg,
+  },
+  authFrame: {
+    flex: 1,
+  },
+  authFrameDesktop: {
+    flexDirection: "row",
+  },
+  authVisual: {
+    backgroundColor: theme.colors.ink,
+    flex: 1.08,
+    minHeight: 230,
+    padding: theme.spacing.xxl,
+    overflow: "hidden",
+  },
+  authCourt: {
+    position: "absolute",
+    width: "68%",
+    aspectRatio: 0.72,
+    right: "-8%",
+    top: "10%",
+    borderWidth: 2,
+    borderColor: "rgba(255,255,255,0.18)",
+    borderRadius: theme.radius.xl,
+    transform: [{ rotate: "-10deg" }],
+  },
+  authCourtVertical: {
+    position: "absolute",
+    left: "50%",
+    top: 0,
+    bottom: 0,
+    width: 2,
+    backgroundColor: "rgba(255,255,255,0.18)",
+  },
+  authCourtHorizontal: {
+    position: "absolute",
+    left: 0,
+    right: 0,
+    top: "50%",
+    height: 2,
+    backgroundColor: "rgba(255,255,255,0.18)",
+  },
+  authBall: {
+    position: "absolute",
+    left: "20%",
+    bottom: "18%",
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: theme.colors.lime,
+    ...theme.shadows.lime,
+  },
+  authVisualCopy: {
+    position: "absolute",
+    left: theme.spacing.xxxl,
+    right: theme.spacing.xxxl,
+    bottom: theme.spacing.xxxl,
+    gap: theme.spacing.md,
+    maxWidth: 560,
+  },
+  authKicker: {
+    color: theme.colors.lime,
+    fontFamily: theme.fonts.displayBold,
+    fontSize: 12,
+    letterSpacing: 2,
+  },
+  authVisualTitle: {
+    color: theme.colors.surface,
+    fontFamily: theme.fonts.displayBold,
+    fontSize: 46,
+    lineHeight: 50,
+    letterSpacing: -1.4,
+  },
+  authVisualText: {
+    color: "rgba(255,255,255,0.65)",
+    fontFamily: theme.fonts.bodyRegular,
+    fontSize: 16,
+    lineHeight: 24,
+  },
+  authFormSide: {
+    flex: 0.92,
+    backgroundColor: theme.colors.bg,
+  },
+  authBack: {
+    position: "absolute",
+    left: theme.spacing.xl,
+    zIndex: theme.zIndex.floating,
+  },
+  authScroll: {
+    flexGrow: 1,
+    justifyContent: "center",
+    boxSizing: "border-box",
+  },
   authBody: {
+    maxWidth: theme.layout.maxForm,
+    alignSelf: "center",
     gap: theme.spacing.xl,
-    paddingTop: theme.spacing.lg,
+  },
+  authFooter: {
+    gap: theme.spacing.md,
+    paddingTop: theme.spacing.sm,
   },
 });

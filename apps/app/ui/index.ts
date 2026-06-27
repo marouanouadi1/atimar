@@ -16,7 +16,7 @@ export type {
   ButtonSpec,
   ButtonVariant,
   ColorKey,
-  CourtCardVariant,
+  CampoCardVariant,
   Disclosure,
   FilterChipVariant,
   IconBadgeSpec,
@@ -57,6 +57,18 @@ export type {
   LogoProps,
   ScreenContainerProps,
 } from "./primitives";
+
+export { sportMeta, sportIcon } from "./sport-meta";
+export type { SportMeta } from "./sport-meta";
+
+export { BrandMark } from "./brand";
+export type { BrandMarkProps } from "./brand";
+
+export { ResponsiveContainer } from "./layout";
+export type { ResponsiveContainerProps } from "./layout";
+
+export { MediaStruttura } from "./media";
+export type { MediaStrutturaProps } from "./media";
 
 export { ScreenTitle, SectionTitle, SectionHeaderRow } from "./typography";
 export type {
@@ -106,10 +118,9 @@ export { MapPreview } from "./map";
 export type { MapPreviewProps } from "./map";
 
 export {
-  CourtHero,
-  CourtCard,
-  VenueCard,
-  BookingCard,
+  CampoHero,
+  CampoCard,
+  StrutturaCard,
   SportSelectCard,
   TimeOfDayCard,
   OptionRow,
@@ -122,10 +133,9 @@ export {
   CheckBadge,
 } from "./cards";
 export type {
-  CourtHeroProps,
-  CourtCardProps,
-  VenueCardProps,
-  BookingCardProps,
+  CampoHeroProps,
+  CampoCardProps,
+  StrutturaCardProps,
   SportSelectCardProps,
   TimeOfDayCardProps,
   OptionRowProps,

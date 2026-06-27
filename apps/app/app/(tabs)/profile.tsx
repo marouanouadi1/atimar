@@ -3,7 +3,7 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Constants from "expo-constants";
 
-import { theme } from "@/theme/tokens";
+import { theme, sportColor } from "@/theme/tokens";
 import { sportLabel } from "@atimar/data";
 import {
   Avatar,
@@ -11,6 +11,7 @@ import {
   Icon,
   MenuList,
   ProfileMenuItem,
+  ResponsiveContainer,
   SectionTitle,
   SportChip,
   textStyle,
@@ -20,10 +21,17 @@ import { useAppState } from "@/state/AppState";
 export default function Profile() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { user, prefs, favorites, logout } = useAppState();
+  const { user, prefs, preferiti, logout } = useAppState();
 
-  const favCount = favorites.courtIds.length + favorites.venueIds.length;
+  const favCount = preferiti.campoIds.length;
   const version = Constants.expoConfig?.version ?? "1.0.0";
+  const webGrad =
+    process.env.EXPO_OS === "web"
+      ? ({
+          backgroundImage:
+            "radial-gradient(circle at 78% 18%, rgba(217,255,67,.20), transparent 28%), linear-gradient(145deg, #12140F 0%, #20251A 100%)",
+        } as object)
+      : {};
 
   const onLogout = () => {
     logout();
@@ -38,32 +46,37 @@ export default function Profile() {
           paddingBottom: insets.bottom + theme.spacing.xxxl,
         }}
       >
-        <View
-          style={[styles.header, { paddingTop: insets.top + theme.spacing.lg }]}
-        >
-          <Avatar name={user?.name ?? "Atleta"} size={72} variant="lime" />
-          <View style={styles.headerInfo}>
-            <Text style={textStyle("title", "surface")}>
-              {user?.name ?? "Atleta"}
-            </Text>
-            <Text style={textStyle("caption", "placeholder")}>
-              {user?.email ?? "—"}
-            </Text>
-          </View>
-          <Pressable
-            style={styles.editBtn}
-            onPress={() => router.push("/setup/sports")}
+        <View style={[styles.header, webGrad]}>
+          <ResponsiveContainer
+            style={[
+              styles.headerInner,
+              { paddingTop: insets.top + theme.spacing.xl },
+            ]}
           >
-            <Icon
-              name="create-outline"
-              size={theme.iconSizes.sm}
-              color="surface"
-            />
-            <Text style={textStyle("caption", "surface")}>Modifica</Text>
-          </Pressable>
+            <Avatar name={user?.name ?? "Atleta"} size={72} variant="lime" />
+            <View style={styles.headerInfo}>
+              <Text style={textStyle("title", "surface")}>
+                {user?.name ?? "Atleta"}
+              </Text>
+              <Text style={textStyle("caption", "placeholder")}>
+                {user?.email ?? "—"}
+              </Text>
+            </View>
+            <Pressable
+              style={styles.editBtn}
+              onPress={() => router.push("/setup/sports")}
+            >
+              <Icon
+                name="create-outline"
+                size={theme.iconSizes.sm}
+                color="surface"
+              />
+              <Text style={textStyle("caption", "surface")}>Modifica</Text>
+            </Pressable>
+          </ResponsiveContainer>
         </View>
 
-        <View style={styles.content}>
+        <ResponsiveContainer style={styles.content}>
           <View style={styles.stats}>
             <DetailStat
               icon="tennisball-outline"
@@ -86,9 +99,20 @@ export default function Profile() {
             <SectionTitle>I tuoi sport</SectionTitle>
             <View style={styles.sportChips}>
               {prefs.sports.length > 0 ? (
-                prefs.sports.map((id) => (
-                  <SportChip key={id} label={sportLabel(id)} active />
-                ))
+                prefs.sports.map((id) => {
+                  const accent = sportColor(id);
+                  return (
+                    <SportChip
+                      key={id}
+                      label={sportLabel(id)}
+                      active
+                      style={{
+                        backgroundColor: accent + "18",
+                        borderColor: accent + "44",
+                      }}
+                    />
+                  );
+                })
               ) : (
                 <Text style={textStyle("caption", "muted")}>
                   Nessuno sport selezionato
@@ -171,7 +195,7 @@ export default function Profile() {
           <Text style={[textStyle("small", "subtle"), styles.version]}>
             ATIMAR · v{version}
           </Text>
-        </View>
+        </ResponsiveContainer>
       </ScrollView>
     </View>
   );
@@ -180,13 +204,14 @@ export default function Profile() {
 const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: theme.colors.bg },
   header: {
-    backgroundColor: theme.colors.primary,
-    paddingHorizontal: theme.layout.screenPadX,
-    paddingBottom: theme.spacing.xl,
+    backgroundColor: theme.colors.ink,
     borderBottomLeftRadius: theme.radius.xl,
     borderBottomRightRadius: theme.radius.xl,
+  },
+  headerInner: {
     alignItems: "center",
     gap: theme.spacing.md,
+    paddingBottom: theme.spacing.xl,
   },
   headerInfo: { alignItems: "center", gap: 2 },
   editBtn: {
@@ -196,12 +221,12 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.xs,
     paddingHorizontal: theme.spacing.md,
     borderRadius: theme.radius.pill,
-    backgroundColor: theme.colors.primaryDark,
+    backgroundColor: "rgba(255,255,255,0.12)",
   },
   content: {
-    paddingHorizontal: theme.layout.screenPadX,
     paddingTop: theme.spacing.xl,
     gap: theme.spacing.xxl,
+    maxWidth: 900,
   },
   stats: { flexDirection: "row", gap: theme.spacing.md },
   section: { gap: theme.spacing.md },

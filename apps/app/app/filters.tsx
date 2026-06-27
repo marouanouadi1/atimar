@@ -3,9 +3,9 @@ import { useRouter } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { theme } from "@/theme/tokens";
-import { DEFAULT_FILTERS, getCourtListItems, sportLabel } from "@atimar/data";
-import { filterCourts } from "@atimar/utils";
-import type { Filters } from "@atimar/types";
+import { DEFAULT_FILTERS, sportLabel } from "@atimar/data";
+import { filtraCampi } from "@atimar/utils";
+import type { Filtri } from "@atimar/types";
 import {
   Button,
   Header,
@@ -17,24 +17,25 @@ import {
   textStyle,
 } from "@/ui";
 import { useAppState } from "@/state/AppState";
+import { useCampiInLista } from "@/data/hooks";
 
 export default function FiltersModal() {
   const router = useRouter();
-  const { filters, setFilters } = useAppState();
-  const [draft, setDraft] = useState<Filters>(filters);
+  const { filtri, setFiltri } = useAppState();
+  const [draft, setDraft] = useState<Filtri>(filtri);
 
-  const courts = useMemo(() => getCourtListItems(), []);
+  const { data: campi = [] } = useCampiInLista();
   const sports = useMemo(
-    () => Array.from(new Set(courts.map((c) => c.sportId))),
-    [courts],
+    () => Array.from(new Set(campi.map((c) => c.idSport))),
+    [campi],
   );
   const count = useMemo(
-    () => filterCourts(courts, draft).length,
-    [courts, draft],
+    () => filtraCampi(campi, draft).length,
+    [campi, draft],
   );
 
   const apply = () => {
-    setFilters(draft);
+    setFiltri(draft);
     router.back();
   };
 
@@ -82,14 +83,15 @@ export default function FiltersModal() {
           <View style={styles.rowBetween}>
             <SectionTitle>Distanza massima</SectionTitle>
             <Text style={textStyle("caption", "primary")}>
-              {draft.maxDistance} km
+              {draft.distanzaMax} km
             </Text>
           </View>
+          {/* TODO: attivare il filtro distanza quando la geolocalizzazione sarà implementata */}
           <RangeSlider
-            value={draft.maxDistance}
+            value={draft.distanzaMax}
             min={1}
             max={50}
-            onChange={(v) => setDraft((d) => ({ ...d, maxDistance: v }))}
+            onChange={(v) => setDraft((d) => ({ ...d, distanzaMax: v }))}
           />
         </View>
 
@@ -99,15 +101,15 @@ export default function FiltersModal() {
             label="Aperto ora"
             sub="Mostra solo i campi aperti adesso"
             icon="time-outline"
-            value={draft.openOnly}
-            onValueChange={(v) => setDraft((d) => ({ ...d, openOnly: v }))}
+            value={draft.soloAperti}
+            onValueChange={(v) => setDraft((d) => ({ ...d, soloAperti: v }))}
           />
           <ToggleRow
             label="Solo disponibili"
             sub="Nascondi i campi senza slot liberi"
             icon="checkmark-circle-outline"
-            value={draft.onlyAvailable}
-            onValueChange={(v) => setDraft((d) => ({ ...d, onlyAvailable: v }))}
+            value={draft.soloDisponibili}
+            onValueChange={(v) => setDraft((d) => ({ ...d, soloDisponibili: v }))}
           />
         </View>
       </View>
@@ -116,7 +118,13 @@ export default function FiltersModal() {
 }
 
 const styles = StyleSheet.create({
-  body: { gap: theme.spacing.xxl, paddingTop: theme.spacing.sm },
+  body: {
+    gap: theme.spacing.xxl,
+    paddingTop: theme.spacing.sm,
+    width: "100%",
+    maxWidth: theme.layout.maxReading,
+    alignSelf: "center",
+  },
   section: { gap: theme.spacing.md },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: theme.spacing.sm },
   rowBetween: {

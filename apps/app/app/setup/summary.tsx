@@ -92,7 +92,13 @@ function SummaryRow({
 }
 
 const styles = StyleSheet.create({
-  body: { gap: theme.spacing.xxl, paddingTop: theme.spacing.lg },
+  body: {
+    gap: theme.spacing.xxl,
+    paddingTop: theme.spacing.lg,
+    width: "100%",
+    maxWidth: theme.layout.maxReading,
+    alignSelf: "center",
+  },
   hero: { alignItems: "center", gap: theme.spacing.lg },
   rows: { gap: theme.spacing.md },
   row: { flexDirection: "row", alignItems: "center", gap: theme.spacing.md },

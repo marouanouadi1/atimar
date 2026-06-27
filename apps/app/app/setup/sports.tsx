@@ -80,7 +80,13 @@ export default function SportsStep() {
 }
 
 const styles = StyleSheet.create({
-  body: { gap: theme.spacing.lg, paddingTop: theme.spacing.sm },
+  body: {
+    gap: theme.spacing.lg,
+    paddingTop: theme.spacing.sm,
+    width: "100%",
+    maxWidth: theme.layout.maxReading,
+    alignSelf: "center",
+  },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: theme.spacing.md },
   cell: { width: "47.5%", flexGrow: 1 },
 });
