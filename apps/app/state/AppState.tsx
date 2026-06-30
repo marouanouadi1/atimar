@@ -83,6 +83,46 @@ interface AppStateValue {
 
 const AppStateContext = createContext<AppStateValue | null>(null);
 
+function profileNameFromSession(s: Session): string {
+  const meta = s.user.user_metadata as Record<string, unknown>;
+  return (
+    (meta?.full_name as string | undefined) ??
+    (meta?.name as string | undefined) ??
+    s.user.email?.split("@")[0] ??
+    "Atleta"
+  );
+}
+
+function profileAvatarFromSession(s: Session): string | undefined {
+  const meta = s.user.user_metadata as Record<string, unknown>;
+  return (
+    (meta?.avatar_url as string | undefined) ??
+    (meta?.picture as string | undefined)
+  );
+}
+
+async function ensureProfileForSession(s: Session): Promise<void> {
+  const url_avatar = profileAvatarFromSession(s);
+  const { error } = await supabase
+    .from("Profili")
+    .upsert(
+      {
+        id: s.user.id,
+        nome_completo: profileNameFromSession(s),
+        ...(url_avatar ? { url_avatar } : {}),
+      },
+      { onConflict: "id", ignoreDuplicates: true }
+    );
+
+  if (error) console.error("[Profili] ensure error:", error);
+}
+
+function scheduleProfileEnsure(s: Session): void {
+  setTimeout(() => {
+    void ensureProfileForSession(s);
+  }, 0);
+}
+
 /* ------------------------------------------------------------------ *
  * Provider                                                            *
  * ------------------------------------------------------------------ */
@@ -122,6 +162,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     // Carica sessione esistente
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
+      if (data.session) scheduleProfileEnsure(data.session);
       setSessionReady(true);
     });
 
@@ -136,19 +177,7 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         return;
       }
       if (event === "SIGNED_IN") {
-        // Crea riga Profili per nuovi utenti (ignoreDuplicates = no-op per utenti già esistenti)
-        const meta = s.user.user_metadata as Record<string, unknown>;
-        const nome_completo =
-          (meta?.full_name as string | undefined) ??
-          (meta?.name as string | undefined) ??
-          s.user.email?.split("@")[0] ??
-          "Atleta";
-        void supabase
-          .from("Profili")
-          .upsert({ id: s.user.id, nome_completo }, { onConflict: "id", ignoreDuplicates: true })
-          .then(({ error }) => {
-            if (error) console.error("[Profili] upsert error:", error);
-          });
+        scheduleProfileEnsure(s);
       }
     });
 
