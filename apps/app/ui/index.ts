@@ -115,7 +115,7 @@ export type {
 } from "./navigation";
 
 export { MapPreview } from "./map";
-export type { MapPreviewProps } from "./map";
+export type { MapPreviewProps } from "./map-shared";
 
 export {
   CampoHero,

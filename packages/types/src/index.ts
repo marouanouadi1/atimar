@@ -125,6 +125,7 @@ export interface Campo {
 export interface CampoInLista extends Campo {
   nomeStruttura: string;
   indirizzo: string;
+  posizione: GeoPoint;
   distanzaKm: number;
   distanza: string;
   mediaVoti: number;

@@ -647,7 +647,38 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      search_campi_nearby: {
+        Args: {
+          p_lat: number
+          p_limit?: number
+          p_lng: number
+          p_offset?: number
+          p_radius_km: number
+          p_solo_aperti?: boolean
+          p_sport?: string
+        }
+        Returns: {
+          campo_id: number
+          campo_indice: number
+          coperto: boolean
+          distanza_km: number
+          indirizzo: string
+          latitudine: number
+          longitudine: number
+          media_voti: number
+          nome_campo: string
+          nome_sport: string
+          nome_struttura: string
+          numero_recensioni: number
+          prezzo_orario: number
+          sempre_aperto: boolean
+          sport_slug: string
+          struttura_id: number
+          tipo_superficie: string
+          total_count: number
+          url_foto_copertina: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

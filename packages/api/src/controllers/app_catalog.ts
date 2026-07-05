@@ -1,6 +1,7 @@
 import type { Campo, CampoInLista, Recensione, Struttura } from '@atimar/types';
 import { getSupabaseClient } from '../client';
 import {
+  mapNearbyCampoRowToCampoInLista,
   mapRowToCampo,
   mapRowToRecensione,
   mapRowToStruttura,
@@ -8,17 +9,12 @@ import {
 } from '../mappers';
 import type {
   CampoRow,
+  NearbyCampoRow,
   RecensioneWithProfilo,
   StrutturaWithRelations,
 } from '../mappers';
 
-export interface CatalogoStrutture {
-  strutture: Struttura[];
-  campi: Campo[];
-  campiInLista: CampoInLista[];
-}
-
-export async function fetchStruttureConCampi(): Promise<CatalogoStrutture> {
+export async function fetchStruttureConCampi() {
   const { data, error } = await getSupabaseClient()
     .from('Strutture')
     .select(
@@ -57,6 +53,47 @@ export async function fetchStruttureConCampi(): Promise<CatalogoStrutture> {
   );
 
   return { strutture, campi, campiInLista };
+}
+
+export async function searchCampiNearby(
+  params: {
+    lat: number;
+    lng: number;
+    radiusKm: number;
+    sport?: string;
+    soloAperti?: boolean;
+    limit?: number;
+    offset?: number;
+  },
+) {
+  const radiusKm = Math.max(1, params.radiusKm);
+  const limit = Math.max(1, Math.min(params.limit ?? 100, 250));
+  const offset = Math.max(0, params.offset ?? 0);
+  const sport =
+    params.sport && params.sport !== 'all' ? params.sport : null;
+
+  const rpc = getSupabaseClient().rpc as unknown as (
+    fn: 'search_campi_nearby',
+    args: Record<string, boolean | number | string | null>,
+  ) => Promise<{ data: NearbyCampoRow[] | null; error: { message: string } | null }>;
+
+  const { data, error } = await rpc('search_campi_nearby', {
+    p_lat: params.lat,
+    p_lng: params.lng,
+    p_radius_km: radiusKm,
+    p_sport: sport,
+    p_solo_aperti: params.soloAperti ?? false,
+    p_limit: limit,
+    p_offset: offset,
+  });
+
+  if (error) throw new Error(error.message);
+
+  const rows = (data ?? []) as NearbyCampoRow[];
+  return {
+    campiInLista: rows.map(mapNearbyCampoRowToCampoInLista),
+    totalCount: rows[0]?.total_count ?? 0,
+  };
 }
 
 export async function fetchStrutturaById(id: string): Promise<Struttura | null> {

@@ -42,7 +42,13 @@
           }
         }
       ],
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "ATIMAR usa la tua posizione per mostrarti i campi piu vicini e filtrare per distanza."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

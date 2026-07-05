@@ -14,10 +14,12 @@ import {
   textStyle,
 } from "@/ui";
 import { useCampiInLista } from "@/data/hooks";
+import { useUserLocation } from "@/data/use-user-location";
 
 export default function ValueNear() {
   const router = useRouter();
   const { data: campi = [] } = useCampiInLista();
+  const userLocation = useUserLocation();
 
   return (
     <ScreenContainer
@@ -45,7 +47,13 @@ export default function ValueNear() {
           subtitle="ATIMAR ti mostra i campi sportivi intorno a te, con distanza, prezzo e disponibilità."
           size="h1"
         />
-        <MapPreview campi={campi} height={260} />
+        <MapPreview
+          campi={campi}
+          height={260}
+          userLocation={userLocation.location}
+          locationStatus={userLocation.status}
+          onRequestLocation={userLocation.requestLocation}
+        />
         <View style={styles.count}>
           <Icon name="location" size={theme.iconSizes.sm} color="primary" />
           <Text style={textStyle("caption", "text")}>

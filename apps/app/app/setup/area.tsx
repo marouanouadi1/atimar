@@ -15,6 +15,7 @@ import {
 } from "@/ui";
 import { useAppState } from "@/state/AppState";
 import { useCampiInLista } from "@/data/hooks";
+import { useUserLocation } from "@/data/use-user-location";
 
 export default function AreaStep() {
   const router = useRouter();
@@ -22,6 +23,7 @@ export default function AreaStep() {
   const [location, setLocation] = useState(prefs.area.location);
   const [radius, setRadius] = useState(prefs.area.radius);
   const { data: campi = [] } = useCampiInLista();
+  const userLocation = useUserLocation();
 
   const onContinue = () => {
     setPrefs({
@@ -41,7 +43,14 @@ export default function AreaStep() {
           subtitle="Imposta la tua zona e quanto sei disposto a spostarti."
           size="h1"
         />
-        <MapPreview campi={campi} radius={radius} height={240} />
+        <MapPreview
+          campi={campi}
+          radius={radius}
+          height={240}
+          userLocation={userLocation.location}
+          locationStatus={userLocation.status}
+          onRequestLocation={userLocation.requestLocation}
+        />
         <FormInput
           label="La tua zona"
           icon="location-outline"

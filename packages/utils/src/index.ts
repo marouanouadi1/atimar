@@ -14,6 +14,8 @@ import type { CampoInLista, Filtri } from "@atimar/types";
 
 /**
  * Filtra una lista di campi applicando i {@link Filtri} attivi.
+ * La distanza non viene filtrata qui: quando c'è posizione utente la ricerca
+ * usa PostGIS tramite RPC, altrimenti il raggio resta inattivo.
  * `soloDisponibili` è un placeholder finché i slot disponibilità non sono collegati.
  */
 export function filtraCampi(
@@ -24,9 +26,6 @@ export function filtraCampi(
   if (f.sport && f.sport !== "all") {
     result = result.filter((c) => c.idSport === f.sport);
   }
-  if (f.distanzaMax) {
-    result = result.filter((c) => c.distanzaKm <= f.distanzaMax);
-  }
   if (f.soloAperti) {
     result = result.filter((c) => c.aperto);
   }
@@ -34,12 +33,10 @@ export function filtraCampi(
   return result;
 }
 
-export type CampoSortKey = "distanza" | "voti" | "prezzo";
-
 /** Restituisce un nuovo array ordinato (non muta l'input). */
 export function ordinaCampi(
   campi: CampoInLista[],
-  per: CampoSortKey = "distanza",
+  per: "distanza" | "voti" | "prezzo" = "distanza",
 ): CampoInLista[] {
   const result = campi.slice();
   switch (per) {
@@ -53,10 +50,10 @@ export function ordinaCampi(
   }
 }
 
-export const DEFAULT_MAX_DISTANCE = 50;
+const DEFAULT_MAX_DISTANCE = 50;
 
 /** Conta i filtri attivi per il badge del pulsante filtri. */
-export function contaFiltriAttivi(f: Filtri): number {
+function contaFiltriAttivi(f: Filtri): number {
   return (
     (f.sport !== "all" ? 1 : 0) +
     (f.distanzaMax < DEFAULT_MAX_DISTANCE ? 1 : 0) +
@@ -87,12 +84,6 @@ export function formatDistanceKm(km: number): string {
 export function formatPrice(value: number): string {
   if (value <= 0) return "Gratis";
   return `€${value}`;
-}
-
-/** Formatta il prezzo "da", es. 18 -> "da €18". */
-export function formatPriceFrom(value: number): string {
-  if (value <= 0) return "Gratis";
-  return `da €${value}`;
 }
 
 /** Formatta un rating con un decimale italiano, es. 4.6 -> "4,6". */

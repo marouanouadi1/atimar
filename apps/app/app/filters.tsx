@@ -17,7 +17,8 @@ import {
   textStyle,
 } from "@/ui";
 import { useAppState } from "@/state/AppState";
-import { useCampiInLista } from "@/data/hooks";
+import { useCampiInLista, useNearbyCampiInLista } from "@/data/hooks";
+import { useUserLocation } from "@/data/use-user-location";
 
 export default function FiltersModal() {
   const router = useRouter();
@@ -25,6 +26,12 @@ export default function FiltersModal() {
   const [draft, setDraft] = useState<Filtri>(filtri);
 
   const { data: campi = [] } = useCampiInLista();
+  const userLocation = useUserLocation();
+  const nearbyCountQuery = useNearbyCampiInLista({
+    location: userLocation.location,
+    filtri: draft,
+    limit: 1,
+  });
   const sports = useMemo(
     () => Array.from(new Set(campi.map((c) => c.idSport))),
     [campi],
@@ -33,9 +40,16 @@ export default function FiltersModal() {
     () => filtraCampi(campi, draft).length,
     [campi, draft],
   );
+  const visibleCount = userLocation.hasLocation
+    ? nearbyCountQuery.data?.totalCount ?? 0
+    : count;
 
   const apply = () => {
-    setFiltri(draft);
+    setFiltri(
+      userLocation.hasLocation
+        ? draft
+        : { ...draft, distanzaMax: DEFAULT_FILTERS.distanzaMax },
+    );
     router.back();
   };
 
@@ -55,7 +69,7 @@ export default function FiltersModal() {
       }
       footer={
         <Button onPress={apply}>
-          Applica · {count} {count === 1 ? "campo" : "campi"}
+          Applica · {visibleCount} {visibleCount === 1 ? "campo" : "campi"}
         </Button>
       }
     >
@@ -91,8 +105,19 @@ export default function FiltersModal() {
             value={draft.distanzaMax}
             min={1}
             max={50}
+            disabled={!userLocation.hasLocation}
             onChange={(v) => setDraft((d) => ({ ...d, distanzaMax: v }))}
           />
+          {!userLocation.hasLocation ? (
+            <Pressable
+              onPress={() => void userLocation.requestLocation()}
+              style={styles.locationHint}
+            >
+              <Text style={textStyle("caption", "primary")}>
+                Usa la posizione per attivare il raggio
+              </Text>
+            </Pressable>
+          ) : null}
         </View>
 
         <View style={styles.section}>
@@ -131,5 +156,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+  },
+  locationHint: {
+    alignSelf: "flex-start",
+    paddingVertical: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.sm,
+    borderRadius: theme.radius.pill,
+    backgroundColor: theme.tints.blueTint,
   },
 });

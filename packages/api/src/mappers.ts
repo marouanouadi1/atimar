@@ -155,6 +155,28 @@ export interface RecensioneWithProfilo {
   Profili: { nome_completo: string | null } | null;
 }
 
+export interface NearbyCampoRow {
+  campo_id: number;
+  struttura_id: number;
+  campo_indice: number | null;
+  nome_campo: string;
+  nome_struttura: string;
+  indirizzo: string;
+  latitudine: number;
+  longitudine: number;
+  distanza_km: number;
+  sport_slug: string;
+  nome_sport: string;
+  tipo_superficie: string | null;
+  coperto: boolean;
+  prezzo_orario: number | null;
+  sempre_aperto: boolean;
+  media_voti: number | null;
+  numero_recensioni: number | null;
+  url_foto_copertina: string | null;
+  total_count: number;
+}
+
 /* ------------------------------------------------------------------ *
  * Struttura row → Struttura                                           *
  * ------------------------------------------------------------------ */
@@ -277,6 +299,7 @@ export function toCampoInLista(campo: Campo, struttura: Struttura): CampoInLista
     ...campo,
     nomeStruttura: struttura.nome,
     indirizzo: struttura.indirizzo,
+    posizione: struttura.posizione,
     distanzaKm: struttura.distanzaKm,
     distanza: struttura.distanza,
     mediaVoti: struttura.mediaVoti,
@@ -284,6 +307,37 @@ export function toCampoInLista(campo: Campo, struttura: Struttura): CampoInLista
     tipoHero: struttura.tipoHero,
     urlFotoCopertina: struttura.urlFotoCopertina,
     mappa: struttura.mappa,
+  };
+}
+
+export function mapNearbyCampoRowToCampoInLista(row: NearbyCampoRow): CampoInLista {
+  const lat = row.latitudine;
+  const lng = row.longitudine;
+  const distanzaKm = row.distanza_km;
+  const prezzoOrario = row.prezzo_orario ?? 0;
+
+  return {
+    id: String(row.campo_id),
+    strutturaId: String(row.struttura_id),
+    indice: row.campo_indice ?? 1,
+    nome: row.nome_campo,
+    idSport: row.sport_slug,
+    nomeSport: row.nome_sport,
+    superficie: row.tipo_superficie ?? "",
+    coperto: row.coperto,
+    prezzoOrario,
+    prezzoLabel: formatPrice(prezzoOrario),
+    aperto: row.sempre_aperto,
+    nomeStruttura: row.nome_struttura,
+    indirizzo: row.indirizzo,
+    posizione: { lat, lng },
+    distanzaKm,
+    distanza: formatDistanceKm(distanzaKm),
+    mediaVoti: row.media_voti ?? 0,
+    numeroRecensioni: row.numero_recensioni ?? 0,
+    tipoHero: tipoHeroPerSport(row.sport_slug),
+    urlFotoCopertina: row.url_foto_copertina,
+    mappa: latLngToMap(lat, lng),
   };
 }
 

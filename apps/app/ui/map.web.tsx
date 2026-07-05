@@ -1,4 +1,6 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import "leaflet/dist/leaflet.css";
+
+import React, { useEffect, useMemo } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -6,39 +8,109 @@ import {
   Text,
   View,
 } from "react-native";
-import MapView, { Circle, Marker } from "react-native-maps";
-import type { Region } from "react-native-maps";
+import L from "leaflet";
+import {
+  Circle,
+  MapContainer,
+  Marker,
+  TileLayer,
+  Tooltip,
+  useMap,
+} from "react-leaflet";
 import { theme, sportColor } from "@/theme/tokens";
 import type { GeoPoint } from "@atimar/types";
-import { textStyle } from "./theme";
 import {
   buildMapPins,
   selectedMapPin,
   type MapPreviewProps,
 } from "./map-shared";
+import { textStyle } from "./theme";
 
-const DEFAULT_REGION: Region = {
-  latitude: 41.9028,
-  longitude: 12.4964,
-  latitudeDelta: 8,
-  longitudeDelta: 8,
-};
+const DEFAULT_CENTER: [number, number] = [41.9028, 12.4964];
 
-function regionForPoints(points: GeoPoint[]): Region {
-  if (points.length === 0) return DEFAULT_REGION;
+function markerIcon(color: string, active: boolean): L.DivIcon {
+  const size = active ? 38 : 30;
+  const dot = active ? 14 : 12;
+  return L.divIcon({
+    className: "",
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2],
+    html: `<div style="
+      width:${size}px;
+      height:${size}px;
+      border-radius:999px;
+      background:#FFFEF7;
+      border:${active ? 4 : 3}px solid ${color};
+      box-shadow:0 8px 20px rgba(18,20,15,0.14);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-sizing:border-box;
+    "><div style="
+      width:${dot}px;
+      height:${dot}px;
+      border-radius:999px;
+      background:${color};
+    "></div></div>`,
+  });
+}
 
-  const lats = points.map((point) => point.lat);
-  const lngs = points.map((point) => point.lng);
-  const minLat = Math.min(...lats);
-  const maxLat = Math.max(...lats);
-  const minLng = Math.min(...lngs);
-  const maxLng = Math.max(...lngs);
-  const latitude = (minLat + maxLat) / 2;
-  const longitude = (minLng + maxLng) / 2;
-  const latitudeDelta = Math.max(0.035, (maxLat - minLat) * 1.6);
-  const longitudeDelta = Math.max(0.035, (maxLng - minLng) * 1.6);
+const userIcon = L.divIcon({
+  className: "",
+  iconSize: [26, 26],
+  iconAnchor: [13, 13],
+  html: `<div style="
+    width:26px;
+    height:26px;
+    border-radius:999px;
+    background:rgba(49,92,255,0.18);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  "><div style="
+    width:14px;
+    height:14px;
+    border-radius:999px;
+    background:#315CFF;
+    border:3px solid #FFFEF7;
+    box-sizing:border-box;
+  "></div></div>`,
+});
 
-  return { latitude, longitude, latitudeDelta, longitudeDelta };
+function MapViewport({
+  points,
+  activePin,
+}: {
+  points: GeoPoint[];
+  activePin: ReturnType<typeof selectedMapPin>;
+}) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (activePin) {
+      map.flyTo([activePin.position.lat, activePin.position.lng], 14, {
+        duration: 0.35,
+      });
+      return;
+    }
+
+    if (points.length === 0) {
+      map.setView(DEFAULT_CENTER, 5);
+      return;
+    }
+
+    if (points.length === 1) {
+      map.setView([points[0].lat, points[0].lng], 13);
+      return;
+    }
+
+    const bounds = L.latLngBounds(
+      points.map((point) => [point.lat, point.lng] as [number, number]),
+    );
+    map.fitBounds(bounds, { padding: [32, 32], maxZoom: 13 });
+  }, [activePin, map, points]);
+
+  return null;
 }
 
 function LocationControl({
@@ -92,7 +164,6 @@ export function MapPreview({
   locationStatus,
   onRequestLocation,
 }: MapPreviewProps) {
-  const mapRef = useRef<MapView | null>(null);
   const h = height ?? (compact ? 140 : 320);
   const pins = useMemo(() => buildMapPins(campi, selectedId), [campi, selectedId]);
   const points = useMemo(
@@ -102,21 +173,7 @@ export function MapPreview({
     ],
     [pins, userLocation],
   );
-  const initialRegion = useMemo(() => regionForPoints(points), [points]);
   const activePin = selectedMapPin(pins, selectedId);
-
-  useEffect(() => {
-    if (!activePin) return;
-    mapRef.current?.animateToRegion(
-      {
-        latitude: activePin.position.lat,
-        longitude: activePin.position.lng,
-        latitudeDelta: 0.035,
-        longitudeDelta: 0.035,
-      },
-      260,
-    );
-  }, [activePin]);
 
   if (pins.length === 0 && !userLocation) {
     return (
@@ -131,70 +188,57 @@ export function MapPreview({
 
   return (
     <View style={[styles.map, { height: h }, style]}>
-      <MapView
-        ref={mapRef}
-        style={StyleSheet.absoluteFill}
-        initialRegion={initialRegion}
-        rotateEnabled={false}
-        pitchEnabled={false}
+      <MapContainer
+        center={DEFAULT_CENTER}
+        zoom={5}
+        scrollWheelZoom={!compact}
+        style={{ width: "100%", height: "100%" }}
       >
+        <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        />
+        <MapViewport points={points} activePin={activePin} />
+
         {userLocation && radius ? (
           <Circle
-            center={{
-              latitude: userLocation.lat,
-              longitude: userLocation.lng,
-            }}
+            center={[userLocation.lat, userLocation.lng]}
             radius={radius * 1000}
-            strokeColor="rgba(49, 92, 255, 0.38)"
-            fillColor="rgba(49, 92, 255, 0.10)"
+            pathOptions={{
+              color: "rgba(49, 92, 255, 0.38)",
+              fillColor: "rgba(49, 92, 255, 0.10)",
+              fillOpacity: 1,
+              weight: 2,
+            }}
           />
         ) : null}
 
         {userLocation ? (
-          <Marker
-            coordinate={{
-              latitude: userLocation.lat,
-              longitude: userLocation.lng,
-            }}
-            title="La tua posizione"
-            zIndex={10}
-          >
-            <View style={styles.userPinOuter}>
-              <View style={styles.userPinInner} />
-            </View>
+          <Marker position={[userLocation.lat, userLocation.lng]} icon={userIcon}>
+            <Tooltip>La tua posizione</Tooltip>
           </Marker>
         ) : null}
 
         {pins.map((pin) => {
-          const color = sportColor(pin.sportId);
           const active = pin.campi.some((campo) => campo.id === selectedId);
+          const color = sportColor(pin.sportId);
           return (
             <Marker
               key={pin.id}
-              coordinate={{
-                latitude: pin.position.lat,
-                longitude: pin.position.lng,
+              position={[pin.position.lat, pin.position.lng]}
+              icon={markerIcon(color, active)}
+              eventHandlers={{
+                click: () => onSelect?.(pin.selectedCampoId),
               }}
-              title={pin.campi[0].nomeStruttura}
-              description={`${pin.campi.length} ${
-                pin.campi.length === 1 ? "campo" : "campi"
-              }`}
-              zIndex={active ? 5 : 1}
-              onPress={() => onSelect?.(pin.selectedCampoId)}
             >
-              <View
-                style={[
-                  styles.pin,
-                  active && styles.pinActive,
-                  { borderColor: color },
-                ]}
-              >
-                <View style={[styles.pinDot, { backgroundColor: color }]} />
-              </View>
+              <Tooltip>
+                {pin.campi[0].nomeStruttura} · {pin.campi.length}{" "}
+                {pin.campi.length === 1 ? "campo" : "campi"}
+              </Tooltip>
             </Marker>
           );
         })}
-      </MapView>
+      </MapContainer>
 
       <LocationControl
         status={locationStatus}
@@ -224,42 +268,6 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     textAlign: "center",
-  },
-  pin: {
-    width: 30,
-    height: 30,
-    borderRadius: theme.radius.pill,
-    backgroundColor: theme.colors.surface,
-    borderWidth: 3,
-    alignItems: "center",
-    justifyContent: "center",
-    ...theme.shadows.floatBtn,
-  },
-  pinActive: {
-    width: 38,
-    height: 38,
-    borderWidth: 4,
-  },
-  pinDot: {
-    width: 12,
-    height: 12,
-    borderRadius: theme.radius.pill,
-  },
-  userPinOuter: {
-    width: 26,
-    height: 26,
-    borderRadius: theme.radius.pill,
-    backgroundColor: "rgba(49, 92, 255, 0.18)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  userPinInner: {
-    width: 14,
-    height: 14,
-    borderRadius: theme.radius.pill,
-    backgroundColor: theme.colors.primary,
-    borderWidth: 3,
-    borderColor: theme.colors.surface,
   },
   locationControl: {
     position: "absolute",

@@ -24,7 +24,8 @@ import {
   textStyle,
 } from "@/ui";
 import { useAppState } from "@/state/AppState";
-import { useCampiInLista } from "@/data/hooks";
+import { useCampiInLista, useNearbyCampiInLista } from "@/data/hooks";
+import { useUserLocation } from "@/data/use-user-location";
 import type { CampoInLista } from "@atimar/types";
 
 type ViewMode = "list" | "map";
@@ -48,19 +49,39 @@ export default function Search() {
   const [view, setView] = useState<ViewMode>("list");
   const [selectedId, setSelectedId] = useState<string | undefined>(undefined);
 
-  const { data: campi = [], isLoading } = useCampiInLista();
+  const { data: campi = [], isLoading: isCatalogLoading } = useCampiInLista();
+  const userLocation = useUserLocation();
+  const nearbyQuery = useNearbyCampiInLista({
+    location: userLocation.location,
+    filtri,
+    limit: 250,
+  });
+  const useNearbySearch = userLocation.hasLocation;
+  const nearbyError = useNearbySearch ? nearbyQuery.error : null;
 
   const results = useMemo(() => {
-    const base = filtraCampi(campi, filtri);
+    const source = useNearbySearch
+      ? nearbyQuery.data?.campiInLista ?? []
+      : filtraCampi(campi, filtri);
     const testo = query.trim().toLowerCase();
-    if (!testo) return base;
-    return base.filter(
+    if (!testo) return source;
+    return source.filter(
       (c) =>
         c.nomeStruttura.toLowerCase().includes(testo) ||
+        c.nome.toLowerCase().includes(testo) ||
         c.nomeSport.toLowerCase().includes(testo) ||
         c.indirizzo.toLowerCase().includes(testo),
     );
-  }, [campi, filtri, query]);
+  }, [
+    campi,
+    filtri,
+    nearbyQuery.data?.campiInLista,
+    query,
+    useNearbySearch,
+  ]);
+  const isLoading = useNearbySearch
+    ? nearbyQuery.isLoading
+    : isCatalogLoading;
 
   const selected: CampoInLista | undefined = selectedId
     ? results.find((c) => c.id === selectedId)
@@ -137,7 +158,7 @@ export default function Search() {
         </ScrollView>
 
         {/* Intestazione risultati */}
-        {!isLoading && (
+        {!isLoading && !nearbyError && (
           <View style={styles.toolbar}>
             <View style={styles.resultInfo}>
               <Text style={textStyle("bodyStrong", "ink")}>
@@ -175,6 +196,12 @@ export default function Search() {
         {/* Risultati */}
         {isLoading ? (
           <ActivityIndicator style={styles.loader} color={theme.colors.primary} />
+        ) : nearbyError ? (
+          <EmptyState
+            icon="alert-circle"
+            title="Ricerca per distanza non disponibile"
+            desc="Configura la funzione Supabase search_campi_nearby per usare la posizione."
+          />
         ) : results.length === 0 ? (
           <EmptyState
             icon="search"
@@ -214,8 +241,12 @@ export default function Search() {
           <View style={styles.mapWrap}>
             <MapPreview
               campi={results}
-              selectedId={selectedId}
+              selectedId={selected?.id}
               onSelect={setSelectedId}
+              radius={filtri.distanzaMax}
+              userLocation={userLocation.location}
+              locationStatus={userLocation.status}
+              onRequestLocation={userLocation.requestLocation}
               height={380}
             />
             {selected ? (
@@ -226,7 +257,7 @@ export default function Search() {
               />
             ) : (
               <Text style={[textStyle("caption", "subtle"), styles.hint]}>
-                La mappa sarà disponibile presto.
+                Tocca un marker per vedere il campo.
               </Text>
             )}
           </View>

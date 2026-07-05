@@ -6,11 +6,19 @@
  */
 
 import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
-import type { CampoInLista, Campo, Struttura, Recensione } from "@atimar/types";
+import type {
+  CampoInLista,
+  Campo,
+  Filtri,
+  GeoPoint,
+  Struttura,
+  Recensione,
+} from "@atimar/types";
 import "./client";
 import { QUERY_KEYS } from "./keys";
 import {
   fetchStruttureConCampi,
+  searchCampiNearby,
   fetchStrutturaById,
   fetchCampiByStruttura,
   fetchRecensioniByStruttura,
@@ -53,6 +61,47 @@ export function useCampiInListaByIds(ids: string[]) {
       return data.campiInLista.filter((c) => set.has(c.id));
     },
     staleTime: 5 * 60_000,
+  });
+}
+
+export function useNearbyCampiInLista({
+  location,
+  filtri,
+  limit = 100,
+  offset = 0,
+  enabled = true,
+}: {
+  location: GeoPoint | null;
+  filtri: Filtri;
+  limit?: number;
+  offset?: number;
+  enabled?: boolean;
+}) {
+  const hasLocation = location != null;
+  const keyArgs = {
+    lat: location?.lat ?? 0,
+    lng: location?.lng ?? 0,
+    radiusKm: filtri.distanzaMax,
+    sport: filtri.sport,
+    soloAperti: filtri.soloAperti,
+    limit,
+    offset,
+  };
+
+  return useQuery({
+    queryKey: QUERY_KEYS.nearbyCampi(keyArgs),
+    queryFn: () =>
+      searchCampiNearby({
+        lat: location!.lat,
+        lng: location!.lng,
+        radiusKm: filtri.distanzaMax,
+        sport: filtri.sport,
+        soloAperti: filtri.soloAperti,
+        limit,
+        offset,
+      }),
+    enabled: enabled && hasLocation,
+    staleTime: 60_000,
   });
 }
 
@@ -108,17 +157,19 @@ export function useFavoritesQuery(profileId: string | null) {
   });
 }
 
-interface ToggleArgs {
-  profileId: string;
-  campoId: number;
-  isFav: boolean;
-}
-
 export function useTogglePreferitoMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ profileId, campoId, isFav }: ToggleArgs) => {
+    mutationFn: async ({
+      profileId,
+      campoId,
+      isFav,
+    }: {
+      profileId: string;
+      campoId: number;
+      isFav: boolean;
+    }) => {
       if (isFav) {
         await removeFavorite(profileId, campoId);
       } else {
