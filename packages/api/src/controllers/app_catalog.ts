@@ -138,7 +138,6 @@ export async function fetchCampiByStruttura(strutturaId: string): Promise<Campo[
 
   if (error || !data) return [];
 
-  // sempre_aperto is NOT NULL after migration 20260627000002.
   const row = data as { sempre_aperto: boolean; Campi: CampoRow[] };
   const strutturaAperta = row.sempre_aperto;
 

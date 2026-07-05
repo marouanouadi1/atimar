@@ -66,7 +66,6 @@ export interface CampoRow {
   fk_struttura: number;
   nome_campo: string;
   tipo_superficie: string | null;
-  /** NOT NULL after migration 20260627000003; default false (outdoor). */
   coperto: boolean;
   prezzo_orario: number | null;
   attivo: boolean;
@@ -125,15 +124,11 @@ export interface StrutturaWithRelations {
   id: number;
   nome: string;
   descrizione: string | null;
-  /** NOT NULL after migration 20260627000002. */
   indirizzo: string;
-  /** NOT NULL after migration 20260627000002. */
   latitudine: number;
-  /** NOT NULL after migration 20260627000002. */
   longitudine: number;
   /** Nullable: price may be legitimately unknown. */
   prezzo_orario: number | null;
-  /** NOT NULL after migration 20260627000002; default false. */
   sempre_aperto: boolean;
   attivo: boolean;
   link_prenotazione_esterno: string | null;
@@ -218,7 +213,6 @@ export function mapRowToStruttura(row: StrutturaWithRelations): Struttura {
     .map((ss) => ss.Servizi?.nome_servizio)
     .filter((n): n is string => n != null);
 
-  // Posizione + mappa (latitudine/longitudine NOT NULL after migration)
   const lat = row.latitudine;
   const lng = row.longitudine;
   const mappa = latLngToMap(lat, lng);
@@ -263,7 +257,6 @@ export function mapRowToCampo(
   index = 0,
 ): Campo {
   const firstSport = campo.Campi_Sport[0]?.Sport;
-  // Legge slug direttamente — nessuna normalizzazione necessaria dopo migration 20260627000001.
   const idSport: SportId = firstSport ? (firstSport.slug as SportId) : "padel";
 
   // Superficie: valore reale dal DB, vuoto se non impostato (no default inventati).
