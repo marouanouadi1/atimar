@@ -28,10 +28,16 @@ import { textStyle } from "./theme";
 
 const DEFAULT_CENTER: [number, number] = [41.9028, 12.4964];
 
+const iconCache = new Map<string, L.DivIcon>();
+
 function markerIcon(color: string, active: boolean): L.DivIcon {
+  const key = `${color}|${active}`;
+  const cached = iconCache.get(key);
+  if (cached) return cached;
+
   const size = active ? 38 : 30;
   const dot = active ? 14 : 12;
-  return L.divIcon({
+  const icon = L.divIcon({
     className: "",
     iconSize: [size, size],
     iconAnchor: [size / 2, size / 2],
@@ -53,6 +59,8 @@ function markerIcon(color: string, active: boolean): L.DivIcon {
       background:${color};
     "></div></div>`,
   });
+  iconCache.set(key, icon);
+  return icon;
 }
 
 const userIcon = L.divIcon({
@@ -86,29 +94,73 @@ function MapViewport({
 }) {
   const map = useMap();
 
+  const pointsKey = useMemo(
+    () =>
+      points
+        .map((point) => `${point.lat.toFixed(5)},${point.lng.toFixed(5)}`)
+        .sort()
+        .join("|"),
+    [points],
+  );
+
+  // Annulla lo zoom-con-rotellina in coda quando la mappa viene smontata:
+  // Leaflet non fa clearTimeout in removeHooks, quindi un _performZoom
+  // schedulato girerebbe dopo map.remove() → crash "_leaflet_pos".
+  useEffect(
+    () => () => {
+      try {
+        clearTimeout(
+          (map.scrollWheelZoom as unknown as { _timer?: number })?._timer,
+        );
+      } catch {
+        /* handler assente o già rimosso: no-op */
+      }
+    },
+    [map],
+  );
+
+  // Fit al set di punti solo su cambi materiali (primo load / cambio filtri),
+  // non sul churn di riferimenti da refetch → preserva lo zoom dell'utente.
   useEffect(() => {
-    if (activePin) {
+    if (activePin) return;
+    if (!map.getContainer()) return;
+
+    try {
+      map.stop();
+      if (points.length === 0) {
+        map.setView(DEFAULT_CENTER, 5);
+        return;
+      }
+      if (points.length === 1) {
+        map.setView([points[0].lat, points[0].lng], 13);
+        return;
+      }
+      const bounds = L.latLngBounds(
+        points.map((point) => [point.lat, point.lng] as [number, number]),
+      );
+      map.fitBounds(bounds, { padding: [32, 32], maxZoom: 13 });
+    } catch {
+      /* mappa in via di smontaggio: no-op */
+    }
+    // activePin/points volutamente esclusi: rifit solo su pointsKey per non
+    // resettare lo zoom su deselezione o refetch a dati invariati.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [map, pointsKey]);
+
+  // Fly alla selezione quando cambia il pin attivo.
+  useEffect(() => {
+    if (!activePin) return;
+    if (!map.getContainer()) return;
+
+    try {
+      map.stop();
       map.flyTo([activePin.position.lat, activePin.position.lng], 14, {
         duration: 0.35,
       });
-      return;
+    } catch {
+      /* mappa in via di smontaggio: no-op */
     }
-
-    if (points.length === 0) {
-      map.setView(DEFAULT_CENTER, 5);
-      return;
-    }
-
-    if (points.length === 1) {
-      map.setView([points[0].lat, points[0].lng], 13);
-      return;
-    }
-
-    const bounds = L.latLngBounds(
-      points.map((point) => [point.lat, point.lng] as [number, number]),
-    );
-    map.fitBounds(bounds, { padding: [32, 32], maxZoom: 13 });
-  }, [activePin, map, points]);
+  }, [map, activePin]);
 
   return null;
 }
@@ -173,7 +225,10 @@ export function MapPreview({
     ],
     [pins, userLocation],
   );
-  const activePin = selectedMapPin(pins, selectedId);
+  const activePin = useMemo(
+    () => selectedMapPin(pins, selectedId),
+    [pins, selectedId],
+  );
 
   if (pins.length === 0 && !userLocation) {
     return (

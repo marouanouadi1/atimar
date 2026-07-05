@@ -5,7 +5,12 @@
  * Gli hook preferiti accettano il profileId da AppState.
  */
 
-import { useQueryClient, useQuery, useMutation } from "@tanstack/react-query";
+import {
+  useQueryClient,
+  useQuery,
+  useMutation,
+  keepPreviousData,
+} from "@tanstack/react-query";
 import type {
   CampoInLista,
   Campo,
@@ -102,6 +107,7 @@ export function useNearbyCampiInLista({
       }),
     enabled: enabled && hasLocation,
     staleTime: 60_000,
+    placeholderData: keepPreviousData,
   });
 }
 
