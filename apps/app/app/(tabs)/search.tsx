@@ -96,8 +96,11 @@ export default function Search() {
     <ScreenContainer>
       <View style={styles.body}>
         <View style={styles.heading}>
-          <Text style={styles.kicker}>DISCOVER</Text>
+          <Text style={styles.kicker}>TROVA CAMPO</Text>
           <Text style={styles.title}>Trova il tuo campo</Text>
+          <Text style={styles.subtitle}>
+            Cerca per struttura, sport o zona e confronta subito i campi disponibili.
+          </Text>
         </View>
         {/* Barra cerca + filtri */}
         <View style={styles.searchRow}>
@@ -161,12 +164,19 @@ export default function Search() {
         {!isLoading && !nearbyError && (
           <View style={styles.toolbar}>
             <View style={styles.resultInfo}>
-              <Text style={textStyle("bodyStrong", "ink")}>
-                {results.length}
-              </Text>
-              <Text style={textStyle("caption", "muted")}>
-                {" "}{results.length === 1 ? "campo trovato" : "campi trovati"}
-              </Text>
+              <View style={styles.resultCount}>
+                <Text style={styles.resultCountNumber}>
+                  {results.length}
+                </Text>
+              </View>
+              <View style={styles.resultCopy}>
+                <Text style={textStyle("bodyStrong", "ink")}>
+                  {results.length === 1 ? "1 campo trovato" : `${results.length} campi trovati`}
+                </Text>
+                <Text style={textStyle("caption", "muted")}>
+                  {useNearbySearch ? "Ordinati dalla tua posizione" : "Catalogo completo ATIMAR"}
+                </Text>
+              </View>
               {filtri.attivi > 0 && (
                 <Pressable
                   onPress={() => setFiltri(DEFAULT_FILTERS)}
@@ -200,7 +210,7 @@ export default function Search() {
           <EmptyState
             icon="alert-circle"
             title="Ricerca per distanza non disponibile"
-            desc="Configura la funzione Supabase search_campi_nearby per usare la posizione."
+            desc="Al momento non riusciamo a usare la posizione. Puoi disattivarla o riprovare piu tardi."
           />
         ) : results.length === 0 ? (
           <EmptyState
@@ -269,7 +279,7 @@ export default function Search() {
 
 const styles = StyleSheet.create({
   body: { gap: theme.spacing.lg, paddingTop: theme.spacing.sm },
-  heading: { gap: 2, paddingTop: theme.spacing.lg },
+  heading: { gap: theme.spacing.xs, paddingTop: theme.spacing.lg },
   kicker: {
     color: theme.colors.primary,
     fontFamily: theme.fonts.displayBold,
@@ -281,6 +291,13 @@ const styles = StyleSheet.create({
     fontFamily: theme.fonts.displayBold,
     fontSize: 32,
     letterSpacing: -0.9,
+  },
+  subtitle: {
+    color: theme.colors.muted,
+    fontFamily: theme.fonts.bodyRegular,
+    fontSize: 15,
+    lineHeight: 23,
+    maxWidth: 620,
   },
   searchRow: {
     flexDirection: "row",
@@ -335,15 +352,37 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     gap: theme.spacing.sm,
+    padding: theme.spacing.md,
+    borderRadius: theme.radius.lg,
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.line,
   },
   resultInfo: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
     flexWrap: "wrap",
+    gap: theme.spacing.sm,
+  },
+  resultCount: {
+    width: 42,
+    height: 42,
+    borderRadius: theme.radius.md,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: theme.tints.blueTint,
+  },
+  resultCountNumber: {
+    color: theme.colors.primary,
+    fontFamily: theme.fonts.displayBold,
+    fontSize: 18,
+    fontVariant: ["tabular-nums"],
+  },
+  resultCopy: {
+    gap: 1,
   },
   clearFilters: {
-    marginLeft: theme.spacing.sm,
     paddingVertical: 2,
     paddingHorizontal: theme.spacing.sm,
     borderRadius: theme.radius.pill,

@@ -25,13 +25,13 @@ const FEATURES = [
   },
   {
     icon: "calendar-outline" as const,
-    title: "Gestione semplice",
-    desc: "Controlla la disponibilità dei tuoi campi e ricevi richieste di prenotazione.",
+    title: "Scheda sempre chiara",
+    desc: "Mostra campi, servizi, foto e contatti in modo ordinato e facile da consultare.",
   },
   {
     icon: "bar-chart-outline" as const,
-    title: "Analytics utili",
-    desc: "Scopri gli sport più richiesti, le fasce orarie preferite e molto altro.",
+    title: "Domanda più leggibile",
+    desc: "Capisci quali sport attirano più interesse e quali dettagli contano davvero.",
   },
   {
     icon: "shield-checkmark-outline" as const,
@@ -119,8 +119,23 @@ export default function Gestori() {
             </Text>
 
             <Text style={styles.heroSub}>
-              Raggiungi migliaia di sportivi nella tua zona. Gestisci la disponibilità dei tuoi campi in modo semplice ed efficiente.
+              Crea una presenza curata per la tua struttura e fatti trovare dagli
+              sportivi che stanno scegliendo dove giocare.
             </Text>
+            <View style={styles.heroProof}>
+              <View style={styles.proofItem}>
+                <Text style={styles.proofValue}>0</Text>
+                <Text style={styles.proofLabel}>costi iniziali</Text>
+              </View>
+              <View style={styles.proofItem}>
+                <Text style={styles.proofValue}>24h</Text>
+                <Text style={styles.proofLabel}>per il primo contatto</Text>
+              </View>
+              <View style={styles.proofItem}>
+                <Text style={styles.proofValue}>Web</Text>
+                <Text style={styles.proofLabel}>e app in un’unica vetrina</Text>
+              </View>
+            </View>
           </View>
         </View>
 
@@ -144,6 +159,15 @@ export default function Gestori() {
 
         {/* Form contatto */}
         <View style={[styles.formSection, isDesktop && styles.formSectionDesktop]}>
+          <View style={styles.formIntro}>
+            <Text style={[styles.sectionTitle, isDesktop && styles.sectionTitleDesktop]}>
+              Raccontaci la tua struttura
+            </Text>
+            <Text style={styles.formIntroText}>
+              Bastano pochi dati: li usiamo solo per ricontattarti e capire come
+              presentare al meglio campi e servizi.
+            </Text>
+          </View>
           <View style={[styles.formCard, isDesktop && styles.formCardDesktop]}>
             {submitted ? (
               <View style={styles.successState}>
@@ -291,6 +315,33 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 26,
   },
+  heroProof: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: theme.spacing.md,
+    paddingTop: theme.spacing.sm,
+  },
+  proofItem: {
+    minWidth: 150,
+    gap: 2,
+    padding: theme.spacing.md,
+    borderRadius: theme.radius.lg,
+    borderWidth: 1,
+    borderColor: theme.overlays.borderOnDark,
+    backgroundColor: "rgba(255,255,255,0.07)",
+  },
+  proofValue: {
+    color: theme.colors.lime,
+    fontFamily: theme.fonts.displayBold,
+    fontSize: 22,
+    letterSpacing: -0.5,
+  },
+  proofLabel: {
+    color: theme.overlays.subtleOnDark,
+    fontFamily: theme.fonts.bodyMedium,
+    fontSize: 12,
+    lineHeight: 17,
+  },
   features: {
     paddingHorizontal: 24,
     paddingVertical: 56,
@@ -359,11 +410,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 56,
     backgroundColor: theme.colors.surface,
+    gap: theme.spacing.xxl,
   },
   formSectionDesktop: {
     paddingHorizontal: 80,
     paddingVertical: 88,
     alignItems: "center",
+  },
+  formIntro: {
+    width: "100%",
+    maxWidth: 560,
+    gap: theme.spacing.sm,
+  },
+  formIntroText: {
+    color: theme.colors.muted,
+    fontFamily: theme.fonts.bodyRegular,
+    fontSize: 15,
+    lineHeight: 24,
   },
   formCard: {
     gap: theme.spacing.xl,

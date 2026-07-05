@@ -56,12 +56,12 @@ export function HeroSection({ onSportSelect }: Props) {
             <Text style={styles.eyebrowText}>SPORT, SENZA GIRI A VUOTO</Text>
           </View>
           <Text style={[styles.headline, desktop && styles.headlineDesktop]}>
-            Trova il campo.{"\n"}
-            <Text style={styles.headlineAccent}>Prenditi la città.</Text>
+            Il campo giusto,{"\n"}
+            <Text style={styles.headlineAccent}>nel momento giusto.</Text>
           </Text>
           <Text style={styles.subtitle}>
-            Strutture vere, dettagli chiari e la strada più breve tra la voglia
-            di giocare e il prossimo match.
+            Scopri strutture sportive vicino a te, confronta campi e dettagli
+            utili, poi scegli dove giocare senza perdere tempo.
           </Text>
           <ScrollView
             horizontal
@@ -99,16 +99,23 @@ export function HeroSection({ onSportSelect }: Props) {
             height={desktop ? 560 : 340}
             style={styles.photo}
           >
+            <View style={styles.photoShade} />
             <View style={styles.photoBadge}>
               <View style={styles.liveDot} />
               <Text style={styles.photoBadgeText}>
                 {featured?.nome ?? "Campi selezionati da Atimar"}
               </Text>
             </View>
+            <View style={styles.photoStats}>
+              <Text style={styles.photoStatValue}>
+                {featured?.prezzoDaLabel ?? "Da oggi"}
+              </Text>
+              <Text style={styles.photoStatLabel}>prenota meglio</Text>
+            </View>
           </MediaStruttura>
           <View style={styles.visualTag}>
-            <Text style={styles.visualTagTop}>PLAY</Text>
-            <Text style={styles.visualTagBottom}>LOCAL</Text>
+            <Text style={styles.visualTagTop}>GIOCA</Text>
+            <Text style={styles.visualTagBottom}>VICINO</Text>
           </View>
         </View>
       </View>
@@ -139,6 +146,7 @@ const styles = StyleSheet.create({
   copy: {
     flex: 0.92,
     gap: theme.spacing.xl,
+    minWidth: 0,
   },
   mobileBrand: {
     display: "none",
@@ -229,11 +237,16 @@ const styles = StyleSheet.create({
   },
   visual: {
     flex: 1.08,
+    minWidth: 0,
   },
   photo: {
     borderRadius: theme.radius.xl,
     borderWidth: 1,
     borderColor: theme.overlays.borderOnDark,
+  },
+  photoShade: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: theme.overlays.scrimSoft,
   },
   photoBadge: {
     position: "absolute",
@@ -259,6 +272,29 @@ const styles = StyleSheet.create({
     color: theme.colors.surface,
     fontFamily: theme.fonts.bodySemiBold,
     fontSize: 13,
+  },
+  photoStats: {
+    position: "absolute",
+    top: theme.spacing.lg,
+    left: theme.spacing.lg,
+    gap: 2,
+    paddingVertical: 12,
+    paddingHorizontal: 14,
+    borderRadius: theme.radius.lg,
+    backgroundColor: theme.overlays.photoBadgeBg,
+    borderWidth: 1,
+    borderColor: theme.overlays.borderOnDark,
+  },
+  photoStatValue: {
+    color: theme.colors.surface,
+    fontFamily: theme.fonts.displayBold,
+    fontSize: 18,
+    letterSpacing: -0.4,
+  },
+  photoStatLabel: {
+    color: theme.overlays.subtleOnDark,
+    fontFamily: theme.fonts.bodyMedium,
+    fontSize: 12,
   },
   visualTag: {
     position: "absolute",

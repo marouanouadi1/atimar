@@ -45,7 +45,8 @@ export function SearchCockpit({ initialSport = "all" }: Props) {
     >
       <View style={styles.titleBlock}>
         <Text style={styles.kicker}>RICERCA RAPIDA</Text>
-        <Text style={styles.title}>Da cosa partiamo?</Text>
+        <Text style={styles.title}>Parti dallo sport</Text>
+        <Text style={styles.subtitle}>Scegli una categoria e apri subito i campi disponibili.</Text>
       </View>
       <View style={styles.sports}>
         {SPORT_OPTIONS.map((sport) => {
@@ -65,7 +66,7 @@ export function SearchCockpit({ initialSport = "all" }: Props) {
       </View>
       <Pressable onPress={() => router.push("/search")} style={styles.cta}>
         <Icon name="search" size={19} color="ink" />
-        <Text style={styles.ctaText}>Trova un campo</Text>
+        <Text style={styles.ctaText}>Apri la ricerca</Text>
       </Pressable>
     </View>
   );
@@ -79,8 +80,8 @@ const styles = StyleSheet.create({
     gap: theme.spacing.lg,
     borderRadius: theme.radius.xl,
     backgroundColor: theme.colors.surface,
-    borderWidth: 1.5,
-    borderColor: theme.colors.ink,
+    borderWidth: 1,
+    borderColor: theme.colors.line,
     boxSizing: "border-box",
     ...theme.shadows.pop,
   },
@@ -94,6 +95,7 @@ const styles = StyleSheet.create({
   },
   titleBlock: {
     gap: 2,
+    minWidth: 210,
   },
   kicker: {
     color: theme.colors.primary,
@@ -107,6 +109,13 @@ const styles = StyleSheet.create({
     fontSize: 20,
     letterSpacing: -0.4,
   },
+  subtitle: {
+    color: theme.colors.muted,
+    fontFamily: theme.fonts.bodyMedium,
+    fontSize: 13,
+    lineHeight: 19,
+    maxWidth: 300,
+  },
   sports: {
     flex: 1,
     flexDirection: "row",
@@ -118,9 +127,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     borderRadius: theme.radius.pill,
     backgroundColor: theme.colors.chip,
+    borderWidth: 1,
+    borderColor: "transparent",
   },
   sportActive: {
     backgroundColor: theme.colors.ink,
+    borderColor: theme.colors.lime,
   },
   sportText: {
     color: theme.colors.muted,
@@ -139,6 +151,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.xl,
     borderRadius: theme.radius.pill,
     backgroundColor: theme.colors.lime,
+    ...theme.shadows.lime,
   },
   ctaText: {
     color: theme.colors.ink,

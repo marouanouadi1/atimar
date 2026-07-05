@@ -27,9 +27,12 @@ export function SportCategoryGrid() {
 
   return (
     <View style={[styles.section, isDesktop && styles.sectionDesktop]}>
-      <Text style={[styles.heading, isDesktop && styles.headingDesktop]}>
-        Esplora per sport
-      </Text>
+      <View style={styles.header}>
+        <Text style={styles.eyebrow}>CATEGORIE</Text>
+        <Text style={[styles.heading, isDesktop && styles.headingDesktop]}>
+          Esplora per sport
+        </Text>
+      </View>
 
       <View style={[styles.grid, isDesktop && styles.gridDesktop]}>
         {SPORTS.map((sport) => {
@@ -41,7 +44,7 @@ export function SportCategoryGrid() {
               style={({ pressed }) => [
                 styles.tile,
                 isDesktop && styles.tileDesktop,
-                { backgroundColor: `${color}18` },
+                { backgroundColor: theme.colors.surface },
                 pressed && { opacity: 0.8 },
               ]}
             >
@@ -49,6 +52,9 @@ export function SportCategoryGrid() {
                 <Icon name={sport.icon} size={26} color={color} />
               </View>
               <Text style={styles.tileLabel}>{sport.label}</Text>
+              <View style={styles.tileAction}>
+                <Icon name="arrow-forward" size={16} color={color} />
+              </View>
             </Pressable>
           );
         })}
@@ -60,7 +66,7 @@ export function SportCategoryGrid() {
 const styles = StyleSheet.create({
   section: {
     paddingHorizontal: theme.layout.screenPadX,
-    paddingVertical: theme.spacing.xxxl,
+    paddingVertical: 64,
     gap: theme.spacing.xl,
   },
   sectionDesktop: {
@@ -74,6 +80,15 @@ const styles = StyleSheet.create({
     fontFamily: theme.fonts.displayBold,
     fontSize: 22,
     letterSpacing: -0.44,
+  },
+  header: {
+    gap: theme.spacing.xs,
+  },
+  eyebrow: {
+    color: theme.colors.primary,
+    fontFamily: theme.fonts.displayBold,
+    fontSize: 10,
+    letterSpacing: 1.5,
   },
   headingDesktop: {
     fontSize: 28,
@@ -97,6 +112,7 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
     borderWidth: 1,
     borderColor: theme.colors.line,
+    ...theme.shadows.card,
   },
   tileDesktop: {
     flexBasis: 0,
@@ -116,5 +132,16 @@ const styles = StyleSheet.create({
     fontSize: 14,
     letterSpacing: -0.14,
     marginTop: theme.spacing.xs,
+  },
+  tileAction: {
+    position: "absolute",
+    right: theme.spacing.md,
+    top: theme.spacing.md,
+    width: 28,
+    height: 28,
+    borderRadius: theme.radius.pill,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: theme.colors.bg,
   },
 });

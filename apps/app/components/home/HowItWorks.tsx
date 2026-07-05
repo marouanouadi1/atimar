@@ -7,19 +7,19 @@ const STEPS = [
     n: 1,
     icon: "tennisball-outline" as const,
     title: "Scegli lo sport",
-    desc: "Seleziona il tuo sport preferito tra padel, tennis, calcio e altro ancora.",
+    desc: "Parti da padel, tennis, calcio e altri sport disponibili nella tua zona.",
   },
   {
     n: 2,
     icon: "search-outline" as const,
     title: "Trova il campo",
-    desc: "Filtra per zona, prezzo, disponibilità e servizi. Trova la struttura perfetta.",
+    desc: "Filtra per zona, prezzo, distanza e servizi davvero utili prima del match.",
   },
   {
     n: 3,
     icon: "checkmark-circle-outline" as const,
     title: "Scegli e gioca",
-    desc: "Apri la scheda della struttura, confronta i campi e trova quella giusta.",
+    desc: "Apri la scheda, confronta i dettagli e arriva alla struttura giusta.",
   },
 ];
 
@@ -113,6 +113,11 @@ const styles = StyleSheet.create({
   },
   step: {
     gap: theme.spacing.md,
+    padding: theme.spacing.xl,
+    borderRadius: theme.radius.lg,
+    backgroundColor: theme.colors.bg,
+    borderWidth: 1,
+    borderColor: theme.colors.line,
   },
   stepDesktop: {
     flex: 1,

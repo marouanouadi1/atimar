@@ -12,7 +12,7 @@ import { Icon } from "@/ui";
 const FEATURES = [
   { icon: "megaphone-outline" as const, label: "Una vetrina chiara per la tua struttura" },
   { icon: "grid-outline" as const, label: "Campi, sport e servizi sempre visibili" },
-  { icon: "location-outline" as const, label: "Più facile da trovare nella tua zona" },
+  { icon: "location-outline" as const, label: "Più facile farti trovare dagli sportivi vicini" },
 ];
 
 /** Sezione CTA scura per i gestori di strutture sportive — usata nell'homepage web. */
@@ -41,10 +41,11 @@ export function GestoriCta() {
           </View>
 
           <Text style={[styles.heading, isDesktop && styles.headingDesktop]}>
-            Porta la tua struttura{"\n"}su ATIMAR
+            Dai più visibilità{"\n"}alla tua struttura
           </Text>
           <Text style={styles.subheading}>
-            Presenta campi, sport e servizi agli atleti che stanno cercando dove giocare.
+            Crea una presenza chiara per campi, sport e servizi, proprio dove
+            gli atleti stanno già cercando il prossimo posto in cui giocare.
           </Text>
 
           <View style={styles.features}>
@@ -92,7 +93,7 @@ const styles = StyleSheet.create({
   },
   content: {
     gap: theme.spacing.xl,
-    maxWidth: 600,
+    maxWidth: 680,
   },
   badge: {
     flexDirection: "row",

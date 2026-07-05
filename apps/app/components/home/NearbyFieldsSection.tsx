@@ -18,7 +18,10 @@ export function NearbyFieldsSection() {
   return (
     <View style={[styles.section, isDesktop && styles.sectionDesktop]}>
       <View style={styles.header}>
-        <Text style={textStyle("sectionHead", "ink")}>Campi in evidenza</Text>
+        <View style={styles.headerCopy}>
+          <Text style={styles.eyebrow}>SELEZIONATI</Text>
+          <Text style={styles.heading}>Campi in evidenza</Text>
+        </View>
         <Pressable
           onPress={() => router.push("/search")}
           style={({ pressed }) => [pressed && { opacity: 0.7 }]}
@@ -63,8 +66,8 @@ export function NearbyFieldsSection() {
 const styles = StyleSheet.create({
   section: {
     gap: theme.spacing.lg,
-    paddingTop: theme.spacing.xxxl,
-    paddingBottom: theme.spacing.xl,
+    paddingTop: 64,
+    paddingBottom: theme.spacing.xxl,
   },
   sectionDesktop: {
     maxWidth: theme.layout.maxContent,
@@ -74,9 +77,25 @@ const styles = StyleSheet.create({
   },
   header: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-end",
     justifyContent: "space-between",
     paddingHorizontal: theme.layout.screenPadX,
+    gap: theme.spacing.lg,
+  },
+  headerCopy: {
+    gap: theme.spacing.xs,
+  },
+  eyebrow: {
+    color: theme.colors.primary,
+    fontFamily: theme.fonts.displayBold,
+    fontSize: 10,
+    letterSpacing: 1.5,
+  },
+  heading: {
+    color: theme.colors.ink,
+    fontFamily: theme.fonts.displayBold,
+    fontSize: 28,
+    letterSpacing: -0.8,
   },
   scroll: {
     gap: theme.spacing.md,
@@ -91,5 +110,6 @@ const styles = StyleSheet.create({
   },
   empty: {
     paddingHorizontal: theme.layout.screenPadX,
+    paddingVertical: theme.spacing.xl,
   },
 });

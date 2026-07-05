@@ -100,7 +100,6 @@ export default function FiltersModal() {
               {draft.distanzaMax} km
             </Text>
           </View>
-          {/* TODO: attivare il filtro distanza quando la geolocalizzazione sarà implementata */}
           <RangeSlider
             value={draft.distanzaMax}
             min={1}
@@ -113,6 +112,9 @@ export default function FiltersModal() {
               onPress={() => void userLocation.requestLocation()}
               style={styles.locationHint}
             >
+              <Text style={textStyle("caption", "ink")}>
+                Raggio non attivo
+              </Text>
               <Text style={textStyle("caption", "primary")}>
                 Usa la posizione per attivare il raggio
               </Text>
@@ -159,9 +161,12 @@ const styles = StyleSheet.create({
   },
   locationHint: {
     alignSelf: "flex-start",
-    paddingVertical: theme.spacing.xs,
-    paddingHorizontal: theme.spacing.sm,
-    borderRadius: theme.radius.pill,
+    gap: 2,
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.md,
+    borderRadius: theme.radius.md,
     backgroundColor: theme.tints.blueTint,
+    borderWidth: 1,
+    borderColor: theme.colors.line,
   },
 });

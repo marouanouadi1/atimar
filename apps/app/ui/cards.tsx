@@ -107,7 +107,9 @@ export function CampoCard({
             <Text style={textStyle("caption", "primary")}>{campo.prezzoLabel}</Text>
           </View>
         </View>
-        <Icon name="chevron-forward" size={theme.iconSizes.md} color="subtle" />
+        <View style={styles.compactArrow}>
+          <Icon name="chevron-forward" size={theme.iconSizes.md} color="subtle" />
+        </View>
       </Pressable>
     );
   }
@@ -127,6 +129,7 @@ export function CampoCard({
         idSport={campo.idSport}
         photoUrl={campo.urlFotoCopertina}
       >
+        <View style={styles.heroScrim} />
         <View style={styles.heroTopRow}>
           <AvailabilityBadge
             state={campo.aperto ? "open" : "closed"}
@@ -639,6 +642,10 @@ const styles = StyleSheet.create({
     bottom: theme.spacing.sm,
     right: theme.spacing.sm,
   },
+  heroScrim: {
+    ...StyleSheet.absoluteFill,
+    backgroundColor: "rgba(12,14,10,0.08)",
+  },
 
   large: {
     backgroundColor: theme.colors.surface,
@@ -646,10 +653,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.colors.line,
     overflow: "hidden",
-    ...theme.shadows.card,
+    ...theme.shadows.pop,
   },
   largeBody: {
-    padding: theme.spacing.md,
+    padding: theme.spacing.lg,
     gap: theme.spacing.xs,
   },
 
@@ -670,6 +677,14 @@ const styles = StyleSheet.create({
   compactBody: {
     flex: 1,
     gap: theme.spacing.xs,
+  },
+  compactArrow: {
+    width: 30,
+    height: 30,
+    borderRadius: theme.radius.pill,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: theme.colors.bg,
   },
 
   statusPill: {
@@ -798,6 +813,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: theme.spacing.md,
     paddingVertical: theme.spacing.xxxl,
+    paddingHorizontal: theme.spacing.xl,
+    borderRadius: theme.radius.xl,
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.line,
   },
   emptyIcon: {
     width: 72,
