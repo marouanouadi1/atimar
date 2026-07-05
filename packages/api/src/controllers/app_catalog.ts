@@ -72,7 +72,11 @@ export async function searchCampiNearby(
   const sport =
     params.sport && params.sport !== 'all' ? params.sport : null;
 
-  const rpc = getSupabaseClient().rpc as unknown as (
+  // NB: mantenere il binding di `this` al client. Estrarre `.rpc` in una
+  // variabile lo scollega dal client e `this.rest` diventa undefined
+  // ("Cannot read properties of undefined (reading 'rest')").
+  const client = getSupabaseClient();
+  const rpc = client.rpc.bind(client) as unknown as (
     fn: 'search_campi_nearby',
     args: Record<string, boolean | number | string | null>,
   ) => Promise<{ data: NearbyCampoRow[] | null; error: { message: string } | null }>;
