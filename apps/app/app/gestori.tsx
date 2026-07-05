@@ -59,7 +59,6 @@ export default function Gestori() {
     setSubmitLoading(true);
     setSubmitError(null);
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error } = await (supabase as any)
         .from("Lead_Clubs")
         .insert({
