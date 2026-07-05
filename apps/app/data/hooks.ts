@@ -30,8 +30,42 @@ import {
   fetchFavorites,
   addFavorite,
   removeFavorite,
+  createFeedbackApp,
+  getInviteByProfile,
+  markInviteShared,
+  upsertInviteForProfile,
 } from "@atimar/api";
 import type { FavoriteRow } from "@atimar/api";
+
+type SubmitFeedbackInput = {
+  profileId: string;
+  categoria: string;
+  messaggio: string;
+  emailContatto?: string | null;
+  piattaforma?: string | null;
+  versioneApp?: string | null;
+};
+
+type PrepareInviteInput = {
+  profileId: string;
+  appUrl?: string;
+};
+
+function sanitizeAppUrl(value?: string): string {
+  const fallback = "https://atimar.app";
+  const raw = value?.trim() || fallback;
+  return raw.replace(/\/+$/, "");
+}
+
+function createInviteCode(profileId: string): string {
+  const seed = `${profileId}-${Date.now()}-${Math.random()}`;
+  let hash = 0;
+  for (let i = 0; i < seed.length; i += 1) {
+    hash = (hash << 5) - hash + seed.charCodeAt(i);
+    hash |= 0;
+  }
+  return `ATIMAR-${Math.abs(hash).toString(36).toUpperCase()}`;
+}
 
 /* ------------------------------------------------------------------ *
  * Hook catalogo                                                       *
@@ -212,6 +246,73 @@ export function useTogglePreferitoMutation() {
     },
     onSettled: (_data, _err, { profileId }) => {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.preferiti(profileId) });
+    },
+  });
+}
+
+/* ------------------------------------------------------------------ *
+ * Feedback e inviti                                                   *
+ * ------------------------------------------------------------------ */
+
+export function useSubmitFeedbackMutation() {
+  return useMutation({
+    mutationFn: async ({
+      profileId,
+      categoria,
+      messaggio,
+      emailContatto,
+      piattaforma,
+      versioneApp,
+    }: SubmitFeedbackInput) => {
+      const { error } = await createFeedbackApp({
+        fk_profilo: profileId,
+        categoria,
+        messaggio,
+        email_contatto: emailContatto ?? null,
+        piattaforma: piattaforma ?? null,
+        versione_app: versioneApp ?? null,
+      });
+
+      if (error) throw error;
+    },
+  });
+}
+
+export function useInviteMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ profileId, appUrl }: PrepareInviteInput) => {
+      const inviteUrl = sanitizeAppUrl(appUrl);
+      const existing = await getInviteByProfile(profileId);
+
+      if (existing.error) throw existing.error;
+
+      const codice = createInviteCode(profileId);
+      const created = existing.data
+        ? null
+        : await upsertInviteForProfile({
+            fk_profilo: profileId,
+            codice,
+            link: `${inviteUrl}?ref=${codice}`,
+          });
+
+      if (created?.error) throw created.error;
+
+      const invito = existing.data ?? created?.data;
+
+      if (!invito) {
+        throw new Error("Impossibile preparare il link di invito");
+      }
+
+      const shared = await markInviteShared(profileId, invito.codice);
+      if (shared.error) throw shared.error;
+
+      return shared.data ?? invito;
+    },
+    onSuccess: (data, { profileId }) => {
+      queryClient.setQueryData(QUERY_KEYS.invito(profileId), data);
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.invito(profileId) });
     },
   });
 }

@@ -26,4 +26,5 @@ export const QUERY_KEYS = {
   recensioni: (strutturaId: string) => ["recensioni", strutturaId] as const,
   preferiti: (profileId: string | null) => ["preferiti", profileId] as const,
   onboarding: (profileId: string | null) => ["onboarding", profileId] as const,
+  invito: (profileId: string | null) => ["invito", profileId] as const,
 } as const;

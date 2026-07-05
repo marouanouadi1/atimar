@@ -171,6 +171,53 @@ export type Database = {
           },
         ]
       }
+      Feedback_App: {
+        Row: {
+          aggiornato_il: string
+          categoria: string
+          created_at: string
+          email_contatto: string | null
+          fk_profilo: string
+          id: number
+          messaggio: string
+          piattaforma: string | null
+          stato: string
+          versione_app: string | null
+        }
+        Insert: {
+          aggiornato_il?: string
+          categoria?: string
+          created_at?: string
+          email_contatto?: string | null
+          fk_profilo: string
+          id?: number
+          messaggio: string
+          piattaforma?: string | null
+          stato?: string
+          versione_app?: string | null
+        }
+        Update: {
+          aggiornato_il?: string
+          categoria?: string
+          created_at?: string
+          email_contatto?: string | null
+          fk_profilo?: string
+          id?: number
+          messaggio?: string
+          piattaforma?: string | null
+          stato?: string
+          versione_app?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "Feedback_App_fk_profilo_fkey"
+            columns: ["fk_profilo"]
+            isOneToOne: false
+            referencedRelation: "Profili"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       Foto_Campi: {
         Row: {
           aggiornato_il: string
@@ -246,6 +293,47 @@ export type Database = {
             columns: ["fk_struttura"]
             isOneToOne: false
             referencedRelation: "Strutture"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      Inviti_App: {
+        Row: {
+          aggiornato_il: string
+          codice: string
+          conteggio_condivisioni: number
+          created_at: string
+          fk_profilo: string
+          id: number
+          link: string
+          ultimo_condiviso_il: string | null
+        }
+        Insert: {
+          aggiornato_il?: string
+          codice: string
+          conteggio_condivisioni?: number
+          created_at?: string
+          fk_profilo: string
+          id?: number
+          link: string
+          ultimo_condiviso_il?: string | null
+        }
+        Update: {
+          aggiornato_il?: string
+          codice?: string
+          conteggio_condivisioni?: number
+          created_at?: string
+          fk_profilo?: string
+          id?: number
+          link?: string
+          ultimo_condiviso_il?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "Inviti_App_fk_profilo_fkey"
+            columns: ["fk_profilo"]
+            isOneToOne: false
+            referencedRelation: "Profili"
             referencedColumns: ["id"]
           },
         ]
@@ -352,6 +440,7 @@ export type Database = {
           created_at: string
           id: string
           nome_completo: string | null
+          onboarding_completato: boolean | null
           raggio_preferito_km: number | null
           url_avatar: string | null
         }
@@ -361,6 +450,7 @@ export type Database = {
           created_at?: string
           id: string
           nome_completo?: string | null
+          onboarding_completato?: boolean | null
           raggio_preferito_km?: number | null
           url_avatar?: string | null
         }
@@ -370,6 +460,7 @@ export type Database = {
           created_at?: string
           id?: string
           nome_completo?: string | null
+          onboarding_completato?: boolean | null
           raggio_preferito_km?: number | null
           url_avatar?: string | null
         }
