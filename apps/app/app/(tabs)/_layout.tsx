@@ -1,4 +1,4 @@
-import { Tabs } from "expo-router";
+import { Redirect, Tabs } from "expo-router";
 import React, { type ComponentProps } from "react";
 import { Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import * as Haptics from "expo-haptics";
@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { theme } from "@/theme/tokens";
 import { Icon, textStyle } from "@/ui";
 import { WebHeader } from "@/components/layout/WebHeader";
+import { useAppState } from "@/state/AppState";
 
 interface TabDef {
   label: string;
@@ -74,6 +75,13 @@ function TabBar({ state, navigation }: TabBarProps) {
 }
 
 export default function TabLayout() {
+  const { ready, user, onboarded, onboardedResolved } = useAppState();
+
+  // Un utente autenticato ma non onboarded (es. web: registrazione avvenuta
+  // prima dell'onboarding) viene spinto nel wizard prima di vedere le tab.
+  if (ready && user && !onboardedResolved) return null;
+  if (ready && user && !onboarded) return <Redirect href="/onboarding/value-near" />;
+
   return (
     <View style={styles.root}>
       <WebHeader />

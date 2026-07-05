@@ -15,17 +15,18 @@ import { GestoriCta } from "@/components/home/GestoriCta";
 export default function WebHomepage() {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, ready } = useAppState();
+  const { user, ready, onboarded, onboardedResolved } = useAppState();
 
   // After Google OAuth redirect, the user lands here. Once the session is
-  // detected (detectSessionInUrl: true in client.ts), redirect to the app.
+  // detected (detectSessionInUrl: true in client.ts), redirect to the app —
+  // through onboarding first if the account hasn't completed it yet.
   // Guard on pathname === "/" so deep links to /favorites etc. are not overridden
   // when this component stays mounted as the stack anchor.
   useEffect(() => {
-    if (ready && user && pathname === "/") {
-      router.replace("/home");
+    if (ready && user && onboardedResolved && pathname === "/") {
+      router.replace(onboarded ? "/home" : "/onboarding/value-near");
     }
-  }, [ready, user, pathname, router]);
+  }, [ready, user, onboarded, onboardedResolved, pathname, router]);
 
   return (
     <ScrollView

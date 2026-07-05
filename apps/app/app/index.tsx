@@ -10,9 +10,10 @@ import { useAppState } from "@/state/AppState";
  * then redirects: onboarding → auth → app. (Real route is `/` so it loads first.)
  */
 export default function Splash() {
-  const { ready, onboarded, user } = useAppState();
+  const { ready, onboarded, onboardedResolved, user } = useAppState();
 
   if (!ready) return <SplashView />;
+  if (user && !onboardedResolved) return <SplashView />;
   if (!onboarded) return <Redirect href="/onboarding/value-near" />;
   if (!user) return <Redirect href="/auth/login" />;
   return <Redirect href="/home" />;

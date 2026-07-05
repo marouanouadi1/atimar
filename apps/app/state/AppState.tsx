@@ -66,6 +66,8 @@ interface AppStateValue {
   /** Supabase auth.users UUID — null quando non loggato. */
   profileId: string | null;
   onboarded: boolean;
+  /** false finché il flag onboarding lato server non è stato letto per l'utente loggato. */
+  onboardedResolved: boolean;
   prefs: UserPrefs;
   preferiti: Preferiti;
   filtri: Filtri;
@@ -117,10 +119,31 @@ async function ensureProfileForSession(s: Session): Promise<void> {
   if (error) console.error("[Profili] ensure error:", error);
 }
 
-function scheduleProfileEnsure(s: Session): void {
+function scheduleProfileEnsure(s: Session, onSettled?: () => void): void {
   setTimeout(() => {
-    void ensureProfileForSession(s);
+    void ensureProfileForSession(s).then(() => onSettled?.());
   }, 0);
+}
+
+async function fetchOnboardingCompleted(profileId: string): Promise<boolean> {
+  const { data, error } = await supabase
+    .from("Profili")
+    .select("onboarding_completato")
+    .eq("id", profileId)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data?.onboarding_completato ?? false;
+}
+
+function setOnboardingCompletedRemote(profileId: string): void {
+  void supabase
+    .from("Profili")
+    .update({ onboarding_completato: true })
+    .eq("id", profileId)
+    .then(({ error }) => {
+      if (error) console.error("[Profili] onboarding update error:", error);
+    });
 }
 
 /* ------------------------------------------------------------------ *
@@ -162,7 +185,12 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     // Carica sessione esistente
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session);
-      if (data.session) scheduleProfileEnsure(data.session);
+      if (data.session) {
+        const uid = data.session.user.id;
+        scheduleProfileEnsure(data.session, () =>
+          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.onboarding(uid) })
+        );
+      }
       setSessionReady(true);
     });
 
@@ -177,7 +205,10 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
         return;
       }
       if (event === "SIGNED_IN") {
-        scheduleProfileEnsure(s);
+        const uid = s.user.id;
+        scheduleProfileEnsure(s, () =>
+          queryClient.invalidateQueries({ queryKey: QUERY_KEYS.onboarding(uid) })
+        );
       }
     });
 
@@ -205,6 +236,29 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
     staleTime: 30_000,
   });
 
+  // ── Onboarding lato server (legato all'account) ─────────────────────
+  const { data: remoteOnboarded, isLoading: onboardingLoading } = useQuery<boolean>({
+    queryKey: QUERY_KEYS.onboarding(profileId),
+    queryFn: () => fetchOnboardingCompleted(profileId!),
+    enabled: !!profileId,
+    staleTime: 30_000,
+  });
+
+  const onboarded = persisted.onboarded || remoteOnboarded === true;
+  const onboardedResolved = !profileId || !onboardingLoading;
+
+  // Riconcilia i due flag: propaga il completamento in entrambe le direzioni
+  // (native: onboarding fatto prima della registrazione; web: viceversa).
+  useEffect(() => {
+    if (!profileId) return;
+    if (remoteOnboarded === false && persisted.onboarded) {
+      queryClient.setQueryData(QUERY_KEYS.onboarding(profileId), true);
+      setOnboardingCompletedRemote(profileId);
+    } else if (remoteOnboarded === true && !persisted.onboarded) {
+      setPersisted((s) => ({ ...s, onboarded: true }));
+    }
+  }, [profileId, remoteOnboarded, persisted.onboarded, queryClient]);
+
   const favCampoIds: string[] = useMemo(
     () => (dbFavs ?? []).map((f) => String(f.fk_campo)),
     [dbFavs]
@@ -212,9 +266,16 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
 
   // ── Azioni ──────────────────────────────────────────────────────────
 
-  const completeOnboarding = useCallback((prefs?: UserPrefs) => {
-    setPersisted((s) => ({ ...s, onboarded: true, prefs: prefs ?? s.prefs }));
-  }, []);
+  const completeOnboarding = useCallback(
+    (prefs?: UserPrefs) => {
+      setPersisted((s) => ({ ...s, onboarded: true, prefs: prefs ?? s.prefs }));
+      if (profileId) {
+        queryClient.setQueryData(QUERY_KEYS.onboarding(profileId), true);
+        setOnboardingCompletedRemote(profileId);
+      }
+    },
+    [profileId, queryClient]
+  );
 
   const setPrefs = useCallback((patch: Partial<UserPrefs>) => {
     setPersisted((s) => ({ ...s, prefs: { ...s.prefs, ...patch } }));
@@ -310,7 +371,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       ready,
       user,
       profileId,
-      onboarded: persisted.onboarded,
+      onboarded,
+      onboardedResolved,
       prefs: persisted.prefs,
       preferiti,
       filtri: persisted.filters,
@@ -329,7 +391,8 @@ export function AppStateProvider({ children }: { children: React.ReactNode }) {
       ready,
       user,
       profileId,
-      persisted.onboarded,
+      onboarded,
+      onboardedResolved,
       persisted.prefs,
       persisted.filters,
       preferiti,
