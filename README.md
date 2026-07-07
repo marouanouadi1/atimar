@@ -97,25 +97,34 @@ nuovo.
 
 ### Nuove modifiche allo schema
 
-Per modifiche scritte direttamente in SQL:
+Ci sono due modi per introdurre una modifica, a seconda di dove nasce.
+
+**1. Modifica scritta direttamente in SQL** (il caso più comune: alter column,
+nuova tabella, indice, ecc.):
 
 ```bash
 pnpm db:migration:new -- nome_modifica
+# scrivere lo SQL nel file generato in supabase/migrations
 pnpm db:reset
 pnpm db:lint
 pnpm db:types
 ```
 
-Per modifiche fatte dallo Studio locale, generare comunque il SQL e revisionarlo
-prima del commit:
+**2. Modifica fatta dal dashboard Supabase remoto** (es. urgenza o esplorazione
+via UI): non è mai definitiva finché non viene riportata nel repo tramite diff:
 
-```bash
-supabase start
-supabase db diff --local -f nome_modifica
+```powershell
+$env:SUPABASE_DB_PASSWORD = "<database-password>"
+pnpm db:pull -- nome_modifica
+pnpm db:migration:repair -- <versione> --status applied
 pnpm db:reset
 pnpm db:lint
 pnpm db:types
 ```
+
+`db:pull` genera la migration confrontando lo schema remoto con la history
+locale; `db:migration:repair` dice a Supabase che quella versione è già
+applicata sul remoto, altrimenti `db:push` proverebbe ad applicarla di nuovo.
 
 Non modificare a mano una migration già applicata o condivisa: creare una nuova
 migration incrementale. Dopo ogni modifica allo schema, rigenerare e committare
