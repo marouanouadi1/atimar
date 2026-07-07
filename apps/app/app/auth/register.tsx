@@ -9,35 +9,46 @@ import type { AuthField } from "@/state/auth";
 
 export default function Register() {
   const router = useRouter();
-  const { register, login } = useAppState();
+  const { register, loginWithGoogle } = useAppState();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState<Partial<Record<AuthField, string>>>({});
+  const [loading, setLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [googleError, setGoogleError] = useState<string | undefined>(undefined);
 
-  const onSubmit = () => {
-    const result = register({ name, email, password });
+  const onSubmit = async () => {
+    setLoading(true);
+    const result = await register({ name, email, password });
+    setLoading(false);
     setErrors(result.errors);
     if (result.ok) router.replace("/home");
   };
 
-  const onSocial = (provider: "google" | "apple") => {
-    const result = login({
-      email: `${provider}@atimar.app`,
-      password: "social-mock",
-    });
-    if (result.ok) router.replace("/home");
+  const handleGoogle = async () => {
+    setGoogleLoading(true);
+    setGoogleError(undefined);
+    const result = await loginWithGoogle();
+    setGoogleLoading(false);
+    if (!result.ok) {
+      setGoogleError(result.error ?? "Accesso Google non riuscito");
+    } else {
+      router.replace("/home");
+    }
   };
 
   return (
     <AuthLayout
       title="Crea il tuo account"
       subtitle="Inizia a trovare campi e a giocare di più."
+      withHero
       onBack={() => router.back()}
-      onSocial={onSocial}
+      onSocial={(p) => { if (p === "google" && !googleLoading) void handleGoogle(); }}
+      socialError={googleError}
       footer={
         <View style={styles.footer}>
-          <Button icon onPress={onSubmit}>
+          <Button icon loading={loading} onPress={onSubmit} disabled={loading}>
             Registrati
           </Button>
           <View style={styles.switchRow}>

@@ -5,9 +5,13 @@
     "module": "esnext",
     "target": "ES2017",
     "noEmit": true,
+    "skipLibCheck": true,
     "types": ["node"],
     "paths": {
-      "@atimar/db-types": ["../db-types/src"]
+      "@atimar/data": ["../data/src"],
+      "@atimar/db-types": ["../db-types/src"],
+      "@atimar/types": ["../types/src"],
+      "@atimar/utils": ["../utils/src"]
     }
   },
   "include": ["src/**/*.ts"]

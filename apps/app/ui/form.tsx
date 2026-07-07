@@ -3,7 +3,7 @@
  * RangeSlider is a dependency-free slider built on PanResponder (works on web).
  */
 
-import React, { useRef, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   PanResponder,
   Pressable,
@@ -55,11 +55,18 @@ export function FormInput({
   style,
 }: FormInputProps) {
   const [hidden, setHidden] = useState(secureTextEntry);
+  const [focused, setFocused] = useState(false);
   const hasError = !!error;
   return (
     <View style={[{ gap: theme.spacing.xs }, style]}>
       {label ? <Text style={textStyle("caption", "text")}>{label}</Text> : null}
-      <View style={[styles.input, hasError && styles.inputError]}>
+      <View
+        style={[
+          styles.input,
+          focused && styles.inputFocused,
+          hasError && styles.inputError,
+        ]}
+      >
         {icon ? (
           <Icon name={icon} size={theme.iconSizes.md} color="subtle" />
         ) : null}
@@ -73,6 +80,8 @@ export function FormInput({
           keyboardType={keyboardType}
           autoCapitalize={autoCapitalize}
           autoComplete={autoComplete}
+          onFocus={() => setFocused(true)}
+          onBlur={() => setFocused(false)}
         />
         {secureTextEntry ? (
           <Pressable onPress={() => setHidden((h) => !h)} hitSlop={8}>
@@ -212,6 +221,7 @@ export interface RangeSliderProps {
   min?: number;
   max?: number;
   step?: number;
+  disabled?: boolean;
   onChange: (v: number) => void;
 }
 
@@ -220,42 +230,46 @@ export function RangeSlider({
   min = 1,
   max = 50,
   step = 1,
+  disabled = false,
   onChange,
 }: RangeSliderProps) {
   const [width, setWidth] = useState(0);
   const range = Math.max(max - min, 1);
   const ratio = Math.min(Math.max((value - min) / range, 0), 1);
 
-  // Keep latest geometry/handlers in a ref so the PanResponder (created once)
-  // never reads stale closures.
-  const ref = useRef({ width, range, min, max, step, value, onChange });
-  ref.current = { width, range, min, max, step, value, onChange };
+  const setFromX = useCallback(
+    (x: number) => {
+      if (width <= 0) return;
+      const r = Math.min(Math.max(x / width, 0), 1);
+      let v = min + r * range;
+      v = Math.round(v / step) * step;
+      v = Math.min(Math.max(v, min), max);
+      if (v !== value) onChange(v);
+    },
+    [width, range, min, max, step, value, onChange],
+  );
 
-  const setFromX = (x: number) => {
-    const s = ref.current;
-    if (s.width <= 0) return;
-    const r = Math.min(Math.max(x / s.width, 0), 1);
-    let v = s.min + r * s.range;
-    v = Math.round(v / s.step) * s.step;
-    v = Math.min(Math.max(v, s.min), s.max);
-    if (v !== s.value) s.onChange(v);
-  };
-
-  const responder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: () => true,
-      onPanResponderGrant: (e) => setFromX(e.nativeEvent.locationX),
-      onPanResponderMove: (e) => setFromX(e.nativeEvent.locationX),
-    }),
-  ).current;
+  // Recreated only when `disabled` or a handler dependency changes; the handlers
+  // always close over the latest props, so no stale-closure ref workaround is
+  // needed. We rely on `locationX`, not accumulated gesture state, so swapping
+  // the responder mid-drag is safe.
+  const responder = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => !disabled,
+        onMoveShouldSetPanResponder: () => !disabled,
+        onPanResponderGrant: (e) => setFromX(e.nativeEvent.locationX),
+        onPanResponderMove: (e) => setFromX(e.nativeEvent.locationX),
+      }),
+    [disabled, setFromX],
+  );
 
   const onLayout = (e: LayoutChangeEvent) =>
     setWidth(e.nativeEvent.layout.width);
 
   return (
     <View
-      style={styles.sliderWrap}
+      style={[styles.sliderWrap, disabled && styles.sliderDisabled]}
       onLayout={onLayout}
       {...responder.panHandlers}
     >
@@ -275,14 +289,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.lg,
     borderRadius: theme.radius.md,
     backgroundColor: theme.colors.surface,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: theme.colors.line,
+  },
+  inputFocused: {
+    borderColor: theme.colors.primary,
+    backgroundColor: theme.colors.surface,
   },
   inputError: {
     borderColor: theme.semantic.danger,
   },
   inputText: {
     fontSize: theme.typography.body.fontSize,
+    fontFamily: theme.fonts.bodyMedium,
     color: theme.colors.ink,
     paddingVertical: 0,
   },
@@ -307,6 +326,9 @@ const styles = StyleSheet.create({
   sliderWrap: {
     height: 36,
     justifyContent: "center",
+  },
+  sliderDisabled: {
+    opacity: 0.45,
   },
   sliderTrack: {
     height: 6,

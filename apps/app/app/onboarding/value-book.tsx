@@ -2,20 +2,21 @@ import { useRouter } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { theme } from "@/theme/tokens";
-import { getCourtListItems } from "@atimar/data";
 import {
   Button,
-  CourtCard,
+  CampoCard,
   Header,
   ScreenContainer,
   ScreenTitle,
   StepProgress,
   textStyle,
 } from "@/ui";
+import { useCampiInLista } from "@/data/hooks";
 
 export default function ValueBook() {
   const router = useRouter();
-  const court = getCourtListItems()[0];
+  const { data: campi = [] } = useCampiInLista();
+  const campo = campi[0];
 
   return (
     <ScreenContainer
@@ -44,10 +45,10 @@ export default function ValueBook() {
       <View style={styles.body}>
         <ScreenTitle
           title="Richiedi disponibilità in un tocco."
-          subtitle="Trovi il campo, scegli l’orario e invii la richiesta. Niente telefonate, niente attese."
+          subtitle="Trovi il campo, scegli l'orario e invii la richiesta. Niente telefonate, niente attese."
           size="h1"
         />
-        {court ? <CourtCard court={court} variant="large" /> : null}
+        {campo ? <CampoCard campo={campo} variant="large" /> : null}
         <Button
           variant="lime"
           icon
@@ -61,6 +62,12 @@ export default function ValueBook() {
 }
 
 const styles = StyleSheet.create({
-  body: { gap: theme.spacing.xl, paddingTop: theme.spacing.lg },
+  body: {
+    gap: theme.spacing.xl,
+    paddingTop: theme.spacing.lg,
+    width: "100%",
+    maxWidth: theme.layout.maxReading,
+    alignSelf: "center",
+  },
   footer: { gap: theme.spacing.md, alignItems: "center" },
 });

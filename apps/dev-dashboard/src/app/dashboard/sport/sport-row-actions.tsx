@@ -32,14 +32,15 @@ import { MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
 import { updateSportAction, deleteSportAction } from './actions'
 import { toast } from 'sonner'
 
-export function SportRowActions({ id, nome }: { id: number; nome: string }) {
+export function SportRowActions({ id, nome, slug: initialSlug }: { id: number; nome: string; slug: string }) {
   const [editOpen, setEditOpen] = useState(false)
   const [nomeSport, setNomeSport] = useState(nome)
+  const [slug, setSlug] = useState(initialSlug)
   const [isPending, startTransition] = useTransition()
 
   function handleUpdate() {
     startTransition(async () => {
-      const result = await updateSportAction(id, nomeSport)
+      const result = await updateSportAction(id, nomeSport, slug)
       if (result.error) {
         toast.error('Errore durante la modifica', { description: result.error })
       } else {
@@ -102,8 +103,18 @@ export function SportRowActions({ id, nome }: { id: number; nome: string }) {
                 autoFocus
               />
             </div>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="slug_edit">Slug *</Label>
+              <Input
+                id="slug_edit"
+                value={slug}
+                onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/\s+/g, ''))}
+                placeholder="es. calcio5"
+              />
+              <p className="text-xs text-muted-foreground">Identificatore stabile. Deve corrispondere a un id in SPORTS (es. padel, calcio5, beachvolley).</p>
+            </div>
             <div className="flex justify-end">
-              <Button onClick={handleUpdate} disabled={!nomeSport || isPending}>
+              <Button onClick={handleUpdate} disabled={!nomeSport || !slug || isPending}>
                 {isPending ? 'Salvataggio...' : 'Salva modifiche'}
               </Button>
             </div>

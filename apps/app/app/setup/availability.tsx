@@ -81,7 +81,13 @@ export default function AvailabilityStep() {
 }
 
 const styles = StyleSheet.create({
-  body: { gap: theme.spacing.xxl, paddingTop: theme.spacing.sm },
+  body: {
+    gap: theme.spacing.xxl,
+    paddingTop: theme.spacing.sm,
+    width: "100%",
+    maxWidth: theme.layout.maxReading,
+    alignSelf: "center",
+  },
   section: { gap: theme.spacing.md },
   daysRow: { flexDirection: "row", gap: theme.spacing.xs },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: theme.spacing.md },

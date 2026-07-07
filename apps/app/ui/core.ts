@@ -122,7 +122,7 @@ export function resolveIconBadgeSpec(tone: IconBadgeTone): IconBadgeSpec {
  * Other shared variant unions
  * ------------------------------------------------------------------ */
 
-export type CourtCardVariant = "large" | "compact";
+export type CampoCardVariant = "large" | "compact";
 export type MapPinVariant = "default" | "selected" | "compact";
 export type ProgressVariant = "pill" | "dots" | "bar";
 export type FilterChipVariant = "pill" | "segment";

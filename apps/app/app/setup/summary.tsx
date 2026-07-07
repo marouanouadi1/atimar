@@ -21,11 +21,11 @@ function timeLabel(id: string): string {
 
 export default function Summary() {
   const router = useRouter();
-  const { prefs, completeOnboarding } = useAppState();
+  const { prefs, completeOnboarding, user } = useAppState();
 
   const onEnter = () => {
     completeOnboarding();
-    router.replace("/auth/register");
+    router.replace(user ? "/home" : "/auth/register");
   };
 
   const sports = prefs.sports.map(sportLabel).join(", ") || "—";
@@ -92,7 +92,13 @@ function SummaryRow({
 }
 
 const styles = StyleSheet.create({
-  body: { gap: theme.spacing.xxl, paddingTop: theme.spacing.lg },
+  body: {
+    gap: theme.spacing.xxl,
+    paddingTop: theme.spacing.lg,
+    width: "100%",
+    maxWidth: theme.layout.maxReading,
+    alignSelf: "center",
+  },
   hero: { alignItems: "center", gap: theme.spacing.lg },
   rows: { gap: theme.spacing.md },
   row: { flexDirection: "row", alignItems: "center", gap: theme.spacing.md },

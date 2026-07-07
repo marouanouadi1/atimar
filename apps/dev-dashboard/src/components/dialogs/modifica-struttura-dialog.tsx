@@ -23,9 +23,9 @@ type Struttura = {
   nome: string
   email: string | null
   fk_citta: number
-  indirizzo: string | null
-  latitudine: number | null
-  longitudine: number | null
+  indirizzo: string
+  latitudine: number
+  longitudine: number
   prezzo_orario: number | null
   telefono: string | null
   cellulare: string | null
@@ -33,8 +33,8 @@ type Struttura = {
   link_prenotazione_esterno: string | null
   descrizione: string | null
   attivo: boolean
-  sempre_aperto: boolean | null
-  verificata: boolean | null
+  sempre_aperto: boolean
+  verificata: boolean
 }
 
 function Field({ id, label, children }: { id: string; label: string; children: React.ReactNode }) {
@@ -83,9 +83,9 @@ function strutturaToForm(s: Struttura): FormState {
     nome: s.nome,
     email: s.email ?? '',
     fk_citta: String(s.fk_citta),
-    indirizzo: s.indirizzo ?? '',
-    latitudine: s.latitudine != null ? String(s.latitudine) : '',
-    longitudine: s.longitudine != null ? String(s.longitudine) : '',
+    indirizzo: s.indirizzo,
+    latitudine: String(s.latitudine),
+    longitudine: String(s.longitudine),
     prezzo_orario: s.prezzo_orario != null ? String(s.prezzo_orario) : '',
     telefono: s.telefono ?? '',
     cellulare: s.cellulare ?? '',
@@ -93,8 +93,8 @@ function strutturaToForm(s: Struttura): FormState {
     link_prenotazione_esterno: s.link_prenotazione_esterno ?? '',
     descrizione: s.descrizione ?? '',
     attivo: s.attivo,
-    sempre_aperto: s.sempre_aperto ?? false,
-    verificata: s.verificata ?? false,
+    sempre_aperto: s.sempre_aperto,
+    verificata: s.verificata,
   }
 }
 
@@ -114,9 +114,9 @@ export function ModificaStrutturaDialog({ struttura, citta }: { struttura: Strut
           nome: form.nome,
           email: form.email || null,
           fk_citta: Number(form.fk_citta),
-          indirizzo: form.indirizzo || null,
-          latitudine: form.latitudine ? Number(form.latitudine) : null,
-          longitudine: form.longitudine ? Number(form.longitudine) : null,
+          indirizzo: form.indirizzo,
+          latitudine: Number(form.latitudine),
+          longitudine: Number(form.longitudine),
           prezzo_orario: form.prezzo_orario ? Number(form.prezzo_orario) : null,
           telefono: form.telefono || null,
           cellulare: form.cellulare || null,
@@ -167,16 +167,16 @@ export function ModificaStrutturaDialog({ struttura, citta }: { struttura: Strut
                 </SelectContent>
               </Select>
             </div>
-            <Field id="indirizzo" label="Indirizzo">
-              <Input id="indirizzo" value={form.indirizzo} onChange={(e) => set('indirizzo', e.target.value)} />
+            <Field id="indirizzo" label="Indirizzo *">
+              <Input id="indirizzo" value={form.indirizzo} onChange={(e) => set('indirizzo', e.target.value)} required />
             </Field>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <Field id="latitudine" label="Latitudine">
-              <Input id="latitudine" type="number" step="any" value={form.latitudine} onChange={(e) => set('latitudine', e.target.value)} />
+            <Field id="latitudine" label="Latitudine *">
+              <Input id="latitudine" type="number" step="any" value={form.latitudine} onChange={(e) => set('latitudine', e.target.value)} required />
             </Field>
-            <Field id="longitudine" label="Longitudine">
-              <Input id="longitudine" type="number" step="any" value={form.longitudine} onChange={(e) => set('longitudine', e.target.value)} />
+            <Field id="longitudine" label="Longitudine *">
+              <Input id="longitudine" type="number" step="any" value={form.longitudine} onChange={(e) => set('longitudine', e.target.value)} required />
             </Field>
           </div>
         </div>

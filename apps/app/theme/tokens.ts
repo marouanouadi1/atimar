@@ -13,70 +13,91 @@
  * ------------------------------------------------------------------ */
 
 export const colors = {
-  ink: "#071A3D",
-  text: "#13213C",
-  muted: "#6B7280",
-  subtle: "#8A94A6",
-  line: "#E8EDF5",
-  surface: "#FFFFFF",
-  primary: "#006EF5",
-  primaryDark: "#0058CC",
-  lime: "#C8FF00",
-  limeDark: "#98C600",
-  chip: "#F1F5FA",
-  bg: "#F7F9FC",
-  placeholder: "#DDE5EF",
-  dark: "#20334F",
-  success: "#24B26B",
+  ink: "#12140F",
+  text: "#252820",
+  muted: "#666B60",
+  subtle: "#8A9084",
+  line: "#D9D8CF",
+  surface: "#FFFEF7",
+  primary: "#315CFF",
+  primaryDark: "#1736B8",
+  lime: "#D9FF43",
+  limeDark: "#93B900",
+  chip: "#E9E8DF",
+  bg: "#F2F0E8",
+  placeholder: "#C9C9BF",
+  dark: "#252820",
+  success: "#168B55",
+  asphalt: "#12140F",
+  bone: "#F2F0E8",
+  volt: "#D9FF43",
+  cobalt: "#315CFF",
+  orange: "#FF6B35",
 } as const;
 
 /** Functional / semantic colors recurring inline in the prototype. */
 export const semantic = {
-  star: "#F5B400",
-  starEmpty: "#E0E5EE",
-  danger: "#C0392B",
-  heart: "#EE5555",
-  disabled: "#C7D3E3",
-  toggleOff: "#D5DDE8",
+  star: "#E6A600",
+  starEmpty: "#D5D4CA",
+  danger: "#C93F32",
+  heart: "#EA4D5B",
+  disabled: "#B8B9B0",
+  toggleOff: "#C8C9C0",
 } as const;
 
 /** Alpha tints over brand colors, used for IconBadge / soft backgrounds. */
 export const tints = {
-  limeTint: "rgba(200,255,0,0.16)",
-  limeTintSoft: "rgba(200,255,0,0.07)",
-  blueTint: "rgba(0,110,245,0.10)",
-  inkTint: "rgba(7,26,61,0.06)",
-  successTint: "rgba(36,178,107,0.14)",
-  heartTint: "rgba(238,85,85,0.12)",
+  limeTint: "rgba(217,255,67,0.28)",
+  limeTintSoft: "rgba(217,255,67,0.12)",
+  blueTint: "rgba(49,92,255,0.11)",
+  inkTint: "rgba(18,20,15,0.07)",
+  successTint: "rgba(22,139,85,0.13)",
+  heartTint: "rgba(234,77,91,0.12)",
 } as const;
 
 /**
  * Translucent surface overlays: `glass` for floating controls / blurred bars,
- * `scrim` for darkening imagery behind foreground content.
+ * `scrim` for darkening imagery behind foreground content,
+ * `*OnDark` for text / border tokens on ink/dark backgrounds.
  */
 export const overlays = {
-  glass: "rgba(255,255,255,0.92)",
-  glassLine: "rgba(7,26,61,0.06)",
-  scrim: "rgba(7,26,61,0.45)",
-  scrimSoft: "rgba(7,26,61,0.18)",
+  glass: "rgba(255,254,247,0.92)",
+  glassLine: "rgba(18,20,15,0.10)",
+  scrim: "rgba(12,14,10,0.58)",
+  scrimSoft: "rgba(12,14,10,0.24)",
+  /** Muted/subtitle text on ink/dark backgrounds (hero, ClubsCta, etc.) */
+  subtleOnDark: "rgba(255,255,255,0.68)",
+  /** Secondary feature text on ink/dark backgrounds. */
+  dimOnDark: "rgba(255,255,255,0.80)",
+  /** Thin border on dark surfaces (photo frames, sport chips on dark). */
+  borderOnDark: "rgba(255,255,255,0.16)",
+  /** Sport chip border on dark hero section. */
+  chipOnDark: "rgba(255,255,255,0.22)",
+  /** Floating badge background over a photo. */
+  photoBadgeBg: "rgba(18,20,15,0.78)",
 } as const;
 
 /** Recurring gradients (stops + angle). Consumers map to LinearGradient/CSS. */
 export const gradients = {
   splash: {
     angle: 180,
-    stops: ["#FFFFFF", "#EAF2FF", "#F0FFB8"],
+    stops: ["#F2F0E8", "#E8E5D8", "#D9FF43"],
     locations: [0, 0.55, 1],
   },
   profileHeader: {
     angle: 155,
-    stops: ["#006EF5", "#0058CC", "#003F99"],
+    stops: ["#12140F", "#20241A", "#315CFF"],
     locations: [0, 0.7, 1],
   },
   avatar: {
     angle: 135,
-    stops: ["#006EF5", "#C8FF00"],
+    stops: ["#315CFF", "#D9FF43"],
     locations: [0, 1],
+  },
+  heroWeb: {
+    angle: 160,
+    stops: ["#12140F", "#1B2016", "#253312"],
+    locations: [0, 0.55, 1],
   },
 } as const;
 
@@ -89,9 +110,9 @@ export const spacing = {
   sm: 8,
   md: 12,
   lg: 16,
-  xl: 20,
-  xxl: 24,
-  xxxl: 32,
+  xl: 24,
+  xxl: 32,
+  xxxl: 48,
 } as const;
 
 /* ------------------------------------------------------------------ *
@@ -99,12 +120,12 @@ export const spacing = {
  * ------------------------------------------------------------------ */
 
 export const radius = {
-  sm: 10,
-  md: 14,
+  sm: 8,
+  md: 12,
   lg: 18,
-  xl: 24,
-  card: 16,
-  hero: 20,
+  xl: 28,
+  card: 18,
+  hero: 24,
   pill: 999,
 } as const;
 
@@ -113,65 +134,25 @@ export const radius = {
  * ------------------------------------------------------------------ */
 
 export interface NativeShadow {
-  shadowColor: string;
-  shadowOffset: { width: number; height: number };
-  shadowOpacity: number;
-  shadowRadius: number;
-  elevation: number;
+  boxShadow: string;
 }
 
 export const shadows = {
-  card: {
-    shadowColor: "#071A3D",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  pop: {
-    shadowColor: "#071A3D",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.08,
-    shadowRadius: 24,
-    elevation: 8,
-  },
-  cta: {
-    shadowColor: "#006EF5",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.28,
-    shadowRadius: 16,
-    elevation: 6,
-  },
-  lime: {
-    shadowColor: "#98C600",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 6,
-  },
-  sheet: {
-    shadowColor: "#071A3D",
-    shadowOffset: { width: 0, height: -8 },
-    shadowOpacity: 0.18,
-    shadowRadius: 30,
-    elevation: 16,
-  },
-  floatBtn: {
-    shadowColor: "#071A3D",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
-    elevation: 4,
-  },
+  card: { boxShadow: "0 2px 0 rgba(18,20,15,0.10)" },
+  pop: { boxShadow: "0 18px 48px rgba(18,20,15,0.14)" },
+  cta: { boxShadow: "0 8px 24px rgba(49,92,255,0.24)" },
+  lime: { boxShadow: "0 8px 22px rgba(147,185,0,0.25)" },
+  sheet: { boxShadow: "0 -16px 44px rgba(18,20,15,0.18)" },
+  floatBtn: { boxShadow: "0 8px 20px rgba(18,20,15,0.14)" },
 } as const satisfies Record<string, NativeShadow>;
 
 export const webShadows = {
-  card: "0 1px 2px rgba(7,26,61,.04), 0 2px 8px rgba(7,26,61,.04)",
-  pop: "0 8px 24px rgba(7,26,61,.08)",
-  cta: "0 6px 16px rgba(0,110,245,.28)",
-  lime: "0 6px 16px rgba(152,198,0,.30)",
-  sheet: "0 -8px 30px rgba(7,26,61,.18)",
-  floatBtn: "0 4px 10px rgba(7,26,61,.10)",
+  card: "0 2px 0 rgba(18,20,15,.10)",
+  pop: "0 18px 48px rgba(18,20,15,.14)",
+  cta: "0 8px 24px rgba(49,92,255,.24)",
+  lime: "0 8px 22px rgba(147,185,0,.25)",
+  sheet: "0 -16px 44px rgba(18,20,15,.18)",
+  floatBtn: "0 8px 20px rgba(18,20,15,.14)",
 } as const;
 
 /* ------------------------------------------------------------------ *
@@ -179,10 +160,15 @@ export const webShadows = {
  * ------------------------------------------------------------------ */
 
 export const fonts = {
-  /** Web / CSS font stack. */
-  sans: "'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif",
-  /** Logical family name; mobile loads "Inter" via expo-font (see apps/app). */
-  family: "Inter",
+  sans: "Inter_400Regular",
+  family: "Inter_400Regular",
+  bodyRegular: "Inter_400Regular",
+  bodyMedium: "Inter_500Medium",
+  bodySemiBold: "Inter_600SemiBold",
+  bodyBold: "Inter_700Bold",
+  displayMedium: "SpaceGrotesk_500Medium",
+  displaySemiBold: "SpaceGrotesk_600SemiBold",
+  displayBold: "SpaceGrotesk_700Bold",
 } as const;
 
 export type FontWeight = "400" | "500" | "600" | "700" | "800";
@@ -196,19 +182,19 @@ export interface TypeStyle {
 
 export const typography = {
   display: {
-    fontSize: 32,
-    fontWeight: "800",
-    letterSpacing: -0.64,
-    lineHeight: 38,
-  },
-  h1: { fontSize: 26, fontWeight: "700", letterSpacing: -0.78, lineHeight: 32 },
-  h1App: {
-    fontSize: 24,
+    fontSize: 40,
     fontWeight: "700",
-    letterSpacing: -0.48,
-    lineHeight: 30,
+    letterSpacing: -1.2,
+    lineHeight: 44,
   },
-  h2: { fontSize: 22, fontWeight: "700", letterSpacing: -0.44, lineHeight: 28 },
+  h1: { fontSize: 32, fontWeight: "700", letterSpacing: -0.9, lineHeight: 36 },
+  h1App: {
+    fontSize: 28,
+    fontWeight: "700",
+    letterSpacing: -0.7,
+    lineHeight: 32,
+  },
+  h2: { fontSize: 24, fontWeight: "700", letterSpacing: -0.5, lineHeight: 29 },
   title: {
     fontSize: 20,
     fontWeight: "700",
@@ -277,6 +263,10 @@ export const iconStroke = { default: 2, emphasis: 2.6 } as const;
 
 export const layout = {
   screenPadX: 20,
+  screenPadDesktop: 40,
+  maxContent: 1280,
+  maxReading: 720,
+  maxForm: 480,
   tabBarHeight: 64,
   tabBarPadBottom: 22,
   ctaHeight: 56,
@@ -288,6 +278,12 @@ export const layout = {
   headerTopApp: 52,
   heroHeight: 280,
   cardHeroHeight: 140,
+} as const;
+
+export const breakpoints = {
+  tablet: 768,
+  desktop: 1024,
+  wide: 1440,
 } as const;
 
 /* ------------------------------------------------------------------ *
@@ -364,8 +360,25 @@ export const sportColors: Record<string, string> = {
   running: "#FA8231",
   ciclismo: "#3867D6",
   crossfit: "#EB3B5A",
+  palestra: "#D63031",
+  yoga: "#00B894",
+  arrampicata: "#FDCB6E",
+  scherma: "#A29BFE",
+  boxe: "#E17055",
+  mma: "#D63031",
+  judo: "#6C5CE7",
+  karate: "#00CEC9",
   rugby: "#574B90",
+  baseball: "#FDCB6E",
+  softball: "#FD79A8",
+  hockey: "#74B9FF",
+  pattinaggio: "#81ECEC",
   golf: "#26A65B",
+  freccette: "#55EFC4",
+  biliardo: "#636E72",
+  bowling: "#B2BEC3",
+  ginnastica: "#FD79A8",
+  atletica: "#FFEAA7",
 };
 
 export const brandFallback = "#6BA2E0";
@@ -394,6 +407,7 @@ export const theme = {
   iconSizes,
   iconStroke,
   layout,
+  breakpoints,
   zIndex,
   easing,
   motion,

@@ -1,109 +1,205 @@
-/**
- * MapPreview + MapPin — an isolated graphic placeholder (no Google/Mapbox).
- * Same API a real map would expose (courts/selectedId/onSelect/radius), so it
- * can be swapped later without touching screens. Colors from @/theme/tokens.
- */
-
-import React from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import type { StyleProp, ViewStyle } from "react-native";
-import { sportColor, theme } from "@/theme/tokens";
-import type { CourtListItem } from "@atimar/types";
+import React, { useEffect, useMemo, useRef } from "react";
+import {
+  ActivityIndicator,
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
+import MapView, { Circle, Marker } from "react-native-maps";
+import type { Region } from "react-native-maps";
+import { theme, sportColor } from "@/theme/tokens";
+import type { GeoPoint } from "@atimar/types";
 import { textStyle } from "./theme";
+import {
+  buildMapPins,
+  selectedMapPin,
+  type MapPreviewProps,
+} from "./map-shared";
 
-/* ------------------------------------------------------------------ *
- * MapPin
- * ------------------------------------------------------------------ */
+const DEFAULT_REGION: Region = {
+  latitude: 41.9028,
+  longitude: 12.4964,
+  latitudeDelta: 8,
+  longitudeDelta: 8,
+};
 
-interface MapPinProps {
-  label: string;
-  sportId: string;
-  selected?: boolean;
-  onPress?: () => void;
+function regionForPoints(points: GeoPoint[]): Region {
+  if (points.length === 0) return DEFAULT_REGION;
+
+  const lats = points.map((point) => point.lat);
+  const lngs = points.map((point) => point.lng);
+  const minLat = Math.min(...lats);
+  const maxLat = Math.max(...lats);
+  const minLng = Math.min(...lngs);
+  const maxLng = Math.max(...lngs);
+  const latitude = (minLat + maxLat) / 2;
+  const longitude = (minLng + maxLng) / 2;
+  const latitudeDelta = Math.max(0.035, (maxLat - minLat) * 1.6);
+  const longitudeDelta = Math.max(0.035, (maxLng - minLng) * 1.6);
+
+  return { latitude, longitude, latitudeDelta, longitudeDelta };
 }
 
-function MapPin({ label, sportId, selected = false, onPress }: MapPinProps) {
+function LocationControl({
+  status = "idle",
+  onRequestLocation,
+}: {
+  status?: MapPreviewProps["locationStatus"];
+  onRequestLocation?: () => void | Promise<void>;
+}) {
+  if (!onRequestLocation || status === "granted") return null;
+
+  const loading = status === "loading";
+  const label =
+    status === "denied"
+      ? "Posizione negata"
+      : status === "unavailable"
+        ? "Posizione non disponibile"
+        : status === "error"
+          ? "Riprova posizione"
+          : "Usa posizione";
+
   return (
     <Pressable
-      onPress={onPress}
-      style={({ pressed }) => [pressed && { opacity: 0.8 }]}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+      disabled={loading}
+      onPress={() => void onRequestLocation()}
+      style={({ pressed }) => [
+        styles.locationControl,
+        pressed && styles.pressed,
+      ]}
     >
-      {selected ? <View style={styles.pinHalo} /> : null}
-      <View
-        style={[styles.pin, selected ? styles.pinSelected : styles.pinIdle]}
-      >
-        <View
-          style={[styles.pinDot, { backgroundColor: sportColor(sportId) }]}
-        />
-        <Text style={textStyle("micro", "ink")}>{label}</Text>
-      </View>
+      {loading ? (
+        <ActivityIndicator size="small" color={theme.colors.primary} />
+      ) : (
+        <Text style={textStyle("caption", "primary")}>{label}</Text>
+      )}
     </Pressable>
   );
 }
 
-/* ------------------------------------------------------------------ *
- * MapPreview
- * ------------------------------------------------------------------ */
-
-export interface MapPreviewProps {
-  courts: CourtListItem[];
-  selectedId?: string;
-  onSelect?: (id: string) => void;
-  /** Show a radius ring (setup area step); 1..50 → relative size. */
-  radius?: number;
-  compact?: boolean;
-  height?: number;
-  style?: StyleProp<ViewStyle>;
-}
-
 export function MapPreview({
-  courts,
+  campi,
   selectedId,
   onSelect,
   radius,
   compact = false,
   height,
   style,
+  userLocation,
+  locationStatus,
+  onRequestLocation,
 }: MapPreviewProps) {
+  const mapRef = useRef<MapView | null>(null);
   const h = height ?? (compact ? 140 : 320);
-  // radius 1..50 mapped to 30%..95% of the frame.
-  const ringPct =
-    radius != null ? Math.min(0.3 + (radius / 50) * 0.65, 0.95) : 0;
+  const pins = useMemo(() => buildMapPins(campi, selectedId), [campi, selectedId]);
+  const points = useMemo(
+    () => [
+      ...pins.map((pin) => pin.position),
+      ...(userLocation ? [userLocation] : []),
+    ],
+    [pins, userLocation],
+  );
+  const initialRegion = useMemo(() => regionForPoints(points), [points]);
+  const activePin = selectedMapPin(pins, selectedId);
+
+  useEffect(() => {
+    if (!activePin) return;
+    mapRef.current?.animateToRegion(
+      {
+        latitude: activePin.position.lat,
+        longitude: activePin.position.lng,
+        latitudeDelta: 0.035,
+        longitudeDelta: 0.035,
+      },
+      260,
+    );
+  }, [activePin]);
+
+  if (pins.length === 0 && !userLocation) {
+    return (
+      <View style={[styles.emptyMap, { height: h }, style]}>
+        <Text style={textStyle("bodyStrong", "muted")}>Nessun punto mappa</Text>
+        <Text style={[textStyle("caption", "muted"), styles.emptyText]}>
+          I campi caricati non hanno coordinate disponibili.
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.map, { height: h }, style]}>
-      {/* decorative "terrain" blobs */}
-      <View style={[styles.blob, styles.blobA]} />
-      <View style={[styles.blob, styles.blobB]} />
-
-      {radius != null ? (
-        <View style={styles.center}>
-          <View
-            style={[
-              styles.ring,
-              { width: `${ringPct * 100}%`, aspectRatio: 1 },
-            ]}
+      <MapView
+        ref={mapRef}
+        style={StyleSheet.absoluteFill}
+        initialRegion={initialRegion}
+        rotateEnabled={false}
+        pitchEnabled={false}
+      >
+        {userLocation && radius ? (
+          <Circle
+            center={{
+              latitude: userLocation.lat,
+              longitude: userLocation.lng,
+            }}
+            radius={radius * 1000}
+            strokeColor="rgba(49, 92, 255, 0.38)"
+            fillColor="rgba(49, 92, 255, 0.10)"
           />
-          <View style={styles.meDot} />
-        </View>
-      ) : null}
+        ) : null}
 
-      {courts.map((c) => (
-        <View
-          key={c.id}
-          style={[
-            styles.pinWrap,
-            { left: `${c.map.x * 100}%`, top: `${c.map.y * 100}%` },
-          ]}
-        >
-          <MapPin
-            label={c.price}
-            sportId={c.sportId}
-            selected={c.id === selectedId}
-            onPress={onSelect ? () => onSelect(c.id) : undefined}
-          />
-        </View>
-      ))}
+        {userLocation ? (
+          <Marker
+            coordinate={{
+              latitude: userLocation.lat,
+              longitude: userLocation.lng,
+            }}
+            title="La tua posizione"
+            zIndex={10}
+          >
+            <View style={styles.userPinOuter}>
+              <View style={styles.userPinInner} />
+            </View>
+          </Marker>
+        ) : null}
+
+        {pins.map((pin) => {
+          const color = sportColor(pin.sportId);
+          const active = pin.campi.some((campo) => campo.id === selectedId);
+          return (
+            <Marker
+              key={pin.id}
+              coordinate={{
+                latitude: pin.position.lat,
+                longitude: pin.position.lng,
+              }}
+              title={pin.campi[0].nomeStruttura}
+              description={`${pin.campi.length} ${
+                pin.campi.length === 1 ? "campo" : "campi"
+              }`}
+              zIndex={active ? 5 : 1}
+              onPress={() => onSelect?.(pin.selectedCampoId)}
+            >
+              <View
+                style={[
+                  styles.pin,
+                  active && styles.pinActive,
+                  { borderColor: color },
+                ]}
+              >
+                <View style={[styles.pinDot, { backgroundColor: color }]} />
+              </View>
+            </Marker>
+          );
+        })}
+      </MapView>
+
+      <LocationControl
+        status={locationStatus}
+        onRequestLocation={onRequestLocation}
+      />
     </View>
   );
 }
@@ -116,79 +212,70 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.line,
     overflow: "hidden",
   },
-  blob: {
-    position: "absolute",
+  emptyMap: {
+    borderRadius: theme.radius.hero,
+    backgroundColor: theme.colors.chip,
+    borderWidth: 1,
+    borderColor: theme.colors.line,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.xl,
+  },
+  emptyText: {
+    textAlign: "center",
+  },
+  pin: {
+    width: 30,
+    height: 30,
     borderRadius: theme.radius.pill,
-    backgroundColor: theme.colors.placeholder,
-    opacity: 0.6,
+    backgroundColor: theme.colors.surface,
+    borderWidth: 3,
+    alignItems: "center",
+    justifyContent: "center",
+    ...theme.shadows.floatBtn,
   },
-  blobA: {
-    width: "60%",
-    height: "50%",
-    top: "-10%",
-    left: "-15%",
+  pinActive: {
+    width: 38,
+    height: 38,
+    borderWidth: 4,
   },
-  blobB: {
-    width: "55%",
-    height: "45%",
-    bottom: "-12%",
-    right: "-12%",
+  pinDot: {
+    width: 12,
+    height: 12,
+    borderRadius: theme.radius.pill,
   },
-  center: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+  userPinOuter: {
+    width: 26,
+    height: 26,
+    borderRadius: theme.radius.pill,
+    backgroundColor: "rgba(49, 92, 255, 0.18)",
     alignItems: "center",
     justifyContent: "center",
   },
-  ring: {
-    borderRadius: theme.radius.pill,
-    borderWidth: 2,
-    borderColor: theme.colors.lime,
-    backgroundColor: theme.tints.limeTint,
-  },
-  meDot: {
-    position: "absolute",
-    width: 16,
-    height: 16,
+  userPinInner: {
+    width: 14,
+    height: 14,
     borderRadius: theme.radius.pill,
     backgroundColor: theme.colors.primary,
     borderWidth: 3,
     borderColor: theme.colors.surface,
   },
-  pinWrap: {
+  locationControl: {
     position: "absolute",
-    transform: [{ translateX: -24 }, { translateY: -16 }],
-  },
-  pin: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: theme.spacing.xs,
-    paddingVertical: theme.spacing.xs,
-    paddingHorizontal: theme.spacing.sm,
+    top: theme.spacing.md,
+    right: theme.spacing.md,
+    minHeight: 36,
+    paddingHorizontal: theme.spacing.md,
     borderRadius: theme.radius.pill,
+    backgroundColor: theme.overlays.glass,
+    borderWidth: 1,
+    borderColor: theme.overlays.glassLine,
+    alignItems: "center",
+    justifyContent: "center",
     ...theme.shadows.floatBtn,
   },
-  pinIdle: {
-    backgroundColor: theme.colors.surface,
-  },
-  pinSelected: {
-    backgroundColor: theme.colors.lime,
-  },
-  pinDot: {
-    width: 8,
-    height: 8,
-    borderRadius: theme.radius.pill,
-  },
-  pinHalo: {
-    position: "absolute",
-    width: 44,
-    height: 44,
-    borderRadius: theme.radius.pill,
-    backgroundColor: theme.tints.limeTint,
-    alignSelf: "center",
-    top: -10,
+  pressed: {
+    opacity: 0.82,
   },
 });

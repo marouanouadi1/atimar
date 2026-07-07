@@ -1,11 +1,13 @@
-import { Tabs } from "expo-router";
+import { Redirect, Tabs } from "expo-router";
 import React, { type ComponentProps } from "react";
-import { Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { theme } from "@/theme/tokens";
 import { Icon, textStyle } from "@/ui";
+import { WebHeader } from "@/components/layout/WebHeader";
+import { useAppState } from "@/state/AppState";
 
 interface TabDef {
   label: string;
@@ -24,6 +26,9 @@ type TabBarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>["tabBar"]>
 
 function TabBar({ state, navigation }: TabBarProps) {
   const insets = useSafeAreaInsets();
+  // On desktop web, WebHeader handles navigation
+  if (process.env.EXPO_OS === "web") return null;
+
   return (
     <View
       style={[styles.bar, { paddingBottom: insets.bottom + theme.spacing.sm }]}
@@ -33,7 +38,7 @@ function TabBar({ state, navigation }: TabBarProps) {
         if (!def) return null;
         const focused = state.index === index;
         const onPress = () => {
-          if (Platform.OS !== "web") {
+          if (process.env.EXPO_OS === "ios") {
             void Haptics.selectionAsync();
           }
           const event = navigation.emit({
@@ -52,12 +57,14 @@ function TabBar({ state, navigation }: TabBarProps) {
             style={styles.item}
             accessibilityRole="button"
           >
-            <Icon
-              name={focused ? def.active : def.inactive}
-              size={theme.iconSizes.lg}
-              color={focused ? "primary" : "subtle"}
-            />
-            <Text style={textStyle("small", focused ? "primary" : "subtle")}>
+            <View style={[styles.iconPill, focused && styles.iconPillActive]}>
+              <Icon
+                name={focused ? def.active : def.inactive}
+                size={theme.iconSizes.lg}
+                color={focused ? "ink" : "subtle"}
+              />
+            </View>
+            <Text style={textStyle("small", focused ? "ink" : "subtle")}>
               {def.label}
             </Text>
           </Pressable>
@@ -68,23 +75,37 @@ function TabBar({ state, navigation }: TabBarProps) {
 }
 
 export default function TabLayout() {
+  const { ready, user, onboarded, onboardedResolved } = useAppState();
+
+  // Un utente autenticato ma non onboarded (es. web: registrazione avvenuta
+  // prima dell'onboarding) viene spinto nel wizard prima di vedere le tab.
+  if (ready && user && !onboardedResolved) return null;
+  if (ready && user && !onboarded) return <Redirect href="/onboarding/value-near" />;
+
   return (
-    <Tabs
-      tabBar={(props) => <TabBar {...props} />}
-      screenOptions={{ headerShown: false }}
-    >
-      <Tabs.Screen name="home" />
-      <Tabs.Screen name="search" />
-      <Tabs.Screen name="favorites" />
-      <Tabs.Screen name="profile" />
-    </Tabs>
+    <View style={styles.root}>
+      <WebHeader />
+      <Tabs
+        tabBar={(props) => <TabBar {...props} />}
+        screenOptions={{ headerShown: false }}
+      >
+        <Tabs.Screen name="home" />
+        <Tabs.Screen name="search" />
+        <Tabs.Screen name="favorites" />
+        <Tabs.Screen name="profile" />
+      </Tabs>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: theme.colors.bg,
+  },
   bar: {
     flexDirection: "row",
-    backgroundColor: theme.overlays.glass,
+    backgroundColor: theme.colors.surface,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: theme.colors.line,
     paddingTop: theme.spacing.sm,
@@ -93,6 +114,16 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    gap: 2,
+    gap: 3,
+  },
+  iconPill: {
+    width: 56,
+    height: 30,
+    borderRadius: theme.radius.pill,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  iconPillActive: {
+    backgroundColor: theme.colors.lime,
   },
 });

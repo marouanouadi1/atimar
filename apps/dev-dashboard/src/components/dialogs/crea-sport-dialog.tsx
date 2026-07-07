@@ -17,6 +17,7 @@ import { toast } from 'sonner'
 export function CreaSportDialog() {
   const [open, setOpen] = useState(false)
   const [nome, setNome] = useState('')
+  const [slug, setSlug] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
@@ -24,13 +25,14 @@ export function CreaSportDialog() {
     setOpen(value)
     if (!value) {
       setNome('')
+      setSlug('')
       setError(null)
     }
   }
 
   function handleSubmit() {
     startTransition(async () => {
-      const result = await createSportAction(nome)
+      const result = await createSportAction(nome, slug)
       if (result.error) {
         setError(result.error)
         toast.error('Errore durante la creazione', { description: result.error })
@@ -57,13 +59,23 @@ export function CreaSportDialog() {
               id="nome_sport"
               value={nome}
               onChange={(e) => setNome(e.target.value)}
-              placeholder="Es. Padel"
+              placeholder="Es. Calcio a 5"
               autoFocus
             />
           </div>
+          <div className="flex flex-col gap-1.5">
+            <Label htmlFor="slug">Slug *</Label>
+            <Input
+              id="slug"
+              value={slug}
+              onChange={(e) => setSlug(e.target.value.toLowerCase().replace(/\s+/g, ''))}
+              placeholder="es. calcio5"
+            />
+            <p className="text-xs text-muted-foreground">Identificatore stabile usato nel codice. Deve corrispondere a un id in SPORTS (es. padel, calcio5, beachvolley).</p>
+          </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
           <div className="flex justify-end">
-            <Button onClick={handleSubmit} disabled={!nome || isPending}>
+            <Button onClick={handleSubmit} disabled={!nome || !slug || isPending}>
               {isPending ? 'Salvataggio...' : 'Crea sport'}
             </Button>
           </div>

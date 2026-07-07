@@ -4,7 +4,15 @@
  */
 
 import React from "react";
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+} from "react-native";
 import type { StyleProp, TextStyle, ViewStyle } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -12,6 +20,7 @@ import { theme } from "@/theme/tokens";
 import { resolveButtonSpec } from "./core";
 import type { ButtonVariant } from "./core";
 import { resolveColor } from "./theme";
+import { BrandMark } from "./brand";
 
 type IonName = keyof typeof Ionicons.glyphMap;
 
@@ -53,6 +62,7 @@ export interface ButtonProps {
   onPress?: () => void;
   variant?: ButtonVariant;
   disabled?: boolean;
+  loading?: boolean;
   /** Show a trailing chevron (primary CTA style). */
   icon?: boolean;
   /** Optional leading Ionicons name. */
@@ -67,6 +77,7 @@ export function Button({
   onPress,
   variant = "primary",
   disabled = false,
+  loading = false,
   icon = false,
   leadingIcon,
   fullWidth = true,
@@ -77,13 +88,14 @@ export function Button({
   const bg = spec.bg ? resolveColor(spec.bg) : "transparent";
   const fg = resolveColor(spec.fg);
   const shadow = spec.shadow ? theme.shadows[spec.shadow] : undefined;
+  const isDisabled = disabled || loading;
 
   return (
     <Pressable
       testID={testID}
       accessibilityRole="button"
-      disabled={disabled}
-      onPress={disabled ? undefined : onPress}
+      disabled={isDisabled}
+      onPress={isDisabled ? undefined : onPress}
       style={({ pressed }) => [
         styles.btn,
         fullWidth && styles.btnFull,
@@ -93,21 +105,27 @@ export function Button({
           borderRadius: theme.radius.pill,
           opacity: pressed ? 0.92 : 1,
         },
-        !disabled && shadow,
+        !isDisabled && shadow,
         style,
       ]}
     >
-      {leadingIcon ? (
-        <Icon name={leadingIcon} size={theme.iconSizes.md} color={spec.fg} />
-      ) : null}
-      <Text style={[styles.btnLabel, { color: fg }]}>{children}</Text>
-      {icon ? (
-        <Icon
-          name="chevron-forward"
-          size={theme.iconSizes.lg}
-          color={spec.fg}
-        />
-      ) : null}
+      {loading ? (
+        <ActivityIndicator size="small" color={fg} />
+      ) : (
+        <>
+          {leadingIcon ? (
+            <Icon name={leadingIcon} size={theme.iconSizes.md} color={spec.fg} />
+          ) : null}
+          <Text style={[styles.btnLabel, { color: fg }]}>{children}</Text>
+          {icon ? (
+            <Icon
+              name="chevron-forward"
+              size={theme.iconSizes.lg}
+              color={spec.fg}
+            />
+          ) : null}
+        </>
+      )}
     </Pressable>
   );
 }
@@ -273,29 +291,7 @@ export interface LogoProps {
 }
 
 export function Logo({ scale = 1, style }: LogoProps) {
-  return (
-    <View style={[styles.logoRow, style]}>
-      <Text
-        style={{
-          color: theme.colors.ink,
-          fontSize: theme.typography.display.fontSize * scale,
-          fontWeight: "800",
-          letterSpacing: theme.typography.display.letterSpacing,
-        }}
-      >
-        ATIMAR
-      </Text>
-      <View
-        style={{
-          width: 10 * scale,
-          height: 10 * scale,
-          borderRadius: theme.radius.sm,
-          backgroundColor: theme.colors.lime,
-          marginBottom: 6 * scale,
-        }}
-      />
-    </View>
-  );
+  return <BrandMark size={42 * scale} style={style} />;
 }
 
 /* ------------------------------------------------------------------ *
@@ -326,6 +322,8 @@ export function ScreenContainer({
   contentStyle,
 }: ScreenContainerProps) {
   const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const desktop = width >= theme.breakpoints.desktop;
   const bottomPad = footer ? 0 : insets.bottom + theme.spacing.xxxl;
   return (
     <View
@@ -344,9 +342,15 @@ export function ScreenContainer({
           style={styles.body}
           contentContainerStyle={[
             styles.bodyContent,
-            { paddingBottom: bottomPad },
+            {
+              paddingBottom: bottomPad,
+              paddingHorizontal: desktop
+                ? theme.layout.screenPadDesktop
+                : theme.layout.screenPadX,
+            },
             contentStyle,
           ]}
+          contentInsetAdjustmentBehavior="automatic"
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
@@ -357,7 +361,12 @@ export function ScreenContainer({
           style={[
             styles.body,
             styles.bodyContent,
-            { paddingBottom: bottomPad },
+            {
+              paddingBottom: bottomPad,
+              paddingHorizontal: desktop
+                ? theme.layout.screenPadDesktop
+                : theme.layout.screenPadX,
+            },
             contentStyle,
           ]}
         >
@@ -365,13 +374,20 @@ export function ScreenContainer({
         </View>
       )}
       {footer ? (
-        <View
-          style={[
-            styles.footer,
-            { paddingBottom: insets.bottom + theme.spacing.lg },
-          ]}
-        >
-          {footer}
+        <View style={styles.footer}>
+          <View
+            style={[
+              styles.footerInner,
+              {
+                paddingBottom: insets.bottom + theme.spacing.lg,
+                paddingHorizontal: desktop
+                  ? theme.layout.screenPadDesktop
+                  : theme.layout.screenPadX,
+              },
+            ]}
+          >
+            {footer}
+          </View>
         </View>
       ) : null}
     </View>
@@ -452,11 +468,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  logoRow: {
-    flexDirection: "row",
-    alignItems: "flex-end",
-    gap: 6,
-  },
   screen: {
     flex: 1,
   },
@@ -464,14 +475,22 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   bodyContent: {
-    paddingHorizontal: theme.layout.screenPadX,
     paddingTop: theme.spacing.sm,
+    width: "100%",
+    maxWidth: theme.layout.maxContent,
+    alignSelf: "center",
+    boxSizing: "border-box",
   },
   footer: {
-    paddingHorizontal: theme.layout.screenPadX,
-    paddingTop: theme.spacing.md,
     backgroundColor: theme.colors.bg,
     borderTopWidth: StyleSheet.hairlineWidth,
     borderTopColor: theme.colors.line,
+  },
+  footerInner: {
+    width: "100%",
+    maxWidth: theme.layout.maxReading,
+    alignSelf: "center",
+    paddingTop: theme.spacing.md,
+    boxSizing: "border-box",
   },
 });

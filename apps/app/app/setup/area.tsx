@@ -3,7 +3,6 @@ import { useRouter } from "expo-router";
 import { StyleSheet, Text, View } from "react-native";
 
 import { theme } from "@/theme/tokens";
-import { getCourtListItems } from "@atimar/data";
 import {
   Button,
   FormInput,
@@ -15,13 +14,16 @@ import {
   textStyle,
 } from "@/ui";
 import { useAppState } from "@/state/AppState";
+import { useCampiInLista } from "@/data/hooks";
+import { useUserLocation } from "@/data/use-user-location";
 
 export default function AreaStep() {
   const router = useRouter();
   const { prefs, setPrefs } = useAppState();
   const [location, setLocation] = useState(prefs.area.location);
   const [radius, setRadius] = useState(prefs.area.radius);
-  const courts = getCourtListItems();
+  const { data: campi = [] } = useCampiInLista();
+  const userLocation = useUserLocation();
 
   const onContinue = () => {
     setPrefs({
@@ -41,7 +43,14 @@ export default function AreaStep() {
           subtitle="Imposta la tua zona e quanto sei disposto a spostarti."
           size="h1"
         />
-        <MapPreview courts={courts} radius={radius} height={240} />
+        <MapPreview
+          campi={campi}
+          radius={radius}
+          height={240}
+          userLocation={userLocation.location}
+          locationStatus={userLocation.status}
+          onRequestLocation={userLocation.requestLocation}
+        />
         <FormInput
           label="La tua zona"
           icon="location-outline"
@@ -65,7 +74,13 @@ export default function AreaStep() {
 }
 
 const styles = StyleSheet.create({
-  body: { gap: theme.spacing.xl, paddingTop: theme.spacing.sm },
+  body: {
+    gap: theme.spacing.xl,
+    paddingTop: theme.spacing.sm,
+    width: "100%",
+    maxWidth: theme.layout.maxReading,
+    alignSelf: "center",
+  },
   radiusBlock: { gap: theme.spacing.sm },
   radiusRow: {
     flexDirection: "row",

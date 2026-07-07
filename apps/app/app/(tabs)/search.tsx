@@ -1,12 +1,20 @@
 import { useMemo, useState } from "react";
-import { useRouter } from "expo-router";
-import { Pressable, StyleSheet, Text, View } from "react-native";
-
-import { theme } from "@/theme/tokens";
-import { getCourtListItemById, getCourtListItems } from "@atimar/data";
-import { filterCourts } from "@atimar/utils";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import {
-  CourtCard,
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+} from "react-native";
+
+import { theme, sportColor } from "@/theme/tokens";
+import { DEFAULT_FILTERS } from "@atimar/data";
+import { filtraCampi } from "@atimar/utils";
+import {
+  CampoCard,
   EmptyState,
   FilterChip,
   Icon,
@@ -16,35 +24,85 @@ import {
   textStyle,
 } from "@/ui";
 import { useAppState } from "@/state/AppState";
+import { useCampiInLista, useNearbyCampiInLista } from "@/data/hooks";
+import { useUserLocation } from "@/data/use-user-location";
+import type { CampoInLista } from "@atimar/types";
 
 type ViewMode = "list" | "map";
 
+const QUICK_SPORTS = [
+  { id: "all", label: "Tutti" },
+  { id: "padel", label: "Padel" },
+  { id: "tennis", label: "Tennis" },
+  { id: "calcio5", label: "Calcio 5" },
+  { id: "beachvolley", label: "Beach Volley" },
+  { id: "basket", label: "Basket" },
+];
+
 export default function Search() {
   const router = useRouter();
-  const { filters, isFavCourt, toggleFavCourt } = useAppState();
-  const [query, setQuery] = useState("");
+  const { q } = useLocalSearchParams<{ q?: string }>();
+  const { width } = useWindowDimensions();
+  const isDesktop = width >= 1024;
+  const { filtri, setFiltri, isPreferitoCampo, togglePreferitoCampo } = useAppState();
+  const [query, setQuery] = useState(q ?? "");
   const [view, setView] = useState<ViewMode>("list");
   const [selectedId, setSelectedId] = useState<string | undefined>(undefined);
 
-  const results = useMemo(() => {
-    const base = filterCourts(getCourtListItems(), filters);
-    const q = query.trim().toLowerCase();
-    if (!q) return base;
-    return base.filter(
-      (c) =>
-        c.venueName.toLowerCase().includes(q) ||
-        c.sport.toLowerCase().includes(q) ||
-        c.address.toLowerCase().includes(q),
-    );
-  }, [filters, query]);
+  const { data: campi = [], isLoading: isCatalogLoading } = useCampiInLista();
+  const userLocation = useUserLocation();
+  const nearbyQuery = useNearbyCampiInLista({
+    location: userLocation.location,
+    filtri,
+    limit: 250,
+  });
+  const useNearbySearch = userLocation.hasLocation;
+  const nearbyError = useNearbySearch ? nearbyQuery.error : null;
 
-  const selected = selectedId ? getCourtListItemById(selectedId) : undefined;
-  const openVenue = (venueId: string) =>
-    router.push({ pathname: "/venue/[id]", params: { id: venueId } });
+  const results = useMemo(() => {
+    const source = useNearbySearch
+      ? nearbyQuery.data?.campiInLista ?? []
+      : filtraCampi(campi, filtri);
+    const testo = query.trim().toLowerCase();
+    if (!testo) return source;
+    return source.filter(
+      (c) =>
+        c.nomeStruttura.toLowerCase().includes(testo) ||
+        c.nome.toLowerCase().includes(testo) ||
+        c.nomeSport.toLowerCase().includes(testo) ||
+        c.indirizzo.toLowerCase().includes(testo),
+    );
+  }, [
+    campi,
+    filtri,
+    nearbyQuery.data?.campiInLista,
+    query,
+    useNearbySearch,
+  ]);
+  const isLoading = useNearbySearch
+    ? nearbyQuery.isLoading
+    : isCatalogLoading;
+
+  const selected: CampoInLista | undefined = selectedId
+    ? results.find((c) => c.id === selectedId)
+    : undefined;
+
+  const apriStruttura = (strutturaId: string) =>
+    router.push({ pathname: "/struttura/[id]", params: { id: strutturaId } });
+
+  const setSport = (id: string) => setFiltri({ ...filtri, sport: id });
 
   return (
     <ScreenContainer>
       <View style={styles.body}>
+        <View style={styles.heading}>
+          <Text style={styles.kicker}>TROVA CAMPO</Text>
+          <Text style={styles.title}>Trova il tuo campo</Text>
+          <Text style={styles.subtitle}>
+            Cerca per struttura, sport o zona e confronta subito i campi disponibili.
+          </Text>
+        </View>
+        {/* Barra cerca + filtri */}
         <View style={styles.searchRow}>
           <View style={{ flex: 1 }}>
             <SearchBar
@@ -55,78 +113,161 @@ export default function Search() {
           </View>
           <Pressable
             onPress={() => router.push("/filters")}
-            style={styles.filterBtn}
+            style={[styles.filterBtn, filtri.attivi > 0 && styles.filterBtnActive]}
             accessibilityLabel="Filtri"
           >
             <Icon
               name="options-outline"
               size={theme.iconSizes.lg}
-              color="ink"
+              color={filtri.attivi > 0 ? "primary" : "ink"}
             />
-            {filters.active > 0 ? (
+            {filtri.attivi > 0 && (
               <View style={styles.filterBadge}>
-                <Text style={textStyle("micro", "ink")}>{filters.active}</Text>
+                <Text style={textStyle("micro", "ink")}>{filtri.attivi}</Text>
               </View>
-            ) : null}
+            )}
           </Pressable>
         </View>
 
-        <View style={styles.toolbar}>
-          <Text style={textStyle("caption", "muted")}>
-            {results.length} {results.length === 1 ? "campo" : "campi"}
-          </Text>
-          <View style={styles.segment}>
-            <FilterChip
-              label="Lista"
-              variant="segment"
-              active={view === "list"}
-              onPress={() => setView("list")}
-            />
-            <FilterChip
-              label="Mappa"
-              variant="segment"
-              active={view === "map"}
-              onPress={() => setView("map")}
-            />
-          </View>
-        </View>
+        {/* Filtro rapido per sport */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.sportChips}
+        >
+          {QUICK_SPORTS.map((s) => {
+            const active = filtri.sport === s.id;
+            const accent = s.id === "all" ? theme.colors.primary : sportColor(s.id);
+            return (
+              <Pressable
+                key={s.id}
+                onPress={() => setSport(s.id)}
+                style={[
+                  styles.sportChip,
+                  active && { backgroundColor: accent, borderColor: accent },
+                ]}
+              >
+                <Text
+                  style={[
+                    styles.sportChipText,
+                    active && { color: "#fff" },
+                  ]}
+                >
+                  {s.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
 
-        {results.length === 0 ? (
+        {/* Intestazione risultati */}
+        {!isLoading && !nearbyError && (
+          <View style={styles.toolbar}>
+            <View style={styles.resultInfo}>
+              <View style={styles.resultCount}>
+                <Text style={styles.resultCountNumber}>
+                  {results.length}
+                </Text>
+              </View>
+              <View style={styles.resultCopy}>
+                <Text style={textStyle("bodyStrong", "ink")}>
+                  {results.length === 1 ? "1 campo trovato" : `${results.length} campi trovati`}
+                </Text>
+                <Text style={textStyle("caption", "muted")}>
+                  {useNearbySearch ? "Ordinati dalla tua posizione" : "Catalogo completo ATIMAR"}
+                </Text>
+              </View>
+              {filtri.attivi > 0 && (
+                <Pressable
+                  onPress={() => setFiltri(DEFAULT_FILTERS)}
+                  style={styles.clearFilters}
+                >
+                  <Text style={textStyle("caption", "primary")}>Rimuovi filtri</Text>
+                </Pressable>
+              )}
+            </View>
+            <View style={styles.segment}>
+              <FilterChip
+                label="Lista"
+                variant="segment"
+                active={view === "list"}
+                onPress={() => setView("list")}
+              />
+              <FilterChip
+                label="Mappa"
+                variant="segment"
+                active={view === "map"}
+                onPress={() => setView("map")}
+              />
+            </View>
+          </View>
+        )}
+
+        {/* Risultati */}
+        {isLoading ? (
+          <ActivityIndicator style={styles.loader} color={theme.colors.primary} />
+        ) : nearbyError ? (
+          <EmptyState
+            icon="alert-circle"
+            title="Ricerca per distanza non disponibile"
+            desc="Al momento non riusciamo a usare la posizione. Puoi disattivarla o riprovare piu tardi."
+          />
+        ) : results.length === 0 ? (
           <EmptyState
             icon="search"
             title="Nessun campo trovato"
             desc="Prova a modificare i filtri o ad ampliare la distanza di ricerca."
           />
         ) : view === "list" ? (
-          <View style={styles.list}>
-            {results.map((court) => (
-              <CourtCard
-                key={court.id}
-                court={court}
-                variant="compact"
-                isFav={isFavCourt(court.id)}
-                onFav={() => toggleFavCourt(court.id)}
-                onPress={() => openVenue(court.venueId)}
-              />
-            ))}
-          </View>
+          isDesktop ? (
+            <View style={styles.gridDesktop}>
+              {results.map((campo) => (
+                <View key={campo.id} style={styles.gridItem}>
+                  <CampoCard
+                    campo={campo}
+                    variant="large"
+                    isFav={isPreferitoCampo(campo.id)}
+                    onFav={() => void togglePreferitoCampo(campo.id)}
+                    onPress={() => apriStruttura(campo.strutturaId)}
+                  />
+                </View>
+              ))}
+            </View>
+          ) : (
+            <View style={styles.list}>
+              {results.map((campo) => (
+                <CampoCard
+                  key={campo.id}
+                  campo={campo}
+                  variant="compact"
+                  isFav={isPreferitoCampo(campo.id)}
+                  onFav={() => void togglePreferitoCampo(campo.id)}
+                  onPress={() => apriStruttura(campo.strutturaId)}
+                />
+              ))}
+            </View>
+          )
         ) : (
           <View style={styles.mapWrap}>
             <MapPreview
-              courts={results}
-              selectedId={selectedId}
+              campi={results}
+              selectedId={selected?.id}
               onSelect={setSelectedId}
+              radius={filtri.distanzaMax}
+              userLocation={userLocation.location}
+              locationStatus={userLocation.status}
+              onRequestLocation={userLocation.requestLocation}
               height={380}
             />
             {selected ? (
-              <CourtCard
-                court={selected}
+              <CampoCard
+                campo={selected}
                 variant="compact"
-                onPress={() => openVenue(selected.venueId)}
+                onPress={() => apriStruttura(selected.strutturaId)}
               />
             ) : (
               <Text style={[textStyle("caption", "subtle"), styles.hint]}>
-                Tocca un campo sulla mappa per i dettagli.
+                Tocca un marker per vedere il campo.
               </Text>
             )}
           </View>
@@ -138,6 +279,26 @@ export default function Search() {
 
 const styles = StyleSheet.create({
   body: { gap: theme.spacing.lg, paddingTop: theme.spacing.sm },
+  heading: { gap: theme.spacing.xs, paddingTop: theme.spacing.lg },
+  kicker: {
+    color: theme.colors.primary,
+    fontFamily: theme.fonts.displayBold,
+    fontSize: 10,
+    letterSpacing: 1.6,
+  },
+  title: {
+    color: theme.colors.ink,
+    fontFamily: theme.fonts.displayBold,
+    fontSize: 32,
+    letterSpacing: -0.9,
+  },
+  subtitle: {
+    color: theme.colors.muted,
+    fontFamily: theme.fonts.bodyRegular,
+    fontSize: 15,
+    lineHeight: 23,
+    maxWidth: 620,
+  },
   searchRow: {
     flexDirection: "row",
     alignItems: "center",
@@ -153,6 +314,10 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.colors.line,
   },
+  filterBtnActive: {
+    borderColor: theme.colors.primary,
+    backgroundColor: theme.tints.blueTint,
+  },
   filterBadge: {
     position: "absolute",
     top: 4,
@@ -165,10 +330,63 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  sportChips: {
+    gap: theme.spacing.sm,
+    paddingVertical: theme.spacing.xs,
+  },
+  sportChip: {
+    paddingVertical: 7,
+    paddingHorizontal: 14,
+    borderRadius: theme.radius.pill,
+    borderWidth: 1,
+    borderColor: theme.colors.line,
+    backgroundColor: theme.colors.chip,
+  },
+  sportChipText: {
+    color: theme.colors.muted,
+    fontSize: 13,
+    fontWeight: "600",
+  },
   toolbar: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    gap: theme.spacing.sm,
+    padding: theme.spacing.md,
+    borderRadius: theme.radius.lg,
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.line,
+  },
+  resultInfo: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: theme.spacing.sm,
+  },
+  resultCount: {
+    width: 42,
+    height: 42,
+    borderRadius: theme.radius.md,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: theme.tints.blueTint,
+  },
+  resultCountNumber: {
+    color: theme.colors.primary,
+    fontFamily: theme.fonts.displayBold,
+    fontSize: 18,
+    fontVariant: ["tabular-nums"],
+  },
+  resultCopy: {
+    gap: 1,
+  },
+  clearFilters: {
+    paddingVertical: 2,
+    paddingHorizontal: theme.spacing.sm,
+    borderRadius: theme.radius.pill,
+    backgroundColor: theme.tints.blueTint,
   },
   segment: {
     flexDirection: "row",
@@ -176,9 +394,19 @@ const styles = StyleSheet.create({
     borderRadius: theme.radius.pill,
     padding: theme.spacing.xs,
     gap: theme.spacing.xs,
-    width: 180,
   },
   list: { gap: theme.spacing.md },
+  gridDesktop: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: theme.spacing.lg,
+  },
+  gridItem: {
+    flexBasis: 300,
+    flexGrow: 1,
+    maxWidth: 360,
+  },
   mapWrap: { gap: theme.spacing.md },
   hint: { textAlign: "center" },
+  loader: { paddingVertical: theme.spacing.xxxl },
 });

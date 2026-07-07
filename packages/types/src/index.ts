@@ -1,13 +1,15 @@
 /**
  * ATIMAR — Shared product types (@atimar/types)
  *
- * Court-first, normalized model:
- *  - A `Venue` is an informational container (club, public field, standalone).
- *  - A `Court` is the primary discovery entity and ALWAYS has a `venueId`.
- *  - `CourtListItem` is a denormalized view (Court + the Venue fields the UI
- *    needs) returned by selectors, so screens never join data by hand.
+ * Modello dominio in italiano, speculare al DB Supabase.
+ *  - Una `Struttura` è il contenitore (centro sportivo).
+ *  - Un `Campo` è l'entità principale di scoperta e ha SEMPRE uno `strutturaId`.
+ *  - `CampoInLista` è una vista denormalizzata (Campo + campi della Struttura
+ *    di cui l'UI ha bisogno) restituita dai selettori, così le schermate
+ *    non devono mai fare join a mano.
  *
- * Derived from MOCK_DATA_CONTRACT.md (design export).
+ * Supabase è la fonte di verità; i mapper in @atimar/api convertono le righe
+ * DB nelle shape di dominio.
  */
 
 /* ------------------------------------------------------------------ *
@@ -36,8 +38,8 @@ export interface Level {
  * Geometry & visuals
  * ------------------------------------------------------------------ */
 
-/** Graphic placeholder kind for hero / court illustration. */
-export type HeroKind =
+/** Tipo hero grafico per illustrazioni del campo/struttura. */
+export type TipoHero =
   | "tennis-clay"
   | "padel-green"
   | "padel-blue"
@@ -49,131 +51,102 @@ export interface GeoPoint {
   lng: number;
 }
 
-/** Relative position (0..1) on the MapPreview placeholder. */
+/** Posizione relativa (0..1) sul placeholder MapPreview. */
 export interface MapPoint {
   x: number;
   y: number;
 }
 
+export interface FotoStruttura {
+  urlFoto: string;
+  copertina: boolean;
+  ordine: number;
+}
+
 /* ------------------------------------------------------------------ *
- * Venue (container) & Court (primary entity)
+ * Struttura (ex Venue) & Campo (ex Court)
  * ------------------------------------------------------------------ */
+
+export interface Struttura {
+  id: string;
+  nome: string;
+  /** IDs degli sport offerti attraverso i campi della struttura. */
+  idSport: SportId[];
+  indirizzo: string;
+  posizione: GeoPoint;
+  /** Posizione relativa sul placeholder della mappa. */
+  mappa: MapPoint;
+  /** Distanza dall'utente — numerica per i filtri, stringa per display (IT).
+   * @todo Valorizzare con geolocalizzazione reale dell'utente. */
+  distanzaKm: number;
+  distanza: string;
+  mediaVoti: number;
+  numeroRecensioni: number;
+  sempreAperto: boolean;
+  coperto: boolean;
+  servizi: string[];
+  descrizione: string;
+  tipoHero: TipoHero;
+  foto: FotoStruttura[];
+  urlFotoCopertina: string | null;
+  /** Prezzo più basso tra i campi (numerico + display). */
+  prezzoDa: number;
+  prezzoDaLabel: string;
+  /** URL prenotazione esterna (Strutture.link_prenotazione_esterno). */
+  linkPrenotazione?: string | null;
+  /** Telefono (Strutture.telefono). */
+  telefono?: string | null;
+  /** Sito web della struttura (Strutture.link_sito_web). */
+  linkSitoWeb?: string | null;
+}
+
+export interface Campo {
+  id: string;
+  strutturaId: string;
+  /** Indice 1-based all'interno della struttura. */
+  indice: number;
+  nome: string;
+  idSport: SportId;
+  /** Etichetta display dello sport, es. "Padel". */
+  nomeSport: string;
+  /** Tipo superficie, reale dal DB o vuoto se non impostato. */
+  superficie: string;
+  coperto: boolean;
+  prezzoOrario: number;
+  /** Prezzo formattato IT, es. "€18". */
+  prezzoLabel: string;
+  aperto: boolean;
+}
 
 /**
- * Venue kind. `public` = campo comunale; `standalone` = single isolated court
- * not part of a real club (still wrapped in a Venue so every Court has a parent).
+ * Vista denormalizzata del campo usata da liste, card, mappa e preferiti.
+ * Restituita dai selettori così l'UI consuma una sola shape.
  */
-export type VenueKind = "club" | "public" | "standalone";
-
-export interface Venue {
-  id: string;
-  name: string;
-  kind: VenueKind;
-  /** Sports offered across the venue's courts. */
-  sportIds: SportId[];
-  address: string;
-  location: GeoPoint;
-  /** Relative position on the map placeholder. */
-  map: MapPoint;
-  /** Distance from the user — numeric for filters, string for display (IT). */
-  distanceKm: number;
-  distance: string;
-  rating: number;
-  reviewsCount: number;
-  open: boolean;
-  indoor: boolean;
-  amenities: string[];
-  description: string;
-  heroKind: HeroKind;
-  /** Cheapest court price (numeric + display). */
-  priceFrom: number;
-  priceFromLabel: string;
-}
-
-export interface Court {
-  id: string;
-  venueId: string;
-  /** 1-based index within its venue. */
-  index: number;
-  name: string;
-  sportId: SportId;
-  /** Display label of the sport, e.g. "Padel". */
-  sport: string;
-  surface: string;
-  indoor: boolean;
-  pricePerHour: number;
-  /** Display price, IT format, e.g. "€18". */
-  price: string;
-  open: boolean;
-}
-
-/**
- * Denormalized court view used by lists, cards, map and favorites.
- * Returned by `@atimar/data` selectors so the UI consumes a single shape.
- */
-export interface CourtListItem extends Court {
-  venueName: string;
-  venueKind: VenueKind;
-  address: string;
-  distanceKm: number;
-  distance: string;
-  rating: number;
-  reviewsCount: number;
-  heroKind: HeroKind;
-  map: MapPoint;
+export interface CampoInLista extends Campo {
+  nomeStruttura: string;
+  indirizzo: string;
+  posizione: GeoPoint;
+  distanzaKm: number;
+  distanza: string;
+  mediaVoti: number;
+  numeroRecensioni: number;
+  tipoHero: TipoHero;
+  urlFotoCopertina: string | null;
+  mappa: MapPoint;
 }
 
 /* ------------------------------------------------------------------ *
- * Availability & booking
+ * Recensioni
  * ------------------------------------------------------------------ */
 
-export type SlotStatus = "free" | "busy";
-
-export interface AvailabilitySlot {
+export interface Recensione {
   id: string;
-  venueId: string;
-  courtId: string;
-  /** ISO date 'YYYY-MM-DD'. */
-  date: string;
-  /** 'HH:mm'. */
-  start: string;
-  end: string;
-  status: SlotStatus;
-  price?: number;
-}
-
-export type BookingStatus =
-  | "requested"
-  | "confirmed"
-  | "declined"
-  | "cancelled";
-
-export interface Booking {
-  id: string;
-  userId: string;
-  venueId: string;
-  courtId: string;
-  /** 'YYYY-MM-DD'. */
-  date: string;
-  slot: { start: string; end: string };
-  status: BookingStatus;
-  note?: string;
-  /** ISO timestamp. */
-  createdAt: string;
-}
-
-/* ------------------------------------------------------------------ *
- * Reviews
- * ------------------------------------------------------------------ */
-
-export interface Review {
-  id: string;
-  venueId: string;
-  name: string;
-  rating: number;
-  /** Relative display string, e.g. "2 settimane fa". */
-  when: string;
-  text: string;
+  strutturaId: string;
+  nomeAutore: string;
+  stelle: number;
+  /** Stringa relativa display, es. "2 settimane fa". */
+  quando: string;
+  commento: string;
 }
 
 /* ------------------------------------------------------------------ *
@@ -195,28 +168,22 @@ export interface UserPrefs {
   availability: { days: DayLabel[]; times: TimeId[] };
 }
 
-/** Favorites: courts are primary; venues optional (separate section/tab). */
-export interface Favorites {
-  courtIds: string[];
-  venueIds: string[];
+/** Preferiti: campi salvati per utente in Campi_Preferiti (Supabase). */
+export interface Preferiti {
+  campoIds: string[];
 }
 
 /* ------------------------------------------------------------------ *
- * Filters
+ * Filtri
  * ------------------------------------------------------------------ */
 
-export interface Filters {
+export interface Filtri {
   sport: "all" | SportId;
-  /** km, 1..50. */
-  maxDistance: number;
-  openOnly: boolean;
-  onlyAvailable: boolean;
-  /** Number of active filters, for the badge. */
-  active: number;
+  /** km, 1..50.
+   * @todo Filtrare per distanza reale quando disponibile. */
+  distanzaMax: number;
+  soloAperti: boolean;
+  soloDisponibili: boolean;
+  /** Numero di filtri attivi, per il badge. */
+  attivi: number;
 }
-
-/** Onboarding / app phase (mirrors prototype `app.jsx`). */
-export type AppPhase = "onboarding" | "auth-register" | "auth-login" | "app";
-
-/** Slide transition direction. */
-export type Direction = "forward" | "back";

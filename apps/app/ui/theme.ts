@@ -5,7 +5,7 @@
  */
 
 import type { TextStyle } from "react-native";
-import { colors, semantic, tints, typography, theme } from "@/theme/tokens";
+import { colors, fonts, semantic, tints, typography, theme } from "@/theme/tokens";
 import type { Theme, TypographyToken } from "@/theme/tokens";
 import type { ColorKey, TintKey } from "./core";
 
@@ -40,9 +40,32 @@ export function textStyle(
   color?: ColorKey | string,
 ): TextStyle {
   const t = typography[token];
+  const displayTokens: TypographyToken[] = [
+    "display",
+    "h1",
+    "h1App",
+    "h2",
+    "title",
+    "sectionHead",
+    "overline",
+  ];
+  const isDisplay = displayTokens.includes(token);
+  const fontFamily = isDisplay
+    ? t.fontWeight === "700"
+      ? fonts.displayBold
+      : t.fontWeight === "600"
+        ? fonts.displaySemiBold
+        : fonts.displayMedium
+    : t.fontWeight === "700"
+      ? fonts.bodyBold
+      : t.fontWeight === "600"
+        ? fonts.bodySemiBold
+        : t.fontWeight === "500"
+          ? fonts.bodyMedium
+          : fonts.bodyRegular;
   const base: TextStyle = {
     fontSize: t.fontSize,
-    fontWeight: t.fontWeight,
+    fontFamily,
     letterSpacing: t.letterSpacing,
     lineHeight: t.lineHeight,
   };

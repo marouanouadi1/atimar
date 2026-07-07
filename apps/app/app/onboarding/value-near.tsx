@@ -2,7 +2,6 @@ import { useRouter } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { theme } from "@/theme/tokens";
-import { getCourtListItems } from "@atimar/data";
 import { pluralize } from "@atimar/utils";
 import {
   Button,
@@ -14,10 +13,13 @@ import {
   StepProgress,
   textStyle,
 } from "@/ui";
+import { useCampiInLista } from "@/data/hooks";
+import { useUserLocation } from "@/data/use-user-location";
 
 export default function ValueNear() {
   const router = useRouter();
-  const courts = getCourtListItems();
+  const { data: campi = [] } = useCampiInLista();
+  const userLocation = useUserLocation();
 
   return (
     <ScreenContainer
@@ -45,11 +47,17 @@ export default function ValueNear() {
           subtitle="ATIMAR ti mostra i campi sportivi intorno a te, con distanza, prezzo e disponibilità."
           size="h1"
         />
-        <MapPreview courts={courts} height={260} />
+        <MapPreview
+          campi={campi}
+          height={260}
+          userLocation={userLocation.location}
+          locationStatus={userLocation.status}
+          onRequestLocation={userLocation.requestLocation}
+        />
         <View style={styles.count}>
           <Icon name="location" size={theme.iconSizes.sm} color="primary" />
           <Text style={textStyle("caption", "text")}>
-            {pluralize(courts.length, "campo disponibile", "campi disponibili")}
+            {pluralize(campi.length, "campo disponibile", "campi disponibili")}
           </Text>
         </View>
       </View>
@@ -58,7 +66,13 @@ export default function ValueNear() {
 }
 
 const styles = StyleSheet.create({
-  body: { gap: theme.spacing.xl, paddingTop: theme.spacing.lg },
+  body: {
+    gap: theme.spacing.xl,
+    paddingTop: theme.spacing.lg,
+    width: "100%",
+    maxWidth: theme.layout.maxReading,
+    alignSelf: "center",
+  },
   footer: { gap: theme.spacing.md, alignItems: "center" },
   count: {
     flexDirection: "row",

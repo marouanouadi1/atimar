@@ -18,7 +18,7 @@ export type Database = {
         Row: {
           aggiornato_il: string
           attivo: boolean
-          coperto: boolean | null
+          coperto: boolean
           created_at: string
           fk_struttura: number
           id: number
@@ -31,7 +31,7 @@ export type Database = {
         Insert: {
           aggiornato_il?: string
           attivo: boolean
-          coperto?: boolean | null
+          coperto?: boolean
           created_at?: string
           fk_struttura: number
           id?: number
@@ -44,7 +44,7 @@ export type Database = {
         Update: {
           aggiornato_il?: string
           attivo?: boolean
-          coperto?: boolean | null
+          coperto?: boolean
           created_at?: string
           fk_struttura?: number
           id?: number
@@ -171,6 +171,53 @@ export type Database = {
           },
         ]
       }
+      Feedback_App: {
+        Row: {
+          aggiornato_il: string
+          categoria: string
+          created_at: string
+          email_contatto: string | null
+          fk_profilo: string
+          id: number
+          messaggio: string
+          piattaforma: string | null
+          stato: string
+          versione_app: string | null
+        }
+        Insert: {
+          aggiornato_il?: string
+          categoria?: string
+          created_at?: string
+          email_contatto?: string | null
+          fk_profilo: string
+          id?: number
+          messaggio: string
+          piattaforma?: string | null
+          stato?: string
+          versione_app?: string | null
+        }
+        Update: {
+          aggiornato_il?: string
+          categoria?: string
+          created_at?: string
+          email_contatto?: string | null
+          fk_profilo?: string
+          id?: number
+          messaggio?: string
+          piattaforma?: string | null
+          stato?: string
+          versione_app?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "Feedback_App_fk_profilo_fkey"
+            columns: ["fk_profilo"]
+            isOneToOne: false
+            referencedRelation: "Profili"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       Foto_Campi: {
         Row: {
           aggiornato_il: string
@@ -246,6 +293,47 @@ export type Database = {
             columns: ["fk_struttura"]
             isOneToOne: false
             referencedRelation: "Strutture"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      Inviti_App: {
+        Row: {
+          aggiornato_il: string
+          codice: string
+          conteggio_condivisioni: number
+          created_at: string
+          fk_profilo: string
+          id: number
+          link: string
+          ultimo_condiviso_il: string | null
+        }
+        Insert: {
+          aggiornato_il?: string
+          codice: string
+          conteggio_condivisioni?: number
+          created_at?: string
+          fk_profilo: string
+          id?: number
+          link: string
+          ultimo_condiviso_il?: string | null
+        }
+        Update: {
+          aggiornato_il?: string
+          codice?: string
+          conteggio_condivisioni?: number
+          created_at?: string
+          fk_profilo?: string
+          id?: number
+          link?: string
+          ultimo_condiviso_il?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "Inviti_App_fk_profilo_fkey"
+            columns: ["fk_profilo"]
+            isOneToOne: false
+            referencedRelation: "Profili"
             referencedColumns: ["id"]
           },
         ]
@@ -352,6 +440,7 @@ export type Database = {
           created_at: string
           id: string
           nome_completo: string | null
+          onboarding_completato: boolean | null
           raggio_preferito_km: number | null
           url_avatar: string | null
         }
@@ -361,6 +450,7 @@ export type Database = {
           created_at?: string
           id: string
           nome_completo?: string | null
+          onboarding_completato?: boolean | null
           raggio_preferito_km?: number | null
           url_avatar?: string | null
         }
@@ -370,6 +460,7 @@ export type Database = {
           created_at?: string
           id?: string
           nome_completo?: string | null
+          onboarding_completato?: boolean | null
           raggio_preferito_km?: number | null
           url_avatar?: string | null
         }
@@ -493,21 +584,21 @@ export type Database = {
       Servizi: {
         Row: {
           aggiornato_il: string
-          attivo: boolean | null
+          attivo: boolean
           descrizione: string | null
           id: number
           nome_servizio: string
         }
         Insert: {
           aggiornato_il?: string
-          attivo?: boolean | null
+          attivo?: boolean
           descrizione?: string | null
           id?: number
           nome_servizio: string
         }
         Update: {
           aggiornato_il?: string
-          attivo?: boolean | null
+          attivo?: boolean
           descrizione?: string | null
           id?: number
           nome_servizio?: string
@@ -519,16 +610,19 @@ export type Database = {
           aggiornato_il: string
           id: number
           nome_sport: string
+          slug: string
         }
         Insert: {
           aggiornato_il?: string
           id?: number
           nome_sport: string
+          slug: string
         }
         Update: {
           aggiornato_il?: string
           id?: number
           nome_sport?: string
+          slug?: string
         }
         Relationships: []
       }
@@ -542,17 +636,17 @@ export type Database = {
           email: string | null
           fk_citta: number
           id: number
-          indirizzo: string | null
-          latitudine: number | null
+          indirizzo: string
+          latitudine: number
           link_prenotazione_esterno: string | null
           link_sito_web: string | null
-          longitudine: number | null
+          longitudine: number
           nome: string
           posizione: unknown
           prezzo_orario: number | null
-          sempre_aperto: boolean | null
+          sempre_aperto: boolean
           telefono: string | null
-          verificata: boolean | null
+          verificata: boolean
         }
         Insert: {
           aggiornato_il?: string
@@ -563,17 +657,17 @@ export type Database = {
           email?: string | null
           fk_citta: number
           id?: number
-          indirizzo?: string | null
-          latitudine?: number | null
+          indirizzo: string
+          latitudine: number
           link_prenotazione_esterno?: string | null
           link_sito_web?: string | null
-          longitudine?: number | null
+          longitudine: number
           nome: string
           posizione?: unknown
           prezzo_orario?: number | null
-          sempre_aperto?: boolean | null
+          sempre_aperto?: boolean
           telefono?: string | null
-          verificata?: boolean | null
+          verificata?: boolean
         }
         Update: {
           aggiornato_il?: string
@@ -584,17 +678,17 @@ export type Database = {
           email?: string | null
           fk_citta?: number
           id?: number
-          indirizzo?: string | null
-          latitudine?: number | null
+          indirizzo?: string
+          latitudine?: number
           link_prenotazione_esterno?: string | null
           link_sito_web?: string | null
-          longitudine?: number | null
+          longitudine?: number
           nome?: string
           posizione?: unknown
           prezzo_orario?: number | null
-          sempre_aperto?: boolean | null
+          sempre_aperto?: boolean
           telefono?: string | null
-          verificata?: boolean | null
+          verificata?: boolean
         }
         Relationships: [
           {
@@ -644,7 +738,38 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      search_campi_nearby: {
+        Args: {
+          p_lat: number
+          p_limit?: number
+          p_lng: number
+          p_offset?: number
+          p_radius_km: number
+          p_solo_aperti?: boolean
+          p_sport?: string
+        }
+        Returns: {
+          campo_id: number
+          campo_indice: number
+          coperto: boolean
+          distanza_km: number
+          indirizzo: string
+          latitudine: number
+          longitudine: number
+          media_voti: number
+          nome_campo: string
+          nome_sport: string
+          nome_struttura: string
+          numero_recensioni: number
+          prezzo_orario: number
+          sempre_aperto: boolean
+          sport_slug: string
+          struttura_id: number
+          tipo_superficie: string
+          total_count: number
+          url_foto_copertina: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
