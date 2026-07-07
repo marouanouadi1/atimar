@@ -218,6 +218,19 @@ function InfoTab({
   struttura: Struttura;
   numeroCampi: number;
 }) {
+  const copertoIcon =
+    struttura.coperto === true
+      ? "home-outline"
+      : struttura.coperto === false
+        ? "sunny-outline"
+        : "help-circle-outline";
+  const copertoLabel =
+    struttura.coperto === true
+      ? "Indoor"
+      : struttura.coperto === false
+        ? "Outdoor"
+        : "Da verificare";
+
   return (
     <View style={styles.section}>
       <Text style={textStyle("body", "text")}>{struttura.descrizione}</Text>
@@ -236,8 +249,8 @@ function InfoTab({
           />
         ) : null}
         <DetailStat
-          icon={struttura.coperto ? "home-outline" : "sunny-outline"}
-          value={struttura.coperto ? "Indoor" : "Outdoor"}
+          icon={copertoIcon}
+          value={copertoLabel}
           label="Tipo"
         />
         <DetailStat

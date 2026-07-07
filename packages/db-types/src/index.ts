@@ -7,10 +7,30 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instantiate createClient with right options
-  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
-  __InternalSupabase: {
-    PostgrestVersion: "14.5"
+  graphql_public: {
+    Tables: {
+      [_ in never]: never
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      graphql: {
+        Args: {
+          extensions?: Json
+          operationName?: string
+          query?: string
+          variables?: Json
+        }
+        Returns: Json
+      }
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
   }
   public: {
     Tables: {
@@ -18,7 +38,7 @@ export type Database = {
         Row: {
           aggiornato_il: string
           attivo: boolean
-          coperto: boolean
+          coperto: boolean | null
           created_at: string
           fk_struttura: number
           id: number
@@ -31,7 +51,7 @@ export type Database = {
         Insert: {
           aggiornato_il?: string
           attivo: boolean
-          coperto?: boolean
+          coperto?: boolean | null
           created_at?: string
           fk_struttura: number
           id?: number
@@ -44,7 +64,7 @@ export type Database = {
         Update: {
           aggiornato_il?: string
           attivo?: boolean
-          coperto?: boolean
+          coperto?: boolean | null
           created_at?: string
           fk_struttura?: number
           id?: number
@@ -332,7 +352,7 @@ export type Database = {
           {
             foreignKeyName: "Inviti_App_fk_profilo_fkey"
             columns: ["fk_profilo"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "Profili"
             referencedColumns: ["id"]
           },
@@ -440,7 +460,7 @@ export type Database = {
           created_at: string
           id: string
           nome_completo: string | null
-          onboarding_completato: boolean | null
+          onboarding_completato: boolean
           raggio_preferito_km: number | null
           url_avatar: string | null
         }
@@ -450,7 +470,7 @@ export type Database = {
           created_at?: string
           id: string
           nome_completo?: string | null
-          onboarding_completato?: boolean | null
+          onboarding_completato?: boolean
           raggio_preferito_km?: number | null
           url_avatar?: string | null
         }
@@ -460,7 +480,7 @@ export type Database = {
           created_at?: string
           id?: string
           nome_completo?: string | null
-          onboarding_completato?: boolean | null
+          onboarding_completato?: boolean
           raggio_preferito_km?: number | null
           url_avatar?: string | null
         }
@@ -751,7 +771,7 @@ export type Database = {
         Returns: {
           campo_id: number
           campo_indice: number
-          coperto: boolean
+          coperto: boolean | null
           distanza_km: number
           indirizzo: string
           latitudine: number
@@ -898,6 +918,9 @@ export type CompositeTypes<
     : never
 
 export const Constants = {
+  graphql_public: {
+    Enums: {},
+  },
   public: {
     Enums: {},
   },

@@ -58,15 +58,95 @@ pnpm ios
 | `pnpm build:dev-dashboard` | Build della dashboard interna                    |
 | `pnpm lint`                | Esegue i controlli lint configurati              |
 | `pnpm typecheck`           | Esegue il controllo TypeScript                   |
+| `pnpm db:migration:list`   | Mostra lo stato migration locale/remoto          |
+| `pnpm db:migration:new -- nome_modifica` | Crea una nuova migration Supabase    |
+| `pnpm db:migration:repair -- versione --status applied` | Allinea la history remota |
+| `pnpm db:pull -- nome_modifica` | Importa modifiche remote in una migration     |
+| `pnpm db:push`             | Applica le migration locali al progetto linkato  |
+| `pnpm db:push:dry-run`     | Mostra le migration che verrebbero applicate     |
+| `pnpm db:reset`            | Ricostruisce il database locale dalle migration  |
+| `pnpm db:lint`             | Esegue il lint dello schema sul database locale  |
+| `pnpm db:types`            | Rigenera i tipi TypeScript dal database linkato  |
 | `pnpm clean`               | Rimuove dipendenze, cache e output locali        |
 
 ## Supabase
 
-### Generare i tipi dal database
+Supabase segue un flusso migration-first: ogni modifica stabile allo schema deve
+essere descritta da un file SQL in `supabase/migrations` e committata insieme al
+codice applicativo collegato. La dashboard remota va usata per ispezione o per
+emergenze; se una modifica nasce fuori dal repository, va riportata subito in
+una migration prima di considerarla definitiva.
+
+### Prima baseline
+
+Il progetto locale è già linkato al progetto Supabase remoto. Per importare lo
+schema remoto attuale come baseline:
+
+```powershell
+$env:SUPABASE_DB_PASSWORD = "<database-password>"
+supabase migration list
+pnpm db:pull -- initial_schema
+pnpm db:migration:repair -- 20260706200224 --status applied
+```
+
+Il file generato in `supabase/migrations` rappresenta il punto di partenza
+versionato. Non includere import massivi o dati temporanei nella baseline schema.
+La `repair` va eseguita una sola volta per dire a Supabase che la baseline è già
+presente sul remoto; senza questo passaggio `db:push` proverebbe ad applicarla di
+nuovo.
+
+### Nuove modifiche allo schema
+
+Per modifiche scritte direttamente in SQL:
 
 ```bash
-supabase gen types typescript --linked > packages/db-types/src/index.ts
+pnpm db:migration:new -- nome_modifica
+pnpm db:reset
+pnpm db:lint
+pnpm db:types
 ```
+
+Per modifiche fatte dallo Studio locale, generare comunque il SQL e revisionarlo
+prima del commit:
+
+```bash
+supabase start
+supabase db diff --local -f nome_modifica
+pnpm db:reset
+pnpm db:lint
+pnpm db:types
+```
+
+Non modificare a mano una migration già applicata o condivisa: creare una nuova
+migration incrementale. Dopo ogni modifica allo schema, rigenerare e committare
+`packages/db-types/src/index.ts` insieme alla migration.
+
+### Deploy
+
+Il deploy iniziale e manuale:
+
+```powershell
+$env:SUPABASE_DB_PASSWORD = "<database-password>"
+pnpm db:push
+```
+
+Usare `pnpm db:push:dry-run` prima del deploy quando si vuole vedere cosa verrà
+applicato senza modificare il database remoto.
+
+### Tipi TypeScript
+
+Dopo ogni modifica allo schema, rigenerare i tipi condivisi dal database linkato:
+
+```bash
+pnpm db:types
+```
+
+### Dati e seed
+
+`supabase/seed.sql` è riservato a seed locali o demo. Import massivi come quello
+di Piacenza devono restare in script dedicati o diventare job idempotenti: non
+vanno trattati come migration di schema e non devono essere mescolati alla
+baseline o alle migration strutturali.
 
 ## Codice condiviso
 

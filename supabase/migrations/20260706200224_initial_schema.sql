@@ -1,0 +1,3662 @@
+
+
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+
+COMMENT ON SCHEMA "public" IS 'standard public schema';
+
+
+
+CREATE EXTENSION IF NOT EXISTS "pg_stat_statements" WITH SCHEMA "extensions";
+
+
+
+
+
+
+CREATE EXTENSION IF NOT EXISTS "pgcrypto" WITH SCHEMA "extensions";
+
+
+
+
+
+
+CREATE EXTENSION IF NOT EXISTS "postgis" WITH SCHEMA "extensions";
+
+
+
+
+
+
+CREATE EXTENSION IF NOT EXISTS "supabase_vault" WITH SCHEMA "vault";
+
+
+
+
+
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp" WITH SCHEMA "extensions";
+
+
+
+
+
+
+CREATE OR REPLACE FUNCTION "public"."imposta_aggiornato_il"() RETURNS "trigger"
+    LANGUAGE "plpgsql"
+    SET "search_path" TO ''
+    AS $$
+BEGIN
+    NEW."aggiornato_il" := now();
+    RETURN NEW;
+END;
+$$;
+
+
+ALTER FUNCTION "public"."imposta_aggiornato_il"() OWNER TO "postgres";
+
+
+CREATE OR REPLACE FUNCTION "public"."search_campi_nearby"("p_lat" double precision, "p_lng" double precision, "p_radius_km" double precision, "p_sport" "text" DEFAULT NULL::"text", "p_solo_aperti" boolean DEFAULT false, "p_limit" integer DEFAULT 100, "p_offset" integer DEFAULT 0) RETURNS TABLE("campo_id" integer, "struttura_id" integer, "campo_indice" integer, "nome_campo" "text", "nome_struttura" "text", "indirizzo" "text", "latitudine" double precision, "longitudine" double precision, "distanza_km" double precision, "sport_slug" "text", "nome_sport" "text", "tipo_superficie" "text", "coperto" boolean, "prezzo_orario" numeric, "sempre_aperto" boolean, "media_voti" double precision, "numero_recensioni" integer, "url_foto_copertina" "text", "total_count" integer)
+    LANGUAGE "sql" STABLE
+    SET "search_path" TO 'public', 'extensions'
+    AS $$
+with user_pos as (
+  select st_setsrid(st_makepoint(p_lng, p_lat), 4326)::geography as geog
+),
+rows as (
+  select
+    c.id as campo_id,
+    s.id as struttura_id,
+    row_number() over (partition by s.id order by c.id)::integer as campo_indice,
+    c.nome_campo,
+    s.nome as nome_struttura,
+    s.indirizzo,
+    s.latitudine::double precision,
+    s.longitudine::double precision,
+    (st_distance(s.posizione::geography, user_pos.geog) / 1000)::double precision as distanza_km,
+    sport.slug as sport_slug,
+    sport.nome_sport,
+    c.tipo_superficie,
+    c.coperto,
+    c.prezzo_orario,
+    s.sempre_aperto,
+    coalesce(reviews.media_voti, 0)::double precision as media_voti,
+    coalesce(reviews.numero_recensioni, 0)::integer as numero_recensioni,
+    foto.url_foto as url_foto_copertina,
+    count(*) over()::integer as total_count
+  from public."Strutture" s
+  join public."Campi" c on c.fk_struttura = s.id
+  cross join user_pos
+  join lateral (
+    select sp.slug, sp.nome_sport
+    from public."Campi_Sport" cs
+    join public."Sport" sp on sp.id = cs.fk_sport
+    where cs.fk_campo = c.id
+      and (p_sport is null or sp.slug = p_sport)
+    order by sp.id
+    limit 1
+  ) sport on true
+  left join lateral (
+    select avg(r.stelle)::double precision as media_voti, count(*)::integer as numero_recensioni
+    from public."RecensioniStrutture" r
+    where r.fk_struttura = s.id
+  ) reviews on true
+  left join lateral (
+    select fs.url_foto
+    from public."Foto_Strutture" fs
+    where fs.fk_struttura = s.id
+      and fs.url_foto ~ '^https?://'
+    order by fs.copertina desc, fs.ordine asc
+    limit 1
+  ) foto on true
+  where s.attivo = true
+    and c.attivo = true
+    and (not p_solo_aperti or s.sempre_aperto = true)
+    and st_dwithin(
+      s.posizione::geography,
+      user_pos.geog,
+      greatest(p_radius_km, 1) * 1000
+    )
+)
+select *
+from rows
+order by distanza_km asc, struttura_id asc, campo_id asc
+limit least(greatest(p_limit, 1), 250)
+offset greatest(p_offset, 0);
+$$;
+
+
+ALTER FUNCTION "public"."search_campi_nearby"("p_lat" double precision, "p_lng" double precision, "p_radius_km" double precision, "p_sport" "text", "p_solo_aperti" boolean, "p_limit" integer, "p_offset" integer) OWNER TO "postgres";
+
+SET default_tablespace = '';
+
+SET default_table_access_method = "heap";
+
+
+CREATE TABLE IF NOT EXISTS "public"."Campi" (
+    "id" integer NOT NULL,
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    "fk_struttura" integer NOT NULL,
+    "nome_campo" character varying NOT NULL,
+    "prezzo_orario" numeric,
+    "max_giocatori" smallint,
+    "min_giocatori" smallint,
+    "attivo" boolean NOT NULL,
+    "coperto" boolean DEFAULT false NOT NULL,
+    "tipo_superficie" "text",
+    "aggiornato_il" timestamp with time zone DEFAULT "now"() NOT NULL
+);
+
+
+ALTER TABLE "public"."Campi" OWNER TO "postgres";
+
+
+ALTER TABLE "public"."Campi" ALTER COLUMN "id" ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME "public"."CampiSportivi_id_seq"
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+
+CREATE TABLE IF NOT EXISTS "public"."Campi_Preferiti" (
+    "fk_campo" integer NOT NULL,
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    "fk_profilo" "uuid" NOT NULL,
+    "aggiornato_il" timestamp with time zone DEFAULT "now"() NOT NULL
+);
+
+
+ALTER TABLE "public"."Campi_Preferiti" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."Campi_Sport" (
+    "fk_campo" integer NOT NULL,
+    "fk_sport" smallint NOT NULL,
+    "aggiornato_il" timestamp with time zone DEFAULT "now"() NOT NULL
+);
+
+
+ALTER TABLE "public"."Campi_Sport" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."Strutture" (
+    "id" integer NOT NULL,
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    "nome" character varying NOT NULL,
+    "attivo" boolean NOT NULL,
+    "prezzo_orario" numeric,
+    "descrizione" "text",
+    "indirizzo" "text" NOT NULL,
+    "latitudine" numeric(9,6) NOT NULL,
+    "longitudine" numeric(9,6) NOT NULL,
+    "telefono" "text",
+    "cellulare" "text",
+    "email" "text",
+    "sempre_aperto" boolean DEFAULT false NOT NULL,
+    "link_prenotazione_esterno" "text",
+    "verificata" boolean DEFAULT false NOT NULL,
+    "aggiornato_il" timestamp with time zone DEFAULT "now"() NOT NULL,
+    "link_sito_web" "text",
+    "fk_citta" integer NOT NULL,
+    "posizione" "extensions"."geography"(Point,4326) GENERATED ALWAYS AS (
+CASE
+    WHEN (("latitudine" IS NOT NULL) AND ("longitudine" IS NOT NULL)) THEN ("extensions"."st_setsrid"("extensions"."st_makepoint"(("longitudine")::double precision, ("latitudine")::double precision), 4326))::"extensions"."geography"
+    ELSE NULL::"extensions"."geography"
+END) STORED
+);
+
+
+ALTER TABLE "public"."Strutture" OWNER TO "postgres";
+
+
+ALTER TABLE "public"."Strutture" ALTER COLUMN "id" ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME "public"."CentriSportivi_id_seq"
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+
+CREATE TABLE IF NOT EXISTS "public"."Citta" (
+    "id" integer NOT NULL,
+    "fk_provincia" smallint NOT NULL,
+    "codice_istat" character(6) NOT NULL,
+    "codice_catastale" character(4),
+    "nome" "text" NOT NULL,
+    "capoluogo" boolean DEFAULT false NOT NULL,
+    "aggiornato_il" timestamp with time zone DEFAULT "now"() NOT NULL
+);
+
+
+ALTER TABLE "public"."Citta" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."Feedback_App" (
+    "id" bigint NOT NULL,
+    "fk_profilo" "uuid" NOT NULL,
+    "categoria" "text" DEFAULT 'generale'::"text" NOT NULL,
+    "messaggio" "text" NOT NULL,
+    "email_contatto" "text",
+    "piattaforma" "text",
+    "versione_app" "text",
+    "stato" "text" DEFAULT 'nuovo'::"text" NOT NULL,
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    "aggiornato_il" timestamp with time zone DEFAULT "now"() NOT NULL
+);
+
+
+ALTER TABLE "public"."Feedback_App" OWNER TO "postgres";
+
+
+ALTER TABLE "public"."Feedback_App" ALTER COLUMN "id" ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME "public"."Feedback_App_id_seq"
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+
+CREATE TABLE IF NOT EXISTS "public"."Foto_Campi" (
+    "id" bigint NOT NULL,
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    "fk_campo" integer NOT NULL,
+    "url_foto" "text" NOT NULL,
+    "testo_alt" "text",
+    "ordine" smallint NOT NULL,
+    "copertina" boolean NOT NULL,
+    "aggiornato_il" timestamp with time zone DEFAULT "now"() NOT NULL
+);
+
+
+ALTER TABLE "public"."Foto_Campi" OWNER TO "postgres";
+
+
+ALTER TABLE "public"."Foto_Campi" ALTER COLUMN "id" ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME "public"."Foto_Campi_id_seq"
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+
+CREATE TABLE IF NOT EXISTS "public"."Foto_Strutture" (
+    "id" bigint NOT NULL,
+    "fk_struttura" integer NOT NULL,
+    "url_foto" "text" NOT NULL,
+    "testo_alt" "text",
+    "ordine" smallint NOT NULL,
+    "copertina" boolean NOT NULL,
+    "aggiornato_il" timestamp with time zone DEFAULT "now"() NOT NULL
+);
+
+
+ALTER TABLE "public"."Foto_Strutture" OWNER TO "postgres";
+
+
+ALTER TABLE "public"."Foto_Strutture" ALTER COLUMN "id" ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME "public"."Foto_Centri_Sportivi_id_seq"
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+
+CREATE TABLE IF NOT EXISTS "public"."Inviti_App" (
+    "id" bigint NOT NULL,
+    "fk_profilo" "uuid" NOT NULL,
+    "codice" "text" NOT NULL,
+    "link" "text" NOT NULL,
+    "conteggio_condivisioni" integer DEFAULT 0 NOT NULL,
+    "ultimo_condiviso_il" timestamp with time zone,
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    "aggiornato_il" timestamp with time zone DEFAULT "now"() NOT NULL
+);
+
+
+ALTER TABLE "public"."Inviti_App" OWNER TO "postgres";
+
+
+ALTER TABLE "public"."Inviti_App" ALTER COLUMN "id" ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME "public"."Inviti_App_id_seq"
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+
+CREATE TABLE IF NOT EXISTS "public"."Orari_Strutture" (
+    "fk_struttura" integer NOT NULL,
+    "giorno_settimana" smallint NOT NULL,
+    "orario_apertura" time without time zone,
+    "orario_chiusura" time without time zone,
+    "chiuso" boolean,
+    "note" "text",
+    "aggiornato_il" timestamp with time zone DEFAULT "now"() NOT NULL,
+    CONSTRAINT "giorno_valido" CHECK ((("giorno_settimana" >= 0) AND ("giorno_settimana" <= 6)))
+);
+
+
+ALTER TABLE "public"."Orari_Strutture" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."Paesi" (
+    "id" smallint NOT NULL,
+    "codice_iso2" character(2) NOT NULL,
+    "codice_iso3" character(3) NOT NULL,
+    "nome" "text" NOT NULL,
+    "aggiornato_il" timestamp with time zone DEFAULT "now"() NOT NULL
+);
+
+
+ALTER TABLE "public"."Paesi" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."Preferenze_Sport_Utente" (
+    "fk_sport" smallint NOT NULL,
+    "fk_profilo" "uuid" NOT NULL,
+    "aggiornato_il" timestamp with time zone DEFAULT "now"() NOT NULL
+);
+
+
+ALTER TABLE "public"."Preferenze_Sport_Utente" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."Profili" (
+    "id" "uuid" NOT NULL,
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    "aggiornato_il" timestamp with time zone DEFAULT "now"() NOT NULL,
+    "nome_completo" "text",
+    "url_avatar" "text",
+    "raggio_preferito_km" smallint,
+    "bio" "text",
+    "onboarding_completato" boolean DEFAULT false NOT NULL
+);
+
+
+ALTER TABLE "public"."Profili" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."Province" (
+    "id" smallint NOT NULL,
+    "fk_regione" smallint NOT NULL,
+    "codice_istat" character(3) NOT NULL,
+    "nome" "text" NOT NULL,
+    "sigla" character(2),
+    "tipologia" "text",
+    "aggiornato_il" timestamp with time zone DEFAULT "now"() NOT NULL
+);
+
+
+ALTER TABLE "public"."Province" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."RecensioniStrutture" (
+    "id" integer NOT NULL,
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    "stelle" smallint NOT NULL,
+    "fk_struttura" integer NOT NULL,
+    "commento" "text",
+    "fk_profilo" "uuid" NOT NULL,
+    "aggiornato_il" timestamp with time zone DEFAULT "now"() NOT NULL,
+    CONSTRAINT "stelle_range" CHECK ((("stelle" >= 1) AND ("stelle" <= 5)))
+);
+
+
+ALTER TABLE "public"."RecensioniStrutture" OWNER TO "postgres";
+
+
+ALTER TABLE "public"."RecensioniStrutture" ALTER COLUMN "id" ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME "public"."RecensioneCentriSportivi_id_seq"
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+
+CREATE TABLE IF NOT EXISTS "public"."Regioni" (
+    "id" smallint NOT NULL,
+    "fk_paese" smallint NOT NULL,
+    "codice_istat" character(2) NOT NULL,
+    "nome" "text" NOT NULL,
+    "aggiornato_il" timestamp with time zone DEFAULT "now"() NOT NULL
+);
+
+
+ALTER TABLE "public"."Regioni" OWNER TO "postgres";
+
+
+CREATE TABLE IF NOT EXISTS "public"."Servizi" (
+    "id" smallint NOT NULL,
+    "nome_servizio" character varying NOT NULL,
+    "descrizione" "text",
+    "attivo" boolean DEFAULT true NOT NULL,
+    "aggiornato_il" timestamp with time zone DEFAULT "now"() NOT NULL
+);
+
+
+ALTER TABLE "public"."Servizi" OWNER TO "postgres";
+
+
+ALTER TABLE "public"."Servizi" ALTER COLUMN "id" ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME "public"."ServiziCentriSportivi_id_seq"
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+
+CREATE TABLE IF NOT EXISTS "public"."Sport" (
+    "id" smallint NOT NULL,
+    "nome_sport" character varying NOT NULL,
+    "aggiornato_il" timestamp with time zone DEFAULT "now"() NOT NULL,
+    "slug" "text" NOT NULL
+);
+
+
+ALTER TABLE "public"."Sport" OWNER TO "postgres";
+
+
+ALTER TABLE "public"."Sport" ALTER COLUMN "id" ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME "public"."Sport_id_seq"
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+
+CREATE TABLE IF NOT EXISTS "public"."Strutture_Servizi" (
+    "fk_struttura" integer NOT NULL,
+    "fk_servizio" smallint NOT NULL,
+    "aggiornato_il" timestamp with time zone DEFAULT "now"() NOT NULL
+);
+
+
+ALTER TABLE "public"."Strutture_Servizi" OWNER TO "postgres";
+
+
+ALTER TABLE ONLY "public"."Campi_Sport"
+    ADD CONSTRAINT "CampiSportivi_Sport_pkey" PRIMARY KEY ("fk_campo", "fk_sport");
+
+
+
+ALTER TABLE ONLY "public"."Campi"
+    ADD CONSTRAINT "CampiSportivi_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."Campi_Preferiti"
+    ADD CONSTRAINT "Campi_Preferiti_pkey" PRIMARY KEY ("fk_campo", "fk_profilo");
+
+
+
+ALTER TABLE ONLY "public"."Strutture_Servizi"
+    ADD CONSTRAINT "CentriSportivi_Servizi_pkey" PRIMARY KEY ("fk_struttura", "fk_servizio");
+
+
+
+ALTER TABLE ONLY "public"."Strutture"
+    ADD CONSTRAINT "CentriSportivi_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."Citta"
+    ADD CONSTRAINT "Citta_codice_istat_key" UNIQUE ("codice_istat");
+
+
+
+ALTER TABLE ONLY "public"."Citta"
+    ADD CONSTRAINT "Citta_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."Citta"
+    ADD CONSTRAINT "Citta_provincia_nome_key" UNIQUE ("fk_provincia", "nome");
+
+
+
+ALTER TABLE ONLY "public"."Feedback_App"
+    ADD CONSTRAINT "Feedback_App_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."Foto_Campi"
+    ADD CONSTRAINT "Foto_Campi_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."Foto_Strutture"
+    ADD CONSTRAINT "Foto_Centri_Sportivi_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."Inviti_App"
+    ADD CONSTRAINT "Inviti_App_codice_key" UNIQUE ("codice");
+
+
+
+ALTER TABLE ONLY "public"."Inviti_App"
+    ADD CONSTRAINT "Inviti_App_fk_profilo_key" UNIQUE ("fk_profilo");
+
+
+
+ALTER TABLE ONLY "public"."Inviti_App"
+    ADD CONSTRAINT "Inviti_App_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."Orari_Strutture"
+    ADD CONSTRAINT "Orari_Centri_Sportivi_pkey" PRIMARY KEY ("fk_struttura", "giorno_settimana");
+
+
+
+ALTER TABLE ONLY "public"."Paesi"
+    ADD CONSTRAINT "Paesi_codice_iso2_key" UNIQUE ("codice_iso2");
+
+
+
+ALTER TABLE ONLY "public"."Paesi"
+    ADD CONSTRAINT "Paesi_codice_iso3_key" UNIQUE ("codice_iso3");
+
+
+
+ALTER TABLE ONLY "public"."Paesi"
+    ADD CONSTRAINT "Paesi_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."Preferenze_Sport_Utente"
+    ADD CONSTRAINT "Preferenze_Sport_Utente_pkey" PRIMARY KEY ("fk_sport", "fk_profilo");
+
+
+
+ALTER TABLE ONLY "public"."Profili"
+    ADD CONSTRAINT "Profili_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."Province"
+    ADD CONSTRAINT "Province_codice_istat_key" UNIQUE ("codice_istat");
+
+
+
+ALTER TABLE ONLY "public"."Province"
+    ADD CONSTRAINT "Province_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."Province"
+    ADD CONSTRAINT "Province_regione_nome_key" UNIQUE ("fk_regione", "nome");
+
+
+
+ALTER TABLE ONLY "public"."RecensioniStrutture"
+    ADD CONSTRAINT "RecensioneCentriSportivi_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."Regioni"
+    ADD CONSTRAINT "Regioni_paese_codice_key" UNIQUE ("fk_paese", "codice_istat");
+
+
+
+ALTER TABLE ONLY "public"."Regioni"
+    ADD CONSTRAINT "Regioni_paese_nome_key" UNIQUE ("fk_paese", "nome");
+
+
+
+ALTER TABLE ONLY "public"."Regioni"
+    ADD CONSTRAINT "Regioni_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."Servizi"
+    ADD CONSTRAINT "ServiziCentriSportivi_nome_servizio_key" UNIQUE ("nome_servizio");
+
+
+
+ALTER TABLE ONLY "public"."Servizi"
+    ADD CONSTRAINT "ServiziCentriSportivi_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."Sport"
+    ADD CONSTRAINT "Sport_pkey" PRIMARY KEY ("id");
+
+
+
+ALTER TABLE ONLY "public"."Sport"
+    ADD CONSTRAINT "Sport_slug_key" UNIQUE ("slug");
+
+
+
+CREATE INDEX "Citta_fk_provincia_idx" ON "public"."Citta" USING "btree" ("fk_provincia");
+
+
+
+CREATE INDEX "Citta_nome_idx" ON "public"."Citta" USING "btree" ("nome");
+
+
+
+CREATE INDEX "Foto_Campi_fk_campo_idx" ON "public"."Foto_Campi" USING "btree" ("fk_campo");
+
+
+
+CREATE INDEX "Foto_Campi_fk_campo_ordine_idx" ON "public"."Foto_Campi" USING "btree" ("fk_campo", "ordine");
+
+
+
+CREATE INDEX "Province_fk_regione_idx" ON "public"."Province" USING "btree" ("fk_regione");
+
+
+
+CREATE INDEX "Regioni_fk_paese_idx" ON "public"."Regioni" USING "btree" ("fk_paese");
+
+
+
+CREATE INDEX "Strutture_fk_citta_idx" ON "public"."Strutture" USING "btree" ("fk_citta");
+
+
+
+CREATE INDEX "strutture_posizione_gist_idx" ON "public"."Strutture" USING "gist" ("posizione");
+
+
+
+CREATE OR REPLACE TRIGGER "trg_aggiornato_il" BEFORE UPDATE ON "public"."Campi" FOR EACH ROW EXECUTE FUNCTION "public"."imposta_aggiornato_il"();
+
+
+
+CREATE OR REPLACE TRIGGER "trg_aggiornato_il" BEFORE UPDATE ON "public"."Campi_Preferiti" FOR EACH ROW EXECUTE FUNCTION "public"."imposta_aggiornato_il"();
+
+
+
+CREATE OR REPLACE TRIGGER "trg_aggiornato_il" BEFORE UPDATE ON "public"."Campi_Sport" FOR EACH ROW EXECUTE FUNCTION "public"."imposta_aggiornato_il"();
+
+
+
+CREATE OR REPLACE TRIGGER "trg_aggiornato_il" BEFORE UPDATE ON "public"."Citta" FOR EACH ROW EXECUTE FUNCTION "public"."imposta_aggiornato_il"();
+
+
+
+CREATE OR REPLACE TRIGGER "trg_aggiornato_il" BEFORE UPDATE ON "public"."Foto_Strutture" FOR EACH ROW EXECUTE FUNCTION "public"."imposta_aggiornato_il"();
+
+
+
+CREATE OR REPLACE TRIGGER "trg_aggiornato_il" BEFORE UPDATE ON "public"."Orari_Strutture" FOR EACH ROW EXECUTE FUNCTION "public"."imposta_aggiornato_il"();
+
+
+
+CREATE OR REPLACE TRIGGER "trg_aggiornato_il" BEFORE UPDATE ON "public"."Paesi" FOR EACH ROW EXECUTE FUNCTION "public"."imposta_aggiornato_il"();
+
+
+
+CREATE OR REPLACE TRIGGER "trg_aggiornato_il" BEFORE UPDATE ON "public"."Preferenze_Sport_Utente" FOR EACH ROW EXECUTE FUNCTION "public"."imposta_aggiornato_il"();
+
+
+
+CREATE OR REPLACE TRIGGER "trg_aggiornato_il" BEFORE UPDATE ON "public"."Profili" FOR EACH ROW EXECUTE FUNCTION "public"."imposta_aggiornato_il"();
+
+
+
+CREATE OR REPLACE TRIGGER "trg_aggiornato_il" BEFORE UPDATE ON "public"."Province" FOR EACH ROW EXECUTE FUNCTION "public"."imposta_aggiornato_il"();
+
+
+
+CREATE OR REPLACE TRIGGER "trg_aggiornato_il" BEFORE UPDATE ON "public"."RecensioniStrutture" FOR EACH ROW EXECUTE FUNCTION "public"."imposta_aggiornato_il"();
+
+
+
+CREATE OR REPLACE TRIGGER "trg_aggiornato_il" BEFORE UPDATE ON "public"."Regioni" FOR EACH ROW EXECUTE FUNCTION "public"."imposta_aggiornato_il"();
+
+
+
+CREATE OR REPLACE TRIGGER "trg_aggiornato_il" BEFORE UPDATE ON "public"."Servizi" FOR EACH ROW EXECUTE FUNCTION "public"."imposta_aggiornato_il"();
+
+
+
+CREATE OR REPLACE TRIGGER "trg_aggiornato_il" BEFORE UPDATE ON "public"."Sport" FOR EACH ROW EXECUTE FUNCTION "public"."imposta_aggiornato_il"();
+
+
+
+CREATE OR REPLACE TRIGGER "trg_aggiornato_il" BEFORE UPDATE ON "public"."Strutture" FOR EACH ROW EXECUTE FUNCTION "public"."imposta_aggiornato_il"();
+
+
+
+CREATE OR REPLACE TRIGGER "trg_aggiornato_il" BEFORE UPDATE ON "public"."Strutture_Servizi" FOR EACH ROW EXECUTE FUNCTION "public"."imposta_aggiornato_il"();
+
+
+
+ALTER TABLE ONLY "public"."Campi_Preferiti"
+    ADD CONSTRAINT "Campi_Preferiti_fk_campo_fkey" FOREIGN KEY ("fk_campo") REFERENCES "public"."Campi"("id");
+
+
+
+ALTER TABLE ONLY "public"."Campi_Preferiti"
+    ADD CONSTRAINT "Campi_Preferiti_fk_profilo_fkey" FOREIGN KEY ("fk_profilo") REFERENCES "public"."Profili"("id");
+
+
+
+ALTER TABLE ONLY "public"."Campi_Sport"
+    ADD CONSTRAINT "Campi_Sport_fk_campo_fkey" FOREIGN KEY ("fk_campo") REFERENCES "public"."Campi"("id");
+
+
+
+ALTER TABLE ONLY "public"."Campi_Sport"
+    ADD CONSTRAINT "Campi_Sport_fk_sport_fkey" FOREIGN KEY ("fk_sport") REFERENCES "public"."Sport"("id");
+
+
+
+ALTER TABLE ONLY "public"."Campi"
+    ADD CONSTRAINT "Campi_fk_struttura_fkey" FOREIGN KEY ("fk_struttura") REFERENCES "public"."Strutture"("id");
+
+
+
+ALTER TABLE ONLY "public"."Citta"
+    ADD CONSTRAINT "Citta_fk_provincia_fkey" FOREIGN KEY ("fk_provincia") REFERENCES "public"."Province"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."Feedback_App"
+    ADD CONSTRAINT "Feedback_App_fk_profilo_fkey" FOREIGN KEY ("fk_profilo") REFERENCES "public"."Profili"("id") ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "public"."Foto_Campi"
+    ADD CONSTRAINT "Foto_Campi_fk_campo_fkey" FOREIGN KEY ("fk_campo") REFERENCES "public"."Campi"("id") ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "public"."Foto_Strutture"
+    ADD CONSTRAINT "Foto_Strutture_fk_struttura_fkey" FOREIGN KEY ("fk_struttura") REFERENCES "public"."Strutture"("id");
+
+
+
+ALTER TABLE ONLY "public"."Inviti_App"
+    ADD CONSTRAINT "Inviti_App_fk_profilo_fkey" FOREIGN KEY ("fk_profilo") REFERENCES "public"."Profili"("id") ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "public"."Orari_Strutture"
+    ADD CONSTRAINT "Orari_Strutture_fk_struttura_fkey" FOREIGN KEY ("fk_struttura") REFERENCES "public"."Strutture"("id");
+
+
+
+ALTER TABLE ONLY "public"."Preferenze_Sport_Utente"
+    ADD CONSTRAINT "Preferenze_Sport_Utente_fk_profilo_fkey" FOREIGN KEY ("fk_profilo") REFERENCES "public"."Profili"("id");
+
+
+
+ALTER TABLE ONLY "public"."Preferenze_Sport_Utente"
+    ADD CONSTRAINT "Preferenze_Sport_Utente_fk_sport_fkey" FOREIGN KEY ("fk_sport") REFERENCES "public"."Sport"("id");
+
+
+
+ALTER TABLE ONLY "public"."Profili"
+    ADD CONSTRAINT "Profili_id_fkey" FOREIGN KEY ("id") REFERENCES "auth"."users"("id") ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "public"."Province"
+    ADD CONSTRAINT "Province_fk_regione_fkey" FOREIGN KEY ("fk_regione") REFERENCES "public"."Regioni"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."RecensioniStrutture"
+    ADD CONSTRAINT "RecensioniStrutture_fk_profilo_fkey" FOREIGN KEY ("fk_profilo") REFERENCES "public"."Profili"("id");
+
+
+
+ALTER TABLE ONLY "public"."RecensioniStrutture"
+    ADD CONSTRAINT "RecensioniStrutture_fk_struttura_fkey" FOREIGN KEY ("fk_struttura") REFERENCES "public"."Strutture"("id");
+
+
+
+ALTER TABLE ONLY "public"."Regioni"
+    ADD CONSTRAINT "Regioni_fk_paese_fkey" FOREIGN KEY ("fk_paese") REFERENCES "public"."Paesi"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE ONLY "public"."Strutture_Servizi"
+    ADD CONSTRAINT "Strutture_Servizi_fk_servizio_fkey" FOREIGN KEY ("fk_servizio") REFERENCES "public"."Servizi"("id");
+
+
+
+ALTER TABLE ONLY "public"."Strutture_Servizi"
+    ADD CONSTRAINT "Strutture_Servizi_fk_struttura_fkey" FOREIGN KEY ("fk_struttura") REFERENCES "public"."Strutture"("id");
+
+
+
+ALTER TABLE ONLY "public"."Strutture"
+    ADD CONSTRAINT "Strutture_fk_citta_fkey" FOREIGN KEY ("fk_citta") REFERENCES "public"."Citta"("id") ON UPDATE CASCADE ON DELETE RESTRICT;
+
+
+
+ALTER TABLE "public"."Campi" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."Campi_Preferiti" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."Campi_Sport" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."Citta" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."Feedback_App" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."Foto_Campi" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."Foto_Strutture" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."Inviti_App" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "Lettura pubblica geografia" ON "public"."Citta" FOR SELECT TO "authenticated", "anon" USING (true);
+
+
+
+CREATE POLICY "Lettura pubblica geografia" ON "public"."Paesi" FOR SELECT TO "authenticated", "anon" USING (true);
+
+
+
+CREATE POLICY "Lettura pubblica geografia" ON "public"."Province" FOR SELECT TO "authenticated", "anon" USING (true);
+
+
+
+CREATE POLICY "Lettura pubblica geografia" ON "public"."Regioni" FOR SELECT TO "authenticated", "anon" USING (true);
+
+
+
+ALTER TABLE "public"."Orari_Strutture" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."Paesi" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."Preferenze_Sport_Utente" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."Profili" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "Profili update proprio profilo" ON "public"."Profili" FOR UPDATE USING (("auth"."uid"() = "id")) WITH CHECK (("auth"."uid"() = "id"));
+
+
+
+ALTER TABLE "public"."Province" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."RecensioniStrutture" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."Regioni" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."Servizi" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."Sport" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."Strutture" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."Strutture_Servizi" ENABLE ROW LEVEL SECURITY;
+
+
+CREATE POLICY "Utenti possono creare feedback propri" ON "public"."Feedback_App" FOR INSERT TO "authenticated" WITH CHECK (("auth"."uid"() = "fk_profilo"));
+
+
+
+CREATE POLICY "Utenti possono gestire inviti propri" ON "public"."Inviti_App" TO "authenticated" USING (("auth"."uid"() = "fk_profilo")) WITH CHECK (("auth"."uid"() = "fk_profilo"));
+
+
+
+CREATE POLICY "Utenti possono leggere feedback propri" ON "public"."Feedback_App" FOR SELECT TO "authenticated" USING (("auth"."uid"() = "fk_profilo"));
+
+
+
+CREATE POLICY "admin full access" ON "public"."Campi" USING (true) WITH CHECK (true);
+
+
+
+CREATE POLICY "admin full access" ON "public"."Campi_Sport" USING (true) WITH CHECK (true);
+
+
+
+CREATE POLICY "admin full access" ON "public"."Foto_Strutture" USING (true) WITH CHECK (true);
+
+
+
+CREATE POLICY "admin full access" ON "public"."Servizi" USING (true) WITH CHECK (true);
+
+
+
+CREATE POLICY "admin full access" ON "public"."Sport" USING (true) WITH CHECK (true);
+
+
+
+CREATE POLICY "admin full access" ON "public"."Strutture" USING (true) WITH CHECK (true);
+
+
+
+CREATE POLICY "admin full access" ON "public"."Strutture_Servizi" USING (true) WITH CHECK (true);
+
+
+
+CREATE POLICY "delete own favorites" ON "public"."Campi_Preferiti" FOR DELETE USING ((("fk_profilo")::"text" = ("auth"."uid"())::"text"));
+
+
+
+CREATE POLICY "insert own favorites" ON "public"."Campi_Preferiti" FOR INSERT WITH CHECK ((("fk_profilo")::"text" = ("auth"."uid"())::"text"));
+
+
+
+CREATE POLICY "profili_insert_own" ON "public"."Profili" FOR INSERT TO "authenticated" WITH CHECK ((("id")::"text" = (( SELECT "auth"."uid"() AS "uid"))::"text"));
+
+
+
+CREATE POLICY "profili_select_own" ON "public"."Profili" FOR SELECT TO "authenticated" USING ((("id")::"text" = (( SELECT "auth"."uid"() AS "uid"))::"text"));
+
+
+
+CREATE POLICY "profili_update_own" ON "public"."Profili" FOR UPDATE TO "authenticated" USING ((("id")::"text" = (( SELECT "auth"."uid"() AS "uid"))::"text")) WITH CHECK ((("id")::"text" = (( SELECT "auth"."uid"() AS "uid"))::"text"));
+
+
+
+CREATE POLICY "select own favorites" ON "public"."Campi_Preferiti" FOR SELECT USING ((("fk_profilo")::"text" = ("auth"."uid"())::"text"));
+
+
+
+CREATE POLICY "update own favorites" ON "public"."Campi_Preferiti" FOR UPDATE USING ((("fk_profilo")::"text" = ("auth"."uid"())::"text")) WITH CHECK ((("fk_profilo")::"text" = ("auth"."uid"())::"text"));
+
+
+
+
+
+ALTER PUBLICATION "supabase_realtime" OWNER TO "postgres";
+
+
+GRANT USAGE ON SCHEMA "public" TO "postgres";
+GRANT USAGE ON SCHEMA "public" TO "anon";
+GRANT USAGE ON SCHEMA "public" TO "authenticated";
+GRANT USAGE ON SCHEMA "public" TO "service_role";
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+GRANT ALL ON FUNCTION "public"."imposta_aggiornato_il"() TO "anon";
+GRANT ALL ON FUNCTION "public"."imposta_aggiornato_il"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."imposta_aggiornato_il"() TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."search_campi_nearby"("p_lat" double precision, "p_lng" double precision, "p_radius_km" double precision, "p_sport" "text", "p_solo_aperti" boolean, "p_limit" integer, "p_offset" integer) TO "anon";
+GRANT ALL ON FUNCTION "public"."search_campi_nearby"("p_lat" double precision, "p_lng" double precision, "p_radius_km" double precision, "p_sport" "text", "p_solo_aperti" boolean, "p_limit" integer, "p_offset" integer) TO "authenticated";
+GRANT ALL ON FUNCTION "public"."search_campi_nearby"("p_lat" double precision, "p_lng" double precision, "p_radius_km" double precision, "p_sport" "text", "p_solo_aperti" boolean, "p_limit" integer, "p_offset" integer) TO "service_role";
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+GRANT ALL ON TABLE "public"."Campi" TO "anon";
+GRANT ALL ON TABLE "public"."Campi" TO "authenticated";
+GRANT ALL ON TABLE "public"."Campi" TO "service_role";
+
+
+
+GRANT ALL ON SEQUENCE "public"."CampiSportivi_id_seq" TO "anon";
+GRANT ALL ON SEQUENCE "public"."CampiSportivi_id_seq" TO "authenticated";
+GRANT ALL ON SEQUENCE "public"."CampiSportivi_id_seq" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."Campi_Preferiti" TO "anon";
+GRANT ALL ON TABLE "public"."Campi_Preferiti" TO "authenticated";
+GRANT ALL ON TABLE "public"."Campi_Preferiti" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."Campi_Sport" TO "anon";
+GRANT ALL ON TABLE "public"."Campi_Sport" TO "authenticated";
+GRANT ALL ON TABLE "public"."Campi_Sport" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."Strutture" TO "anon";
+GRANT ALL ON TABLE "public"."Strutture" TO "authenticated";
+GRANT ALL ON TABLE "public"."Strutture" TO "service_role";
+
+
+
+GRANT ALL ON SEQUENCE "public"."CentriSportivi_id_seq" TO "anon";
+GRANT ALL ON SEQUENCE "public"."CentriSportivi_id_seq" TO "authenticated";
+GRANT ALL ON SEQUENCE "public"."CentriSportivi_id_seq" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."Citta" TO "anon";
+GRANT ALL ON TABLE "public"."Citta" TO "authenticated";
+GRANT ALL ON TABLE "public"."Citta" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."Feedback_App" TO "anon";
+GRANT ALL ON TABLE "public"."Feedback_App" TO "authenticated";
+GRANT ALL ON TABLE "public"."Feedback_App" TO "service_role";
+
+
+
+GRANT ALL ON SEQUENCE "public"."Feedback_App_id_seq" TO "anon";
+GRANT ALL ON SEQUENCE "public"."Feedback_App_id_seq" TO "authenticated";
+GRANT ALL ON SEQUENCE "public"."Feedback_App_id_seq" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."Foto_Campi" TO "anon";
+GRANT ALL ON TABLE "public"."Foto_Campi" TO "authenticated";
+GRANT ALL ON TABLE "public"."Foto_Campi" TO "service_role";
+
+
+
+GRANT ALL ON SEQUENCE "public"."Foto_Campi_id_seq" TO "anon";
+GRANT ALL ON SEQUENCE "public"."Foto_Campi_id_seq" TO "authenticated";
+GRANT ALL ON SEQUENCE "public"."Foto_Campi_id_seq" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."Foto_Strutture" TO "anon";
+GRANT ALL ON TABLE "public"."Foto_Strutture" TO "authenticated";
+GRANT ALL ON TABLE "public"."Foto_Strutture" TO "service_role";
+
+
+
+GRANT ALL ON SEQUENCE "public"."Foto_Centri_Sportivi_id_seq" TO "anon";
+GRANT ALL ON SEQUENCE "public"."Foto_Centri_Sportivi_id_seq" TO "authenticated";
+GRANT ALL ON SEQUENCE "public"."Foto_Centri_Sportivi_id_seq" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."Inviti_App" TO "anon";
+GRANT ALL ON TABLE "public"."Inviti_App" TO "authenticated";
+GRANT ALL ON TABLE "public"."Inviti_App" TO "service_role";
+
+
+
+GRANT ALL ON SEQUENCE "public"."Inviti_App_id_seq" TO "anon";
+GRANT ALL ON SEQUENCE "public"."Inviti_App_id_seq" TO "authenticated";
+GRANT ALL ON SEQUENCE "public"."Inviti_App_id_seq" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."Orari_Strutture" TO "anon";
+GRANT ALL ON TABLE "public"."Orari_Strutture" TO "authenticated";
+GRANT ALL ON TABLE "public"."Orari_Strutture" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."Paesi" TO "anon";
+GRANT ALL ON TABLE "public"."Paesi" TO "authenticated";
+GRANT ALL ON TABLE "public"."Paesi" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."Preferenze_Sport_Utente" TO "anon";
+GRANT ALL ON TABLE "public"."Preferenze_Sport_Utente" TO "authenticated";
+GRANT ALL ON TABLE "public"."Preferenze_Sport_Utente" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."Profili" TO "anon";
+GRANT ALL ON TABLE "public"."Profili" TO "authenticated";
+GRANT ALL ON TABLE "public"."Profili" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."Province" TO "anon";
+GRANT ALL ON TABLE "public"."Province" TO "authenticated";
+GRANT ALL ON TABLE "public"."Province" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."RecensioniStrutture" TO "anon";
+GRANT ALL ON TABLE "public"."RecensioniStrutture" TO "authenticated";
+GRANT ALL ON TABLE "public"."RecensioniStrutture" TO "service_role";
+
+
+
+GRANT ALL ON SEQUENCE "public"."RecensioneCentriSportivi_id_seq" TO "anon";
+GRANT ALL ON SEQUENCE "public"."RecensioneCentriSportivi_id_seq" TO "authenticated";
+GRANT ALL ON SEQUENCE "public"."RecensioneCentriSportivi_id_seq" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."Regioni" TO "anon";
+GRANT ALL ON TABLE "public"."Regioni" TO "authenticated";
+GRANT ALL ON TABLE "public"."Regioni" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."Servizi" TO "anon";
+GRANT ALL ON TABLE "public"."Servizi" TO "authenticated";
+GRANT ALL ON TABLE "public"."Servizi" TO "service_role";
+
+
+
+GRANT ALL ON SEQUENCE "public"."ServiziCentriSportivi_id_seq" TO "anon";
+GRANT ALL ON SEQUENCE "public"."ServiziCentriSportivi_id_seq" TO "authenticated";
+GRANT ALL ON SEQUENCE "public"."ServiziCentriSportivi_id_seq" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."Sport" TO "anon";
+GRANT ALL ON TABLE "public"."Sport" TO "authenticated";
+GRANT ALL ON TABLE "public"."Sport" TO "service_role";
+
+
+
+GRANT ALL ON SEQUENCE "public"."Sport_id_seq" TO "anon";
+GRANT ALL ON SEQUENCE "public"."Sport_id_seq" TO "authenticated";
+GRANT ALL ON SEQUENCE "public"."Sport_id_seq" TO "service_role";
+
+
+
+GRANT ALL ON TABLE "public"."Strutture_Servizi" TO "anon";
+GRANT ALL ON TABLE "public"."Strutture_Servizi" TO "authenticated";
+GRANT ALL ON TABLE "public"."Strutture_Servizi" TO "service_role";
+
+
+
+
+
+
+
+
+
+ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON SEQUENCES TO "postgres";
+ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON SEQUENCES TO "anon";
+ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON SEQUENCES TO "authenticated";
+ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON SEQUENCES TO "service_role";
+
+
+
+
+
+
+ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON FUNCTIONS TO "postgres";
+ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON FUNCTIONS TO "anon";
+ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON FUNCTIONS TO "authenticated";
+ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON FUNCTIONS TO "service_role";
+
+
+
+
+
+
+ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "postgres";
+ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "anon";
+ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "authenticated";
+ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "service_role";
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

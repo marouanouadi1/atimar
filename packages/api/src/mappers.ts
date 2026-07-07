@@ -66,7 +66,7 @@ export interface CampoRow {
   fk_struttura: number;
   nome_campo: string;
   tipo_superficie: string | null;
-  coperto: boolean;
+  coperto: boolean | null;
   prezzo_orario: number | null;
   attivo: boolean;
   Campi_Sport: CampoSportRow[];
@@ -163,7 +163,7 @@ export interface NearbyCampoRow {
   sport_slug: string;
   nome_sport: string;
   tipo_superficie: string | null;
-  coperto: boolean;
+  coperto: boolean | null;
   prezzo_orario: number | null;
   sempre_aperto: boolean;
   media_voti: number | null;
@@ -205,8 +205,12 @@ export function mapRowToStruttura(row: StrutturaWithRelations): Struttura {
       ? Math.round((stelle.reduce((a, b) => a + b, 0) / numeroRecensioni) * 10) / 10
       : 0;
 
-  // Coperta: almeno un campo è coperto
-  const coperto = campiAttivi.some((c) => c.coperto);
+  const valoriCoperto = campiAttivi.map((c) => c.coperto);
+  const coperto = valoriCoperto.includes(true)
+    ? true
+    : valoriCoperto.length > 0 && valoriCoperto.every((v) => v === false)
+      ? false
+      : null;
 
   // Servizi
   const servizi = row.Strutture_Servizi

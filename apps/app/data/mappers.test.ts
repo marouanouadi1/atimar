@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 
 import {
   mapFotoStruttura,
+  mapRowToCampo,
+  mapRowToStruttura,
   mapNearbyCampoRowToCampoInLista,
   toCampoInLista,
 } from "@atimar/api";
@@ -87,6 +89,60 @@ describe("coordinate", () => {
   });
 });
 
+describe("coperto nullable", () => {
+  it("mantiene null quando mappa un campo", () => {
+    const result = mapRowToCampo({
+      id: 10,
+      fk_struttura: 1,
+      nome_campo: "Campo da verificare",
+      tipo_superficie: null,
+      coperto: null,
+      prezzo_orario: null,
+      attivo: true,
+      Campi_Sport: [],
+    });
+
+    expect(result.coperto).toBeNull();
+  });
+
+  it("aggrega la struttura come coperta se almeno un campo attivo è coperto", () => {
+    const result = mapRowToStruttura({
+      ...strutturaRowFixture(),
+      Campi: [
+        campoRowFixture({ id: 1, coperto: false }),
+        campoRowFixture({ id: 2, coperto: true }),
+        campoRowFixture({ id: 3, coperto: null }),
+      ],
+    });
+
+    expect(result.coperto).toBe(true);
+  });
+
+  it("aggrega la struttura come scoperta solo se tutti i campi attivi sono scoperti", () => {
+    const result = mapRowToStruttura({
+      ...strutturaRowFixture(),
+      Campi: [
+        campoRowFixture({ id: 1, coperto: false }),
+        campoRowFixture({ id: 2, coperto: false }),
+      ],
+    });
+
+    expect(result.coperto).toBe(false);
+  });
+
+  it("aggrega la struttura come da verificare se nessun campo è coperto e almeno uno è ignoto", () => {
+    const result = mapRowToStruttura({
+      ...strutturaRowFixture(),
+      Campi: [
+        campoRowFixture({ id: 1, coperto: false }),
+        campoRowFixture({ id: 2, coperto: null }),
+      ],
+    });
+
+    expect(result.coperto).toBeNull();
+  });
+});
+
 describe("mapNearbyCampoRowToCampoInLista", () => {
   it("mappa una riga RPC geospaziale in CampoInLista", () => {
     const result = mapNearbyCampoRowToCampoInLista({
@@ -130,4 +186,64 @@ describe("mapNearbyCampoRowToCampoInLista", () => {
       urlFotoCopertina: "https://cdn.test/cover.jpg",
     });
   });
+
+  it("mantiene null per il coperto ignoto della RPC geospaziale", () => {
+    const result = mapNearbyCampoRowToCampoInLista({
+      campo_id: 43,
+      struttura_id: 7,
+      campo_indice: 1,
+      nome_campo: "Campo ignoto",
+      nome_struttura: "Centro Test",
+      indirizzo: "Via Test 7",
+      latitudine: 45.4642,
+      longitudine: 9.19,
+      distanza_km: 1.2,
+      sport_slug: "padel",
+      nome_sport: "Padel",
+      tipo_superficie: null,
+      coperto: null,
+      prezzo_orario: null,
+      sempre_aperto: true,
+      media_voti: null,
+      numero_recensioni: null,
+      url_foto_copertina: null,
+      total_count: 1,
+    });
+
+    expect(result.coperto).toBeNull();
+  });
 });
+
+function strutturaRowFixture() {
+  return {
+    id: 1,
+    nome: "Centro Test",
+    descrizione: null,
+    indirizzo: "Via Test 1",
+    latitudine: 45.4642,
+    longitudine: 9.19,
+    prezzo_orario: null,
+    sempre_aperto: true,
+    attivo: true,
+    link_prenotazione_esterno: null,
+    telefono: null,
+    link_sito_web: null,
+    Campi: [],
+    Strutture_Servizi: [],
+    RecensioniStrutture: [],
+    Foto_Strutture: [],
+  };
+}
+
+function campoRowFixture(overrides: { id: number; coperto: boolean | null }) {
+  return {
+    id: overrides.id,
+    fk_struttura: 1,
+    nome_campo: `Campo ${overrides.id}`,
+    tipo_superficie: null,
+    coperto: overrides.coperto,
+    prezzo_orario: null,
+    attivo: true,
+    Campi_Sport: [],
+  };
+}
