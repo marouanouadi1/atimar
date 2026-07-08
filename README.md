@@ -60,7 +60,7 @@ pnpm ios
 | `pnpm typecheck`           | Esegue il controllo TypeScript                   |
 | `pnpm db:migration:list`   | Mostra lo stato migration locale/remoto          |
 | `pnpm db:migration:new -- nome_modifica` | Crea una nuova migration Supabase    |
-| `pnpm db:migration:repair -- versione --status applied` | Allinea la history remota |
+| `pnpm db:migration:repair -- versione --status applied` | Ripara history remote fuori sync |
 | `pnpm db:pull -- nome_modifica` | Importa modifiche remote in una migration     |
 | `pnpm db:push`             | Applica le migration locali al progetto linkato  |
 | `pnpm db:push:dry-run`     | Mostra le migration che verrebbero applicate     |
@@ -86,14 +86,13 @@ schema remoto attuale come baseline:
 $env:SUPABASE_DB_PASSWORD = "<database-password>"
 supabase migration list
 pnpm db:pull -- initial_schema
-pnpm db:migration:repair -- 20260706200224 --status applied
 ```
 
 Il file generato in `supabase/migrations` rappresenta il punto di partenza
 versionato. Non includere import massivi o dati temporanei nella baseline schema.
-La `repair` va eseguita una sola volta per dire a Supabase che la baseline è già
-presente sul remoto; senza questo passaggio `db:push` proverebbe ad applicarla di
-nuovo.
+`pnpm db:pull` usa `supabase db pull --yes`: conferma automaticamente il prompt
+di Supabase e aggiorna la history remota per segnare la migration come già
+applicata.
 
 ### Nuove modifiche allo schema
 
@@ -116,15 +115,15 @@ via UI): non è mai definitiva finché non viene riportata nel repo tramite diff
 ```powershell
 $env:SUPABASE_DB_PASSWORD = "<database-password>"
 pnpm db:pull -- nome_modifica
-pnpm db:migration:repair -- <versione> --status applied
 pnpm db:reset
 pnpm db:lint
 pnpm db:types
 ```
 
 `db:pull` genera la migration confrontando lo schema remoto con la history
-locale; `db:migration:repair` dice a Supabase che quella versione è già
-applicata sul remoto, altrimenti `db:push` proverebbe ad applicarla di nuovo.
+locale e, grazie a `--yes`, accetta il prompt che aggiorna la history remota.
+Non eseguire subito dopo `db:migration:repair --status applied` sulla stessa
+versione: proverebbe a inserire una riga già presente nella migration history.
 
 Non modificare a mano una migration già applicata o condivisa: creare una nuova
 migration incrementale. Dopo ogni modifica allo schema, rigenerare e committare
