@@ -34,6 +34,7 @@ export {
   resolveColor,
   resolveTint,
   textStyle,
+  noNativeOutline,
 } from "./theme";
 
 export {

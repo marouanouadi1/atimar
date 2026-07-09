@@ -11,6 +11,18 @@ import type { ColorKey, TintKey } from "./core";
 
 export const tokens: Theme = theme;
 
+/**
+ * Suppresses the browser's native focus ring on web `<input>` elements.
+ * RN's `outlineStyle` type omits "none" (hence the cast), but it's required:
+ * once outline-style resolves to "auto" on focus, browsers draw their own
+ * ring regardless of outlineWidth/outlineColor. No-op on native platforms.
+ * Spread onto any TextInput style.
+ */
+export const noNativeOutline: TextStyle = {
+  outlineWidth: 0,
+  outlineStyle: "none" as unknown as TextStyle["outlineStyle"],
+};
+
 export function useTheme(): Theme {
   return theme;
 }
