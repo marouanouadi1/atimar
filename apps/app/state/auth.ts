@@ -146,10 +146,13 @@ export async function signInWithGoogle(): Promise<OAuthResult> {
           typeof window !== "undefined" ? window.location.origin : undefined,
       },
     });
-    // If we reach here, either an error occurred or the redirect hasn't happened
-    // yet (shouldn't happen in normal flow).
     if (error) return { ok: false, error: error.message };
-    return { ok: true }; // page is navigating away; this is mostly unreachable
+    // Success: window.location.assign() was just called and the browser is
+    // navigating to Google right now, but that navigation is asynchronous —
+    // JS keeps running until the new page actually loads. Never resolve here,
+    // otherwise the caller's `router.replace(...)` runs first and flashes the
+    // current screen (e.g. the home page) before Google's form appears.
+    return new Promise<OAuthResult>(() => {});
   }
 
   // Native: open Google login in the system browser, capture the redirect,

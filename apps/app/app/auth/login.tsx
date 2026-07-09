@@ -33,8 +33,9 @@ export default function Login() {
     if (!result.ok) {
       setGoogleError(result.error ?? "Accesso Google non riuscito");
     } else {
-      // On native: session is set, navigate to home.
-      // On web: page has already redirected — this line is unreachable.
+      // Native only: on success, session is set — navigate to home.
+      // (On web the promise never resolves here; the browser is already
+      // navigating to Google's page.)
       router.replace("/home");
     }
   };
