@@ -50,6 +50,33 @@ function Checkbox({ id, label, checked, onChange }: {
   )
 }
 
+function CopertoSelect({
+  value,
+  onChange,
+}: {
+  value: boolean | null
+  onChange: (v: boolean | null) => void
+}) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      <Label>Coperto</Label>
+      <Select
+        value={value === null ? 'unknown' : value ? 'yes' : 'no'}
+        onValueChange={(v) => onChange(v === 'unknown' ? null : v === 'yes')}
+      >
+        <SelectTrigger>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent position="popper">
+          <SelectItem value="unknown">Non so</SelectItem>
+          <SelectItem value="yes">Sì</SelectItem>
+          <SelectItem value="no">No</SelectItem>
+        </SelectContent>
+      </Select>
+    </div>
+  )
+}
+
 type FormState = {
   fk_struttura: string
   nome_campo: string
@@ -58,7 +85,7 @@ type FormState = {
   min_giocatori: string
   max_giocatori: string
   attivo: boolean
-  coperto: boolean
+  coperto: boolean | null
   sport_ids: number[]
 }
 
@@ -76,7 +103,7 @@ export function ModificaCampoDialog({ campo, strutture, sport, trigger }: {
     min_giocatori: campo.min_giocatori != null ? String(campo.min_giocatori) : '',
     max_giocatori: campo.max_giocatori != null ? String(campo.max_giocatori) : '',
     attivo: campo.attivo,
-    coperto: campo.coperto ?? false,
+    coperto: campo.coperto,
     sport_ids: campo.sport_ids,
   })
   const [error, setError] = useState<string | null>(null)
@@ -179,7 +206,7 @@ export function ModificaCampoDialog({ campo, strutture, sport, trigger }: {
           </div>
           <div className="flex flex-col gap-2">
             <Checkbox id="attivo" label="Attivo" checked={form.attivo} onChange={(v) => set('attivo', v)} />
-            <Checkbox id="coperto" label="Coperto" checked={form.coperto} onChange={(v) => set('coperto', v)} />
+            <CopertoSelect value={form.coperto} onChange={(v) => set('coperto', v)} />
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
@@ -201,7 +228,7 @@ export function ModificaCampoDialog({ campo, strutture, sport, trigger }: {
           min_giocatori: campo.min_giocatori != null ? String(campo.min_giocatori) : '',
           max_giocatori: campo.max_giocatori != null ? String(campo.max_giocatori) : '',
           attivo: campo.attivo,
-          coperto: campo.coperto ?? false,
+          coperto: campo.coperto,
           sport_ids: campo.sport_ids,
         })
         setError(null)

@@ -35,6 +35,12 @@ type Props = {
   action?: React.ReactNode
 }
 
+function formatCoperto(value: boolean | null) {
+  if (value === true) return 'Sì'
+  if (value === false) return 'No'
+  return 'Da verificare'
+}
+
 export function CampiTable({ data, strutture, sport, action }: Props) {
   const columns: ColumnDef<Campo>[] = [
     {
@@ -86,7 +92,7 @@ export function CampiTable({ data, strutture, sport, action }: Props) {
     {
       key: 'coperto',
       header: 'Coperto',
-      cell: (c) => <span>{c.coperto ? 'Sì' : 'No'}</span>,
+      cell: (c) => <span>{formatCoperto(c.coperto)}</span>,
     },
     {
       key: 'attivo',

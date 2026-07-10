@@ -102,3 +102,31 @@ jobs:
 
       - name: Build dashboard
         run: pnpm --filter @atimar/dev-dashboard build
+
+  database:
+    name: database / migrations
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    needs: repo-shape
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: 2.106.0
+
+      - name: Start local Supabase
+        run: supabase start
+
+      - name: Rebuild database from migrations
+        run: supabase db reset
+
+      - name: Lint local database schema
+        run: supabase db lint --local --schema public --fail-on error
+
+      - name: Stop local Supabase
+        if: always()
+        run: supabase stop --no-backup
