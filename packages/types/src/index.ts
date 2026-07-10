@@ -83,7 +83,7 @@ export interface Struttura {
   mediaVoti: number;
   numeroRecensioni: number;
   sempreAperto: boolean;
-  coperto: boolean;
+  coperto: boolean | null;
   servizi: string[];
   descrizione: string;
   tipoHero: TipoHero;
@@ -111,7 +111,7 @@ export interface Campo {
   nomeSport: string;
   /** Tipo superficie, reale dal DB o vuoto se non impostato. */
   superficie: string;
-  coperto: boolean;
+  coperto: boolean | null;
   prezzoOrario: number;
   /** Prezzo formattato IT, es. "€18". */
   prezzoLabel: string;

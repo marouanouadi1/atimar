@@ -58,15 +58,103 @@ pnpm ios
 | `pnpm build:dev-dashboard` | Build della dashboard interna                    |
 | `pnpm lint`                | Esegue i controlli lint configurati              |
 | `pnpm typecheck`           | Esegue il controllo TypeScript                   |
+| `pnpm db:migration:list`   | Mostra lo stato migration locale/remoto          |
+| `pnpm db:migration:new -- nome_modifica` | Crea una nuova migration Supabase    |
+| `pnpm db:migration:repair -- versione --status applied` | Ripara history remote fuori sync |
+| `pnpm db:pull -- nome_modifica` | Importa modifiche remote in una migration     |
+| `pnpm db:push`             | Applica le migration locali al progetto linkato  |
+| `pnpm db:push:dry-run`     | Mostra le migration che verrebbero applicate     |
+| `pnpm db:reset`            | Ricostruisce il database locale dalle migration  |
+| `pnpm db:lint`             | Esegue il lint dello schema sul database locale  |
+| `pnpm db:types`            | Rigenera i tipi TypeScript dal database linkato  |
 | `pnpm clean`               | Rimuove dipendenze, cache e output locali        |
 
 ## Supabase
 
-### Generare i tipi dal database
+Supabase segue un flusso migration-first: ogni modifica stabile allo schema deve
+essere descritta da un file SQL in `supabase/migrations` e committata insieme al
+codice applicativo collegato. La dashboard remota va usata per ispezione o per
+emergenze; se una modifica nasce fuori dal repository, va riportata subito in
+una migration prima di considerarla definitiva.
+
+### Prima baseline
+
+Il progetto locale è già linkato al progetto Supabase remoto. Per importare lo
+schema remoto attuale come baseline:
+
+```powershell
+$env:SUPABASE_DB_PASSWORD = "<database-password>"
+supabase migration list
+pnpm db:pull -- initial_schema
+```
+
+Il file generato in `supabase/migrations` rappresenta il punto di partenza
+versionato. Non includere import massivi o dati temporanei nella baseline schema.
+`pnpm db:pull` usa `supabase db pull --yes`: conferma automaticamente il prompt
+di Supabase e aggiorna la history remota per segnare la migration come già
+applicata.
+
+### Nuove modifiche allo schema
+
+Ci sono due modi per introdurre una modifica, a seconda di dove nasce.
+
+**1. Modifica scritta direttamente in SQL** (il caso più comune: alter column,
+nuova tabella, indice, ecc.):
 
 ```bash
-supabase gen types typescript --linked > packages/db-types/src/index.ts
+pnpm db:migration:new -- nome_modifica
+# scrivere lo SQL nel file generato in supabase/migrations
+pnpm db:reset
+pnpm db:lint
+pnpm db:types
 ```
+
+**2. Modifica fatta dal dashboard Supabase remoto** (es. urgenza o esplorazione
+via UI): non è mai definitiva finché non viene riportata nel repo tramite diff:
+
+```powershell
+$env:SUPABASE_DB_PASSWORD = "<database-password>"
+pnpm db:pull -- nome_modifica
+pnpm db:reset
+pnpm db:lint
+pnpm db:types
+```
+
+`db:pull` genera la migration confrontando lo schema remoto con la history
+locale e, grazie a `--yes`, accetta il prompt che aggiorna la history remota.
+Non eseguire subito dopo `db:migration:repair --status applied` sulla stessa
+versione: proverebbe a inserire una riga già presente nella migration history.
+
+Non modificare a mano una migration già applicata o condivisa: creare una nuova
+migration incrementale. Dopo ogni modifica allo schema, rigenerare e committare
+`packages/db-types/src/index.ts` insieme alla migration.
+
+### Deploy
+
+Il deploy iniziale e manuale:
+
+```powershell
+$env:SUPABASE_DB_PASSWORD = "<database-password>"
+pnpm db:push
+```
+
+Usare `pnpm db:push:dry-run` prima del deploy quando si vuole vedere cosa verrà
+applicato senza modificare il database remoto.
+
+### Tipi TypeScript
+
+Dopo ogni modifica allo schema, rigenerare i tipi condivisi dal database linkato:
+
+```bash
+pnpm db:types
+```
+
+### Dati e seed
+
+`supabase/seed.sql` è riservato a seed locali o demo. Import massivi come quello
+di Piacenza devono restare in script dedicati o diventare job idempotenti: non
+vanno trattati come migration di schema e non devono essere mescolati alla
+baseline o alle migration strutturali.
 
 ## Codice condiviso
 
