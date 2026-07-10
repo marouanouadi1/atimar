@@ -142,6 +142,7 @@ export interface CampoInLista extends Campo {
 export interface Recensione {
   id: string;
   strutturaId: string;
+  profileId: string;
   nomeAutore: string;
   stelle: number;
   /** Stringa relativa display, es. "2 settimane fa". */
