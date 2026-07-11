@@ -85,7 +85,7 @@ export default function Search() {
   // catalogo): controllare anche l'assenza di dati evita il flash "0 campi"
   // prima che arrivi il primo risultato della ricerca per posizione.
   const isLoading = useNearbySearch
-    ? nearbyQuery.isLoading || nearbyQuery.data === undefined
+    ? (nearbyQuery.isLoading || nearbyQuery.data === undefined) && !nearbyError
     : isCatalogLoading;
 
   const selected: CampoInLista | undefined = selectedId
