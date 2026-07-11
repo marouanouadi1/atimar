@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   ActivityIndicator,
@@ -363,17 +363,19 @@ function RecensioniTab({
   const [commento, setCommento] = useState(recensioneUtente?.commento ?? "");
   const [formError, setFormError] = useState<string | null>(null);
 
-  useEffect(() => {
+  // Riallinea il form quando cambia la recensione di riferimento: login,
+  // struttura diversa, oppure dati caricati/aggiornati dal server in modo
+  // asincrono. Fatto in fase di render (pattern raccomandato da React per
+  // derivare stato da prop) invece che in un useEffect, che innescava render a
+  // cascata segnalati dal linter.
+  const reviewKey = `${profileId ?? ""}|${strutturaId}|${recensioneUtente?.id ?? ""}|${recensioneUtente?.stelle ?? 0}|${recensioneUtente?.commento ?? ""}`;
+  const [syncedKey, setSyncedKey] = useState(reviewKey);
+  if (syncedKey !== reviewKey) {
+    setSyncedKey(reviewKey);
     setStelle(recensioneUtente?.stelle ?? 0);
     setCommento(recensioneUtente?.commento ?? "");
     setFormError(null);
-  }, [
-    profileId,
-    strutturaId,
-    recensioneUtente?.id,
-    recensioneUtente?.stelle,
-    recensioneUtente?.commento,
-  ]);
+  }
 
   const handleSubmit = async () => {
     if (!profileId) {
