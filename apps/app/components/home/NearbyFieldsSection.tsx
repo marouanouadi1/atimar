@@ -17,7 +17,7 @@ export function NearbyFieldsSection() {
 
   return (
     <View style={[styles.section, isDesktop && styles.sectionDesktop]}>
-      <View style={styles.header}>
+      <View style={[styles.header, isDesktop && styles.headerDesktop]}>
         <View style={styles.headerCopy}>
           <Text style={styles.eyebrow}>SELEZIONATI</Text>
           <Text style={styles.heading}>Campi in evidenza</Text>
@@ -81,6 +81,11 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: theme.layout.screenPadX,
     gap: theme.spacing.lg,
+  },
+  // Su desktop la sezione fornisce già il padding orizzontale (screenPadDesktop):
+  // azzerare quello dell'header lo allinea alle card dello scroll (che usano 0).
+  headerDesktop: {
+    paddingHorizontal: 0,
   },
   headerCopy: {
     gap: theme.spacing.xs,

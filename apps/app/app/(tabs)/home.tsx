@@ -13,24 +13,22 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { theme } from "@/theme/tokens";
-import { ordinaCampi } from "@atimar/utils";
+import { sportLabel } from "@atimar/data";
+import { formatRating, ordinaCampi } from "@atimar/utils";
 import {
+  bgFloodlitPanel,
+  bgWarmLight,
   CampoCard,
   Icon,
   MediaStruttura,
   noNativeOutline,
   ResponsiveContainer,
+  SportChip,
+  useHover,
+  webTransition,
 } from "@/ui";
 import { useAppState } from "@/state/AppState";
-import { useCampiInLista, useStrutture } from "@/data/hooks";
-
-const QUICK_SPORTS = [
-  { id: "all", label: "Tutti" },
-  { id: "padel", label: "Padel" },
-  { id: "tennis", label: "Tennis" },
-  { id: "calcio5", label: "Calcio 5" },
-  { id: "beachvolley", label: "Beach" },
-] as const;
+import { useCampiInLista } from "@/data/hooks";
 
 export default function Home() {
   const router = useRouter();
@@ -39,11 +37,29 @@ export default function Home() {
   const desktop = width >= theme.breakpoints.desktop;
   const { user, filtri, setFiltri, isPreferitoCampo, togglePreferitoCampo } = useAppState();
   const [query, setQuery] = useState("");
+  const featuredHover = useHover();
+  const searchHover = useHover();
+  const clubHover = useHover();
 
   const { data: campi = [], isLoading } = useCampiInLista();
-  const { data: strutture = [] } = useStrutture();
   const popular = useMemo(() => ordinaCampi(campi, "voti").slice(0, 6), [campi]);
-  const featured = strutture.find((s) => s.urlFotoCopertina) ?? strutture[0];
+  // Il campo del momento è il primo dei più votati (stesso ordinamento di
+  // "Campi da provare"), non una struttura scelta a caso: così la card ha
+  // sempre un motivo verificabile per essere in cima alla home.
+  const featured = popular[0];
+  const hasRating = !!featured && featured.mediaVoti > 0;
+  // Sport più frequenti nel catalogo reale, non un elenco fisso: evita che le
+  // pillole propongano sport assenti (o ne ignorino altri molto presenti).
+  const topSports = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const c of campi) {
+      counts.set(c.idSport, (counts.get(c.idSport) ?? 0) + 1);
+    }
+    return [...counts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6)
+      .map(([id]) => id);
+  }, [campi]);
 
   const apriStruttura = (strutturaId: string) =>
     router.push({ pathname: "/struttura/[id]", params: { id: strutturaId } });
@@ -65,6 +81,7 @@ export default function Home() {
       <ResponsiveContainer
         style={[
           styles.page,
+          bgWarmLight,
           {
             paddingTop: desktop ? theme.spacing.xxxl : insets.top + theme.spacing.lg,
           },
@@ -92,7 +109,15 @@ export default function Home() {
                 returnKeyType="search"
                 style={styles.searchInput}
               />
-              <Pressable onPress={() => goSearch()} style={styles.searchButton}>
+              <Pressable
+                onPress={() => goSearch()}
+                {...searchHover.hoverProps}
+                style={[
+                  styles.searchButton,
+                  webTransition("transform, box-shadow", 180),
+                  searchHover.hovered && styles.searchButtonHover,
+                ]}
+              >
                 <Icon name="arrow-forward" size={19} color="ink" />
               </Pressable>
             </View>
@@ -100,47 +125,53 @@ export default function Home() {
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
+              style={styles.sportsScroll}
               contentContainerStyle={styles.sports}
             >
-              {QUICK_SPORTS.map((sport) => (
-                <Pressable
-                  key={sport.id}
-                  onPress={() => goSearch(sport.id)}
-                  style={[
-                    styles.sport,
-                    filtri.sport === sport.id && styles.sportActive,
-                  ]}
-                >
-                  <Text
-                    style={[
-                      styles.sportText,
-                      filtri.sport === sport.id && styles.sportTextActive,
-                    ]}
-                  >
-                    {sport.label}
-                  </Text>
-                </Pressable>
+              <SportChip
+                label="Tutti"
+                active={filtri.sport === "all"}
+                onPress={() => goSearch("all")}
+              />
+              {topSports.map((id) => (
+                <SportChip
+                  key={id}
+                  label={sportLabel(id)}
+                  active={filtri.sport === id}
+                  onPress={() => goSearch(id)}
+                />
               ))}
             </ScrollView>
           </View>
 
           <Pressable
-            onPress={() => featured && apriStruttura(featured.id)}
-            style={styles.featured}
+            onPress={() => featured && apriStruttura(featured.strutturaId)}
+            {...featuredHover.hoverProps}
+            style={[
+              styles.featured,
+              webTransition("transform", 260),
+              featuredHover.hovered && styles.featuredHover,
+            ]}
           >
             <MediaStruttura
               photoUrl={featured?.urlFotoCopertina}
-              sportId={featured?.idSport[0]}
+              sportId={featured?.idSport}
               height={desktop ? 420 : 250}
               style={styles.featuredMedia}
             >
               <View style={styles.featuredLabel}>
-                <Text style={styles.featuredKicker}>IN EVIDENZA</Text>
+                <Text style={styles.featuredKicker}>
+                  {hasRating ? "MIGLIORE VALUTAZIONE" : "CONSIGLIATO"}
+                </Text>
                 <Text style={styles.featuredName} numberOfLines={1}>
-                  {featured?.nome ?? "Scopri le strutture Atimar"}
+                  {featured?.nomeStruttura ?? "Scopri le strutture Atimar"}
                 </Text>
                 <Text style={styles.featuredMeta}>
-                  {featured?.prezzoDaLabel ?? "Esplora ora"}
+                  {featured
+                    ? hasRating
+                      ? `★ ${formatRating(featured.mediaVoti)} · ${featured.nomeSport}`
+                      : `${featured.nomeSport} · ${featured.prezzoLabel}`
+                    : "Esplora ora"}
                 </Text>
               </View>
             </MediaStruttura>
@@ -166,9 +197,9 @@ export default function Home() {
               <Text style={styles.emptyText}>Nessun campo disponibile al momento.</Text>
             </View>
           ) : (
-            <View style={[styles.grid, !desktop && styles.list]}>
+            <View style={desktop ? styles.grid : styles.list}>
               {popular.map((campo) => (
-                <View key={campo.id} style={desktop ? styles.gridItem : undefined}>
+                <View key={campo.id} style={desktop ? styles.gridItem : styles.listItem}>
                   <CampoCard
                     campo={campo}
                     variant={desktop ? "large" : "compact"}
@@ -184,7 +215,8 @@ export default function Home() {
 
         <Pressable
           onPress={() => router.push("/gestori" as never)}
-          style={styles.clubBanner}
+          {...clubHover.hoverProps}
+          style={[styles.clubBanner, bgFloodlitPanel]}
         >
           <View style={styles.clubCopy}>
             <Text style={styles.clubKicker}>ATIMAR FOR CLUBS</Text>
@@ -193,7 +225,13 @@ export default function Home() {
               Porta strutture e disponibilità davanti agli sportivi della tua zona.
             </Text>
           </View>
-          <View style={styles.clubCta}>
+          <View
+            style={[
+              styles.clubCta,
+              webTransition("transform, box-shadow", 200),
+              clubHover.hovered && styles.clubCtaHover,
+            ]}
+          >
             <Text style={styles.clubCtaText}>Scopri di più</Text>
             <Icon name="arrow-forward" size={18} color="ink" />
           </View>
@@ -280,30 +318,30 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     backgroundColor: theme.colors.lime,
   },
+  searchButtonHover: {
+    transform: [{ translateY: -1 }],
+    boxShadow: "0 10px 22px rgba(147,185,0,0.45)",
+  },
+  sportsScroll: {
+    // Un horizontal ScrollView senza altezza esplicita collassa a 0 su web
+    // (min-height:auto di un overflow container vale 0): l'altezza va data qui.
+    // flexShrink:0 evita che, essendo il figlio più "leggero" della colonna,
+    // si schiacci per primo quando lo spazio disponibile è inferiore al
+    // contenuto totale.
+    height: 36,
+    flexGrow: 0,
+    flexShrink: 0,
+  },
   sports: {
+    flexDirection: "row",
     gap: theme.spacing.sm,
-  },
-  sport: {
-    paddingVertical: 9,
-    paddingHorizontal: 15,
-    borderRadius: theme.radius.pill,
-    borderWidth: 1,
-    borderColor: theme.colors.line,
-  },
-  sportActive: {
-    backgroundColor: theme.colors.ink,
-    borderColor: theme.colors.ink,
-  },
-  sportText: {
-    color: theme.colors.muted,
-    fontFamily: theme.fonts.bodySemiBold,
-    fontSize: 13,
-  },
-  sportTextActive: {
-    color: theme.colors.surface,
+    paddingRight: theme.spacing.lg,
   },
   featured: {
     flex: 1,
+  },
+  featuredHover: {
+    transform: [{ translateY: -4 }],
   },
   featuredMedia: {
     borderRadius: theme.radius.xl,
@@ -365,13 +403,21 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     gap: theme.spacing.lg,
   },
+  // Colonna pulita su mobile: nessun flexWrap (che impedirebbe alle righe di
+  // stirarsi a piena larghezza, facendo sforare le card oltre lo schermo).
   list: {
     flexDirection: "column",
+    gap: theme.spacing.md,
   },
   gridItem: {
     width: "31.5%",
     minWidth: 280,
     flexGrow: 1,
+  },
+  // Larghezza definita: forza la CampoCard a riempire la riga così che il corpo
+  // (flex:1, minWidth:0) comprima il testo invece di espandere la card.
+  listItem: {
+    width: "100%",
   },
   loader: {
     paddingVertical: theme.spacing.xxxl,
@@ -427,6 +473,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.xl,
     borderRadius: theme.radius.pill,
     backgroundColor: theme.colors.lime,
+  },
+  clubCtaHover: {
+    transform: [{ translateY: -2 }],
+    boxShadow: "0 14px 30px rgba(147,185,0,0.4)",
   },
   clubCtaText: {
     color: theme.colors.ink,
