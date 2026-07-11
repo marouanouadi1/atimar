@@ -1,6 +1,12 @@
 import { Redirect, Tabs } from "expo-router";
 import React, { type ComponentProps } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import {
+  Pressable,
+  StyleSheet,
+  Text,
+  View,
+  useWindowDimensions,
+} from "react-native";
 import * as Haptics from "expo-haptics";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
@@ -26,8 +32,14 @@ type TabBarProps = Parameters<NonNullable<ComponentProps<typeof Tabs>["tabBar"]>
 
 function TabBar({ state, navigation }: TabBarProps) {
   const insets = useSafeAreaInsets();
-  // On desktop web, WebHeader handles navigation
-  if (process.env.EXPO_OS === "web") return null;
+  const { width } = useWindowDimensions();
+  // Su desktop web la navigazione è gestita dal WebHeader in alto, quindi la
+  // tab bar in basso è ridondante. Su web mobile (e sempre su nativo) va invece
+  // mostrata: senza, le sezioni Home/Cerca/Preferiti/Profilo sarebbero
+  // irraggiungibili da browser mobile.
+  const isDesktopWeb =
+    process.env.EXPO_OS === "web" && width >= theme.breakpoints.desktop;
+  if (isDesktopWeb) return null;
 
   return (
     <View
@@ -79,8 +91,14 @@ export default function TabLayout() {
 
   // Un utente autenticato ma non onboarded (es. web: registrazione avvenuta
   // prima dell'onboarding) viene spinto nel wizard prima di vedere le tab.
+  // Su web si salta l'intro marketing (nata per l'app) e si va dritti al setup.
   if (ready && user && !onboardedResolved) return null;
-  if (ready && user && !onboarded) return <Redirect href="/onboarding/value-near" />;
+  if (ready && user && !onboarded) {
+    const isWebPlatform = process.env.EXPO_OS === "web";
+    return (
+      <Redirect href={isWebPlatform ? "/setup/sports" : "/onboarding/value-near"} />
+    );
+  }
 
   return (
     <View style={styles.root}>

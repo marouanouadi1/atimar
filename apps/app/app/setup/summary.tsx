@@ -3,16 +3,7 @@ import { StyleSheet, Text, View } from "react-native";
 
 import { theme } from "@/theme/tokens";
 import { TIMES, sportLabel } from "@atimar/data";
-import {
-  Button,
-  Card,
-  CheckBadge,
-  Header,
-  Icon,
-  ScreenContainer,
-  ScreenTitle,
-  textStyle,
-} from "@/ui";
+import { Card, CheckBadge, FlowScreen, Icon, textStyle } from "@/ui";
 import { useAppState } from "@/state/AppState";
 
 function timeLabel(id: string): string {
@@ -29,45 +20,38 @@ export default function Summary() {
   };
 
   const sports = prefs.sports.map(sportLabel).join(", ") || "—";
-  const zone = `${prefs.area.location} · ${prefs.area.radius} km`;
   const availability = `${prefs.availability.days.join(", ") || "—"} · ${prefs.availability.times.map(timeLabel).join(", ") || "—"}`;
 
   return (
-    <ScreenContainer
-      header={<Header onBack={() => router.back()} />}
-      footer={
-        <View style={styles.footer}>
-          <Button variant="lime" icon onPress={onEnter}>
-            Entra in ATIMAR
-          </Button>
-          <Button variant="ghost" onPress={() => router.push("/setup/sports")}>
-            Modifica preferenze
-          </Button>
-        </View>
-      }
+    <FlowScreen
+      title="Tutto pronto!"
+      onBack={() => router.back()}
+      step={3}
+      total={3}
+      primaryLabel="Entra in ATIMAR"
+      primaryVariant="lime"
+      primaryIcon
+      onPrimary={onEnter}
+      secondaryLabel="Rivedi"
+      onSecondary={() => router.push("/setup/sports")}
+      bodyGap={theme.spacing.xxl}
     >
-      <View style={styles.body}>
-        <View style={styles.hero}>
-          <CheckBadge />
-          <ScreenTitle
-            title="Tutto pronto!"
-            subtitle="Abbiamo personalizzato ATIMAR in base alle tue preferenze."
-            size="h1"
-            align="center"
-          />
-        </View>
-
-        <View style={styles.rows}>
-          <SummaryRow icon="tennisball-outline" label="Sport" value={sports} />
-          <SummaryRow icon="location-outline" label="Zona" value={zone} />
-          <SummaryRow
-            icon="time-outline"
-            label="Disponibilità"
-            value={availability}
-          />
-        </View>
+      <View style={styles.hero}>
+        <CheckBadge />
+        <Text style={[textStyle("body", "muted"), styles.heroSubtitle]}>
+          Abbiamo personalizzato ATIMAR in base alle tue preferenze.
+        </Text>
       </View>
-    </ScreenContainer>
+
+      <View style={styles.rows}>
+        <SummaryRow icon="tennisball-outline" label="Sport" value={sports} />
+        <SummaryRow
+          icon="time-outline"
+          label="Disponibilità"
+          value={availability}
+        />
+      </View>
+    </FlowScreen>
   );
 }
 
@@ -92,15 +76,8 @@ function SummaryRow({
 }
 
 const styles = StyleSheet.create({
-  body: {
-    gap: theme.spacing.xxl,
-    paddingTop: theme.spacing.lg,
-    width: "100%",
-    maxWidth: theme.layout.maxReading,
-    alignSelf: "center",
-  },
   hero: { alignItems: "center", gap: theme.spacing.lg },
+  heroSubtitle: { textAlign: "center" },
   rows: { gap: theme.spacing.md },
   row: { flexDirection: "row", alignItems: "center", gap: theme.spacing.md },
-  footer: { gap: theme.spacing.sm },
 });
