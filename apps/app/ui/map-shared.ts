@@ -10,10 +10,21 @@ export interface MapPreviewProps {
   radius?: number;
   compact?: boolean;
   height?: number;
+  /** Riempie il contenitore in flex (mappa immersiva a tutto schermo) invece di usare `height`. */
+  fill?: boolean;
   style?: StyleProp<ViewStyle>;
   userLocation?: GeoPoint | null;
   locationStatus?: UserLocationStatus;
   onRequestLocation?: () => void | Promise<void>;
+  /** Punto attorno a cui si cerca (default: userLocation). Centra cerchio raggio e fit iniziale. */
+  searchOrigin?: GeoPoint | null;
+  /**
+   * Chiamata quando l'utente sposta o zooma la mappa: passa il centro
+   * corrente e il raggio (km) che copre l'area visibile. Sostituisce un
+   * raggio impostato manualmente — la ricerca segue sempre quello che è
+   * inquadrato in mappa.
+   */
+  onSearchArea?: (center: GeoPoint, radiusKm: number) => void;
 }
 
 function hasValidPosition(campo: CampoInLista): boolean {
@@ -44,6 +55,23 @@ export function buildMapPins(campi: CampoInLista[], selectedId?: string) {
       sportId: primary.idSport,
     };
   });
+}
+
+/**
+ * Raggio (km) che circoscrive l'intera area visibile della mappa (mezza
+ * diagonale del rettangolo del viewport), così il cerchio di ricerca copre
+ * anche gli angoli dello schermo. Usato per derivare la ricerca dallo
+ * zoom/pan della mappa invece che da un raggio impostato manualmente.
+ */
+export function radiusKmForViewport(
+  latSpanDeg: number,
+  lngSpanDeg: number,
+  centerLat: number,
+): number {
+  const latKm = (latSpanDeg * 111) / 2;
+  const cos = Math.cos((centerLat * Math.PI) / 180) || 1;
+  const lngKm = (lngSpanDeg * 111 * cos) / 2;
+  return Math.max(1, Math.round(Math.sqrt(latKm * latKm + lngKm * lngKm)));
 }
 
 export function selectedMapPin(

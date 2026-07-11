@@ -57,6 +57,18 @@ export function sportLabel(sportId: string): string {
   );
 }
 
+/** Etichetta quando un campo non ha alcuno sport associato. */
+export const SPORT_NON_SPECIFICATO = "Sport non specificato";
+
+/**
+ * Etichetta per uno o più sport, es. "Padel" oppure "Calcio a 5 · Tennis"
+ * per un campo polivalente.
+ */
+export function sportsLabel(sportIds: string[]): string {
+  if (sportIds.length === 0) return SPORT_NON_SPECIFICATO;
+  return sportIds.map(sportLabel).join(" · ");
+}
+
 export const LEVELS: Level[] = [
   {
     id: "beginner",

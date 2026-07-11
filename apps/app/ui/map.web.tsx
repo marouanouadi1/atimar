@@ -1,12 +1,13 @@
 import "leaflet/dist/leaflet.css";
 
-import React, { useEffect, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import {
   ActivityIndicator,
   Pressable,
   StyleSheet,
   Text,
   View,
+  useWindowDimensions,
 } from "react-native";
 import L from "leaflet";
 import {
@@ -16,48 +17,43 @@ import {
   TileLayer,
   Tooltip,
   useMap,
+  useMapEvents,
 } from "react-leaflet";
-import { theme, sportColor } from "@/theme/tokens";
+import { theme } from "@/theme/tokens";
 import type { GeoPoint } from "@atimar/types";
 import {
   buildMapPins,
+  radiusKmForViewport,
   selectedMapPin,
   type MapPreviewProps,
 } from "./map-shared";
 import { textStyle } from "./theme";
 
 const DEFAULT_CENTER: [number, number] = [41.9028, 12.4964];
+// Tempo massimo (ms) entro cui un movimento programmatico deve produrre un
+// moveend: oltre, il flag si auto-resetta per non "ingoiare" un gesto utente
+// successivo se l'animazione viene interrotta a metà (es. da map.stop()).
+const PROGRAMMATIC_MOVE_TIMEOUT = 1000;
 
 const iconCache = new Map<string, L.DivIcon>();
 
-function markerIcon(color: string, active: boolean): L.DivIcon {
-  const key = `${color}|${active}`;
+/** Pin a goccia stile Google Maps: un solo colore, più grande/scuro se attivo. */
+function markerIcon(active: boolean): L.DivIcon {
+  const key = active ? "active" : "idle";
   const cached = iconCache.get(key);
   if (cached) return cached;
 
-  const size = active ? 38 : 30;
-  const dot = active ? 14 : 12;
+  const w = active ? 36 : 28;
+  const h = Math.round(w * (34 / 24));
+  const color = active ? theme.mapMarker.pinActive : theme.mapMarker.pin;
   const icon = L.divIcon({
     className: "",
-    iconSize: [size, size],
-    iconAnchor: [size / 2, size / 2],
-    html: `<div style="
-      width:${size}px;
-      height:${size}px;
-      border-radius:999px;
-      background:#FFFEF7;
-      border:${active ? 4 : 3}px solid ${color};
-      box-shadow:0 8px 20px rgba(18,20,15,0.14);
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      box-sizing:border-box;
-    "><div style="
-      width:${dot}px;
-      height:${dot}px;
-      border-radius:999px;
-      background:${color};
-    "></div></div>`,
+    iconSize: [w, h],
+    iconAnchor: [w / 2, h],
+    html: `<svg width="${w}" height="${h}" viewBox="0 0 24 34" xmlns="http://www.w3.org/2000/svg" style="display:block;filter:drop-shadow(0 6px 10px rgba(18,20,15,0.28));">
+      <path d="M12 0C5.4 0 0 5.4 0 12c0 9 12 22 12 22s12-13 12-22c0-6.6-5.4-12-12-12z" fill="${color}"/>
+      <circle cx="12" cy="12" r="5" fill="${theme.mapMarker.ring}"/>
+    </svg>`,
   });
   iconCache.set(key, icon);
   return icon;
@@ -88,11 +84,33 @@ const userIcon = L.divIcon({
 function MapViewport({
   points,
   activePin,
+  searchOrigin,
+  radius,
+  onUserMove,
 }: {
   points: GeoPoint[];
   activePin: ReturnType<typeof selectedMapPin>;
+  searchOrigin?: GeoPoint | null;
+  radius?: number;
+  onUserMove?: (center: GeoPoint, radiusKm: number) => void;
 }) {
   const map = useMap();
+  const programmatic = useRef(false);
+  const programmaticTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  // Chiave dell'ultimo (centro, raggio) comunicato a onUserMove dalla mappa
+  // stessa: se searchOrigin/radius cambiano per rispecchiare esattamente
+  // quel valore (perché è stata la mappa a chiederlo spostandosi), il fit
+  // sotto va saltato — la mappa è già inquadrata così, rifittarla
+  // produrrebbe uno "scatto" indietro subito dopo il gesto dell'utente.
+  const lastEmittedKey = useRef<string | null>(null);
+
+  const markProgrammatic = useCallback(() => {
+    programmatic.current = true;
+    if (programmaticTimer.current) clearTimeout(programmaticTimer.current);
+    programmaticTimer.current = setTimeout(() => {
+      programmatic.current = false;
+    }, PROGRAMMATIC_MOVE_TIMEOUT);
+  }, []);
 
   const pointsKey = useMemo(
     () =>
@@ -102,12 +120,17 @@ function MapViewport({
         .join("|"),
     [points],
   );
+  const searchOriginKey = searchOrigin
+    ? `${searchOrigin.lat.toFixed(4)},${searchOrigin.lng.toFixed(4)}`
+    : null;
 
-  // Annulla lo zoom-con-rotellina in coda quando la mappa viene smontata:
-  // Leaflet non fa clearTimeout in removeHooks, quindi un _performZoom
-  // schedulato girerebbe dopo map.remove() → crash "_leaflet_pos".
+  // Annulla lo zoom-con-rotellina in coda e il timer del flag "programmatico"
+  // quando la mappa viene smontata: Leaflet non fa clearTimeout in
+  // removeHooks, quindi un _performZoom schedulato girerebbe dopo
+  // map.remove() → crash "_leaflet_pos".
   useEffect(
     () => () => {
+      if (programmaticTimer.current) clearTimeout(programmaticTimer.current);
       try {
         clearTimeout(
           (map.scrollWheelZoom as unknown as { _timer?: number })?._timer,
@@ -119,14 +142,34 @@ function MapViewport({
     [map],
   );
 
-  // Fit al set di punti solo su cambi materiali (primo load / cambio filtri),
-  // non sul churn di riferimenti da refetch → preserva lo zoom dell'utente.
+  // Fit al set di punti (o al cerchio di ricerca, se presente) solo su cambi
+  // materiali (primo load / cambio filtri / nuova ricerca per zona), non sul
+  // churn di riferimenti da refetch → preserva lo zoom dell'utente. Se il
+  // nuovo searchOrigin/radius coincide con l'ultimo emesso da onUserMove, la
+  // mappa è già inquadrata così (è stata lei a chiederlo spostandosi): il fit
+  // andrebbe saltato per non "scattare" indietro subito dopo il gesto.
   useEffect(() => {
     if (activePin) return;
     if (!map.getContainer()) return;
+    if (
+      searchOrigin &&
+      radius &&
+      lastEmittedKey.current === `${searchOriginKey},${radius}`
+    ) {
+      return;
+    }
 
     try {
       map.stop();
+      markProgrammatic();
+
+      if (searchOrigin && radius) {
+        const bounds = L.latLng(searchOrigin.lat, searchOrigin.lng).toBounds(
+          radius * 2 * 1000,
+        );
+        map.fitBounds(bounds, { padding: [24, 24], maxZoom: 14 });
+        return;
+      }
       if (points.length === 0) {
         map.setView(DEFAULT_CENTER, 5);
         return;
@@ -142,10 +185,10 @@ function MapViewport({
     } catch {
       /* mappa in via di smontaggio: no-op */
     }
-    // activePin/points volutamente esclusi: rifit solo su pointsKey per non
-    // resettare lo zoom su deselezione o refetch a dati invariati.
+    // activePin/points volutamente esclusi: rifit solo su pointsKey/searchOrigin/radius
+    // per non resettare lo zoom su deselezione o refetch a dati invariati.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [map, pointsKey]);
+  }, [map, pointsKey, searchOriginKey, radius]);
 
   // Fly alla selezione quando cambia il pin attivo.
   useEffect(() => {
@@ -154,13 +197,51 @@ function MapViewport({
 
     try {
       map.stop();
+      markProgrammatic();
       map.flyTo([activePin.position.lat, activePin.position.lng], 14, {
         duration: 0.35,
       });
     } catch {
       /* mappa in via di smontaggio: no-op */
     }
-  }, [map, activePin]);
+  }, [map, activePin, markProgrammatic]);
+
+  // Movimenti manuali (pan/zoom dell'utente) → ricarica i dati per l'area
+  // ora visibile (centro + raggio che copre il viewport). I movimenti
+  // innescati dal codice (fit/flyTo sopra) sono marcati e vengono ignorati qui.
+  useMapEvents({
+    // "dragstart" scatta SOLO per un trascinamento avviato dall'utente (mai
+    // per fitBounds/flyTo programmatici). Se l'utente afferra la mappa mentre
+    // un fit programmatico è ancora in corso, la posizione finale del gesto è
+    // comunque sua: invalidiamo subito il flag così il moveend risultante non
+    // viene inghiottito da un fit concomitante (es. innescato dalla chiusura
+    // della card, che può spostare leggermente il pin "primario" del venue).
+    dragstart: () => {
+      programmatic.current = false;
+      if (programmaticTimer.current) clearTimeout(programmaticTimer.current);
+    },
+    moveend: () => {
+      if (programmatic.current) {
+        programmatic.current = false;
+        if (programmaticTimer.current) clearTimeout(programmaticTimer.current);
+        return;
+      }
+      if (!onUserMove) return;
+      const center = map.getCenter();
+      const bounds = map.getBounds();
+      const geoCenter: GeoPoint = {
+        lat: Number(center.lat.toFixed(4)),
+        lng: Number(center.lng.toFixed(4)),
+      };
+      const radiusKm = radiusKmForViewport(
+        bounds.getNorth() - bounds.getSouth(),
+        bounds.getEast() - bounds.getWest(),
+        center.lat,
+      );
+      lastEmittedKey.current = `${geoCenter.lat.toFixed(4)},${geoCenter.lng.toFixed(4)},${radiusKm}`;
+      onUserMove(geoCenter, radiusKm);
+    },
+  });
 
   return null;
 }
@@ -211,12 +292,20 @@ export function MapPreview({
   radius,
   compact = false,
   height,
+  fill = false,
   style,
   userLocation,
   locationStatus,
   onRequestLocation,
+  searchOrigin,
+  onSearchArea,
 }: MapPreviewProps) {
   const h = height ?? (compact ? 140 : 320);
+  const { width: windowWidth } = useWindowDimensions();
+  // Sui telefoni i controlli +/- di Leaflet occupano spazio prezioso e sono
+  // ridondanti col pinch-to-zoom: li mostriamo solo da tablet in su.
+  const showZoomControl = windowWidth >= theme.breakpoints.tablet;
+  const origin = searchOrigin ?? userLocation ?? null;
   const pins = useMemo(() => buildMapPins(campi, selectedId), [campi, selectedId]);
   const points = useMemo(
     () => [
@@ -230,9 +319,14 @@ export function MapPreview({
     [pins, selectedId],
   );
 
-  if (pins.length === 0 && !userLocation) {
+  if (pins.length === 0 && !userLocation && !searchOrigin) {
     return (
-      <View style={[styles.emptyMap, { height: h }, style]}>
+      <View
+        style={[
+          fill ? styles.emptyMapFill : [styles.emptyMap, { height: h }],
+          style,
+        ]}
+      >
         <Text style={textStyle("bodyStrong", "muted")}>Nessun punto mappa</Text>
         <Text style={[textStyle("caption", "muted"), styles.emptyText]}>
           I campi caricati non hanno coordinate disponibili.
@@ -242,22 +336,29 @@ export function MapPreview({
   }
 
   return (
-    <View style={[styles.map, { height: h }, style]}>
+    <View style={[fill ? styles.mapFill : [styles.map, { height: h }], style]}>
       <MapContainer
         center={DEFAULT_CENTER}
         zoom={5}
         scrollWheelZoom={!compact}
+        zoomControl={showZoomControl}
         style={{ width: "100%", height: "100%" }}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
-        <MapViewport points={points} activePin={activePin} />
+        <MapViewport
+          points={points}
+          activePin={activePin}
+          searchOrigin={searchOrigin ?? undefined}
+          radius={radius}
+          onUserMove={onSearchArea}
+        />
 
-        {userLocation && radius ? (
+        {origin && radius ? (
           <Circle
-            center={[userLocation.lat, userLocation.lng]}
+            center={[origin.lat, origin.lng]}
             radius={radius * 1000}
             pathOptions={{
               color: "rgba(49, 92, 255, 0.38)",
@@ -276,21 +377,16 @@ export function MapPreview({
 
         {pins.map((pin) => {
           const active = pin.campi.some((campo) => campo.id === selectedId);
-          const color = sportColor(pin.sportId);
           return (
             <Marker
               key={pin.id}
               position={[pin.position.lat, pin.position.lng]}
-              icon={markerIcon(color, active)}
+              icon={markerIcon(active)}
+              zIndexOffset={active ? 1000 : 0}
               eventHandlers={{
                 click: () => onSelect?.(pin.selectedCampoId),
               }}
-            >
-              <Tooltip>
-                {pin.campi[0].nomeStruttura} · {pin.campi.length}{" "}
-                {pin.campi.length === 1 ? "campo" : "campi"}
-              </Tooltip>
-            </Marker>
+            />
           );
         })}
       </MapContainer>
@@ -311,11 +407,24 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.line,
     overflow: "hidden",
   },
+  mapFill: {
+    flex: 1,
+    backgroundColor: theme.colors.chip,
+    overflow: "hidden",
+  },
   emptyMap: {
     borderRadius: theme.radius.hero,
     backgroundColor: theme.colors.chip,
     borderWidth: 1,
     borderColor: theme.colors.line,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.xl,
+  },
+  emptyMapFill: {
+    flex: 1,
+    backgroundColor: theme.colors.chip,
     alignItems: "center",
     justifyContent: "center",
     gap: theme.spacing.xs,
@@ -336,6 +445,7 @@ const styles = StyleSheet.create({
     borderColor: theme.overlays.glassLine,
     alignItems: "center",
     justifyContent: "center",
+    zIndex: 1000,
     ...theme.shadows.floatBtn,
   },
   pressed: {

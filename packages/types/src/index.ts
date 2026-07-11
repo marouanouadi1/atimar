@@ -106,7 +106,10 @@ export interface Campo {
   /** Indice 1-based all'interno della struttura. */
   indice: number;
   nome: string;
+  /** Sport primario, usato per badge/icona singola (es. card, marker mappa). */
   idSport: SportId;
+  /** Tutti gli sport associati al campo — i campi polivalenti ne hanno più di uno; usare questo per i filtri. */
+  sportIds: SportId[];
   /** Etichetta display dello sport, es. "Padel". */
   nomeSport: string;
   /** Tipo superficie, reale dal DB o vuoto se non impostato. */
@@ -142,6 +145,7 @@ export interface CampoInLista extends Campo {
 export interface Recensione {
   id: string;
   strutturaId: string;
+  profileId: string;
   nomeAutore: string;
   stelle: number;
   /** Stringa relativa display, es. "2 settimane fa". */
@@ -183,7 +187,6 @@ export interface Filtri {
    * @todo Filtrare per distanza reale quando disponibile. */
   distanzaMax: number;
   soloAperti: boolean;
-  soloDisponibili: boolean;
   /** Numero di filtri attivi, per il badge. */
   attivi: number;
 }

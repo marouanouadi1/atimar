@@ -3,6 +3,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   ActivityIndicator,
   Linking,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -12,7 +13,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { theme } from "@/theme/tokens";
-import { sportLabel } from "@atimar/data";
+import { sportLabel, sportsLabel } from "@atimar/data";
 import { formatPrice, formatRating, pluralize } from "@atimar/utils";
 import type { Recensione, Struttura, Campo } from "@atimar/types";
 import {
@@ -40,9 +41,16 @@ export default function StrutturaDetail() {
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const desktop = width >= theme.breakpoints.desktop;
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, campoId, sport } = useLocalSearchParams<{
+    id: string;
+    campoId?: string;
+    sport?: string;
+  }>();
   const { isPreferitoCampo, togglePreferitoCampo, user } = useAppState();
-  const [tab, setTab] = useState<Tab>("info");
+  // Se si arriva da una ricerca/filtro per sport (es. da un pin mappa con più
+  // campi), si apre direttamente sulla tab "Campi" già filtrata, senza dover
+  // rifiltrare da capo.
+  const [tab, setTab] = useState<Tab>(sport || campoId ? "campi" : "info");
 
   const { data: struttura, isLoading } = useStruttura(id ?? "");
   const { data: campi = [] } = useCampiByStruttura(id ?? "");
@@ -124,7 +132,7 @@ export default function StrutturaDetail() {
           <Card style={styles.detailCard} elevated>
             <View style={styles.detailTop}>
               <SportTag
-                label={sportLabel(struttura.idSport[0] ?? "")}
+                label={sportsLabel(struttura.idSport)}
                 sportId={struttura.idSport[0] ?? "padel"}
               />
               <AvailabilityBadge
@@ -195,6 +203,8 @@ export default function StrutturaDetail() {
               campi={campi}
               isPreferitoCampo={isPreferitoCampo}
               onTogglePreferito={onTogglePreferitoCampo}
+              sportFilter={sport}
+              highlightId={campoId}
             />
           ) : (
             <RecensioniTab
@@ -287,19 +297,51 @@ function CampiTab({
   campi,
   isPreferitoCampo,
   onTogglePreferito,
+  sportFilter,
+  highlightId,
 }: {
   campi: Campo[];
   isPreferitoCampo: (id: string) => boolean;
   onTogglePreferito: (id: string) => void;
+  sportFilter?: string;
+  highlightId?: string;
 }) {
+  const [showAll, setShowAll] = useState(false);
+  const hasAltriSport =
+    !!sportFilter && campi.some((c) => !c.sportIds.includes(sportFilter));
+  const visibili =
+    sportFilter && hasAltriSport && !showAll
+      ? campi.filter((c) => c.sportIds.includes(sportFilter))
+      : campi;
+
   return (
     <View style={styles.section}>
-      {campi.map((campo) => (
-        <Card key={campo.id} style={styles.campoRow}>
+      {hasAltriSport ? (
+        <View style={styles.sportFilterBanner}>
+          <Text style={textStyle("caption", "text")}>
+            {showAll
+              ? "Tutti i campi della struttura"
+              : `Solo campi di ${sportLabel(sportFilter!)}`}
+          </Text>
+          <Pressable onPress={() => setShowAll((v) => !v)} hitSlop={8}>
+            <Text style={textStyle("caption", "primary")}>
+              {showAll ? "Filtra per sport cercato" : "Vedi tutti i campi"}
+            </Text>
+          </Pressable>
+        </View>
+      ) : null}
+      {visibili.map((campo) => (
+        <Card
+          key={campo.id}
+          style={[
+            styles.campoRow,
+            campo.id === highlightId && styles.campoRowHighlight,
+          ]}
+        >
           <View style={{ flex: 1, gap: 2 }}>
             <Text style={textStyle("bodyStrong", "ink")}>{campo.nome}</Text>
             <Text style={textStyle("caption", "muted")}>
-              {campo.nomeSport}
+              {sportsLabel(campo.sportIds)}
               {campo.superficie ? ` · ${campo.superficie}` : ""}
             </Text>
           </View>
@@ -442,10 +484,24 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.colors.line,
   },
+  sportFilterBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: theme.spacing.sm,
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.md,
+    borderRadius: theme.radius.md,
+    backgroundColor: theme.tints.blueTint,
+  },
   campoRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: theme.spacing.md,
+  },
+  campoRowHighlight: {
+    borderWidth: 2,
+    borderColor: theme.colors.primary,
   },
   reviewSummary: {
     flexDirection: "row",
