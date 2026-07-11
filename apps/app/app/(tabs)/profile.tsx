@@ -182,17 +182,6 @@ export default function Profile() {
                 {user?.email ?? "—"}
               </Text>
             </View>
-            <Pressable
-              style={styles.editBtn}
-              onPress={() => router.push("/setup/sports")}
-            >
-              <Icon
-                name="create-outline"
-                size={theme.iconSizes.sm}
-                color="surface"
-              />
-              <Text style={textStyle("caption", "surface")}>Modifica</Text>
-            </Pressable>
           </ResponsiveContainer>
         </View>
 
@@ -207,11 +196,6 @@ export default function Profile() {
               icon="heart-outline"
               value={String(favCount)}
               label="Preferiti"
-            />
-            <DetailStat
-              icon="navigate-outline"
-              value={`${prefs.area.radius}km`}
-              label="Raggio"
             />
           </View>
 
@@ -248,18 +232,12 @@ export default function Profile() {
                 icon="tennisball-outline"
                 label="Sport preferiti"
                 sub={`${prefs.sports.length} selezionati`}
-                onPress={() => router.push("/setup/sports")}
-              />
-              <ProfileMenuItem
-                icon="location-outline"
-                label="Zona"
-                sub={prefs.area.location}
-                onPress={() => router.push("/setup/area")}
+                onPress={() => router.push("/setup/sports?mode=edit")}
               />
               <ProfileMenuItem
                 icon="time-outline"
                 label="Disponibilità"
-                onPress={() => router.push("/setup/availability")}
+                onPress={() => router.push("/setup/availability?mode=edit")}
               />
               <ProfileMenuItem
                 icon="notifications-outline"
@@ -437,15 +415,6 @@ const styles = StyleSheet.create({
     paddingBottom: theme.spacing.xl,
   },
   headerInfo: { alignItems: "center", gap: 2 },
-  editBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: theme.spacing.xs,
-    paddingVertical: theme.spacing.xs,
-    paddingHorizontal: theme.spacing.md,
-    borderRadius: theme.radius.pill,
-    backgroundColor: "rgba(255,255,255,0.12)",
-  },
   content: {
     paddingTop: theme.spacing.xl,
     gap: theme.spacing.xxl,

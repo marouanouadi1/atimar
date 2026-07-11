@@ -19,8 +19,8 @@ export default function WebHomepage() {
 
   // After Google OAuth redirect, the user lands here. Once the session is
   // detected (detectSessionInUrl: true in client.ts), redirect to the app —
-  // through setup first if the account hasn't completed onboarding yet (the
-  // app-only marketing intro is skipped on web; the landing already sells it).
+  // through setup first if the account hasn't completed onboarding yet.
+  // Skip the native marketing intro on web, same as (tabs)/_layout.tsx.
   // Guard on pathname === "/" so deep links to /favorites etc. are not overridden
   // when this component stays mounted as the stack anchor.
   useEffect(() => {
