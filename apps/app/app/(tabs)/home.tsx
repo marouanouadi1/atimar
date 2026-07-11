@@ -18,6 +18,7 @@ import {
   CampoCard,
   Icon,
   MediaStruttura,
+  noNativeOutline,
   ResponsiveContainer,
 } from "@/ui";
 import { useAppState } from "@/state/AppState";
@@ -269,6 +270,7 @@ const styles = StyleSheet.create({
     color: theme.colors.ink,
     fontFamily: theme.fonts.bodyMedium,
     fontSize: 15,
+    ...noNativeOutline,
   },
   searchButton: {
     width: 50,

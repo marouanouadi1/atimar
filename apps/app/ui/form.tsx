@@ -21,7 +21,7 @@ import type {
 } from "react-native";
 import { theme } from "@/theme/tokens";
 import { Icon } from "./primitives";
-import { textStyle } from "./theme";
+import { noNativeOutline, textStyle } from "./theme";
 
 /* ------------------------------------------------------------------ *
  * FormInput
@@ -38,6 +38,8 @@ export interface FormInputProps {
   keyboardType?: KeyboardTypeOptions;
   autoCapitalize?: "none" | "sentences" | "words" | "characters";
   autoComplete?: React.ComponentProps<typeof TextInput>["autoComplete"];
+  multiline?: boolean;
+  numberOfLines?: number;
   style?: StyleProp<ViewStyle>;
 }
 
@@ -52,6 +54,8 @@ export function FormInput({
   keyboardType,
   autoCapitalize = "none",
   autoComplete,
+  multiline = false,
+  numberOfLines,
   style,
 }: FormInputProps) {
   const [hidden, setHidden] = useState(secureTextEntry);
@@ -63,6 +67,7 @@ export function FormInput({
       <View
         style={[
           styles.input,
+          multiline && styles.inputMultiline,
           focused && styles.inputFocused,
           hasError && styles.inputError,
         ]}
@@ -80,6 +85,9 @@ export function FormInput({
           keyboardType={keyboardType}
           autoCapitalize={autoCapitalize}
           autoComplete={autoComplete}
+          multiline={multiline}
+          numberOfLines={numberOfLines}
+          textAlignVertical={multiline ? "top" : undefined}
           onFocus={() => setFocused(true)}
           onBlur={() => setFocused(false)}
         />
@@ -296,6 +304,12 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.primary,
     backgroundColor: theme.colors.surface,
   },
+  inputMultiline: {
+    height: undefined,
+    minHeight: 136,
+    alignItems: "flex-start",
+    paddingVertical: theme.spacing.md,
+  },
   inputError: {
     borderColor: theme.semantic.danger,
   },
@@ -304,6 +318,7 @@ const styles = StyleSheet.create({
     fontFamily: theme.fonts.bodyMedium,
     color: theme.colors.ink,
     paddingVertical: 0,
+    ...noNativeOutline,
   },
   search: {
     flexDirection: "row",

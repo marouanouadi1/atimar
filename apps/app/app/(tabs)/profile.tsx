@@ -8,7 +8,6 @@ import {
   Share,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -21,6 +20,7 @@ import {
   Avatar,
   Button,
   DetailStat,
+  FormInput,
   Icon,
   MenuList,
   ProfileMenuItem,
@@ -378,7 +378,7 @@ export default function Profile() {
               })}
             </View>
 
-            <TextInput
+            <FormInput
               value={feedbackMessage}
               onChangeText={(value) => {
                 setFeedbackMessage(value);
@@ -386,10 +386,7 @@ export default function Profile() {
                 if (feedbackSent) setFeedbackSent(false);
               }}
               placeholder="Scrivi qui il tuo feedback..."
-              placeholderTextColor={theme.colors.subtle}
               multiline
-              textAlignVertical="top"
-              style={styles.feedbackInput}
             />
 
             {feedbackError ? (
@@ -507,17 +504,6 @@ const styles = StyleSheet.create({
   categoryPillActive: {
     backgroundColor: theme.tints.limeTint,
     borderColor: theme.colors.lime,
-  },
-  feedbackInput: {
-    minHeight: 136,
-    padding: theme.spacing.md,
-    borderRadius: theme.radius.md,
-    borderWidth: 1.5,
-    borderColor: theme.colors.line,
-    backgroundColor: theme.colors.bg,
-    color: theme.colors.ink,
-    fontSize: theme.typography.body.fontSize,
-    fontFamily: theme.fonts.bodyMedium,
   },
   modalActions: {
     flexDirection: "row",
