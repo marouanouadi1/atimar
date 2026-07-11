@@ -48,6 +48,7 @@ const campo: Campo = {
   indice: 1,
   nome: "Campo 1",
   idSport: "padel",
+  sportIds: ["padel"],
   nomeSport: "Padel",
   superficie: "erba sintetica",
   coperto: false,
@@ -143,6 +144,46 @@ describe("coperto nullable", () => {
   });
 });
 
+describe("mapRowToCampo sport", () => {
+  it("espone tutti gli sport associati a un campo polivalente", () => {
+    const result = mapRowToCampo({
+      id: 20,
+      fk_struttura: 1,
+      nome_campo: "Campo polivalente coperto",
+      tipo_superficie: null,
+      coperto: true,
+      prezzo_orario: 20,
+      attivo: true,
+      Campi_Sport: [
+        { fk_campo: 20, fk_sport: 4, Sport: { id: 4, nome_sport: "Tennis", slug: "tennis" } },
+        { fk_campo: 20, fk_sport: 2, Sport: { id: 2, nome_sport: "Calcio a 5", slug: "calcio5" } },
+      ],
+    });
+
+    // Sport primario deterministico: id sport più basso, indipendentemente
+    // dall'ordine restituito da Supabase per le relazioni annidate.
+    expect(result.idSport).toBe("calcio5");
+    expect(result.sportIds).toEqual(["calcio5", "tennis"]);
+  });
+
+  it("usa una etichetta di fallback per un campo senza sport associati", () => {
+    const result = mapRowToCampo({
+      id: 21,
+      fk_struttura: 1,
+      nome_campo: "Palestra generica",
+      tipo_superficie: null,
+      coperto: null,
+      prezzo_orario: null,
+      attivo: true,
+      Campi_Sport: [],
+    });
+
+    expect(result.idSport).toBe("");
+    expect(result.sportIds).toEqual([]);
+    expect(result.nomeSport).toBe("Sport non specificato");
+  });
+});
+
 describe("mapNearbyCampoRowToCampoInLista", () => {
   it("mappa una riga RPC geospaziale in CampoInLista", () => {
     const result = mapNearbyCampoRowToCampoInLista({
@@ -157,6 +198,7 @@ describe("mapNearbyCampoRowToCampoInLista", () => {
       distanza_km: 3.24,
       sport_slug: "padel",
       nome_sport: "Padel",
+      sport_slugs: ["padel"],
       tipo_superficie: "erba sintetica",
       coperto: true,
       prezzo_orario: 28,
@@ -174,6 +216,7 @@ describe("mapNearbyCampoRowToCampoInLista", () => {
       nome: "Campo Blu",
       nomeStruttura: "Padel Milano",
       idSport: "padel",
+      sportIds: ["padel"],
       nomeSport: "Padel",
       posizione: { lat: 45.4642, lng: 9.19 },
       distanzaKm: 3.24,
@@ -200,6 +243,7 @@ describe("mapNearbyCampoRowToCampoInLista", () => {
       distanza_km: 1.2,
       sport_slug: "padel",
       nome_sport: "Padel",
+      sport_slugs: ["padel"],
       tipo_superficie: null,
       coperto: null,
       prezzo_orario: null,
@@ -211,6 +255,63 @@ describe("mapNearbyCampoRowToCampoInLista", () => {
     });
 
     expect(result.coperto).toBeNull();
+  });
+
+  it("espone tutti gli sport di un campo polivalente, non solo il primario", () => {
+    const result = mapNearbyCampoRowToCampoInLista({
+      campo_id: 44,
+      struttura_id: 8,
+      campo_indice: 1,
+      nome_campo: "Campo polivalente coperto",
+      nome_struttura: "Centro Polivalente",
+      indirizzo: "Via Test 8",
+      latitudine: 45.4642,
+      longitudine: 9.19,
+      distanza_km: 2.1,
+      sport_slug: "calcio5",
+      nome_sport: "Calcio a 5",
+      sport_slugs: ["calcio5", "tennis"],
+      tipo_superficie: null,
+      coperto: true,
+      prezzo_orario: 20,
+      sempre_aperto: true,
+      media_voti: null,
+      numero_recensioni: null,
+      url_foto_copertina: null,
+      total_count: 1,
+    });
+
+    expect(result.idSport).toBe("calcio5");
+    expect(result.sportIds).toEqual(["calcio5", "tennis"]);
+  });
+
+  it("usa un'etichetta di fallback quando il campo non ha sport associati", () => {
+    const result = mapNearbyCampoRowToCampoInLista({
+      campo_id: 45,
+      struttura_id: 9,
+      campo_indice: 1,
+      nome_campo: "Palestra generica",
+      nome_struttura: "Centro Fitness",
+      indirizzo: "Via Test 9",
+      latitudine: 45.4642,
+      longitudine: 9.19,
+      distanza_km: 0.5,
+      sport_slug: null,
+      nome_sport: null,
+      sport_slugs: null,
+      tipo_superficie: null,
+      coperto: null,
+      prezzo_orario: null,
+      sempre_aperto: true,
+      media_voti: null,
+      numero_recensioni: null,
+      url_foto_copertina: null,
+      total_count: 1,
+    });
+
+    expect(result.idSport).toBe("");
+    expect(result.sportIds).toEqual([]);
+    expect(result.nomeSport).toBe("Sport non specificato");
   });
 });
 

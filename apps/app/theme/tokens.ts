@@ -389,6 +389,17 @@ export function sportColor(sportId: string): string {
 }
 
 /* ------------------------------------------------------------------ *
+ * Map marker — colore unico dei pin campo (non più per-sport).
+ * Distinto dal blu "tua posizione" (colors.primary).
+ * ------------------------------------------------------------------ */
+
+export const mapMarker = {
+  pin: "#E5484D",
+  pinActive: "#B4231F",
+  ring: "#FFFEF7",
+} as const;
+
+/* ------------------------------------------------------------------ *
  * Aggregate
  * ------------------------------------------------------------------ */
 
@@ -414,6 +425,7 @@ export const theme = {
   stagger,
   variantDefaults,
   sportColors,
+  mapMarker,
 } as const;
 
 export type Theme = typeof theme;

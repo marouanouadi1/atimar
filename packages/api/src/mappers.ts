@@ -15,7 +15,7 @@ import type {
   Struttura,
   TipoHero,
 } from "@atimar/types";
-import { SPORTS } from "@atimar/data";
+import { SPORT_NON_SPECIFICATO, SPORTS } from "@atimar/data";
 import { formatPrice, formatDistanceKm } from "@atimar/utils";
 
 /* ------------------------------------------------------------------ *
@@ -160,8 +160,11 @@ export interface NearbyCampoRow {
   latitudine: number;
   longitudine: number;
   distanza_km: number;
-  sport_slug: string;
-  nome_sport: string;
+  /** Null se il campo non ha alcuno sport associato in Campi_Sport. */
+  sport_slug: string | null;
+  nome_sport: string | null;
+  /** Tutti gli sport associati al campo, in ordine di id. */
+  sport_slugs: string[] | null;
   tipo_superficie: string | null;
   coperto: boolean | null;
   prezzo_orario: number | null;
@@ -260,8 +263,13 @@ export function mapRowToCampo(
   strutturaAperta = true,
   index = 0,
 ): Campo {
-  const firstSport = campo.Campi_Sport[0]?.Sport;
-  const idSport: SportId = firstSport ? (firstSport.slug as SportId) : "padel";
+  // Ordine deterministico per id sport, coerente con l'RPC search_campi_nearby.
+  const sports = campo.Campi_Sport
+    .map((cs) => cs.Sport)
+    .filter((s): s is SportRow => s != null)
+    .sort((a, b) => a.id - b.id);
+  const sportIds = sports.map((s) => s.slug as SportId);
+  const idSport: SportId = sportIds[0] ?? "";
 
   // Superficie: valore reale dal DB, vuoto se non impostato (no default inventati).
   const superficie = campo.tipo_superficie ?? "";
@@ -270,7 +278,7 @@ export function mapRowToCampo(
 
   // Etichetta sport dall'array SPORTS
   const sportEntry = SPORTS.find((s) => s.id === idSport);
-  const nomeSport = sportEntry?.label ?? idSport;
+  const nomeSport = sportEntry?.label ?? sports[0]?.nome_sport ?? SPORT_NON_SPECIFICATO;
 
   return {
     id: String(campo.id),
@@ -278,6 +286,7 @@ export function mapRowToCampo(
     indice: index + 1,
     nome: campo.nome_campo,
     idSport,
+    sportIds,
     nomeSport,
     superficie,
     coperto: campo.coperto,
@@ -312,14 +321,18 @@ export function mapNearbyCampoRowToCampoInLista(row: NearbyCampoRow): CampoInLis
   const lng = row.longitudine;
   const distanzaKm = row.distanza_km;
   const prezzoOrario = row.prezzo_orario ?? 0;
+  const sportIds = (row.sport_slugs ?? []) as SportId[];
+  const idSport: SportId = (row.sport_slug as SportId | null) ?? sportIds[0] ?? "";
+  const nomeSport = row.nome_sport ?? SPORT_NON_SPECIFICATO;
 
   return {
     id: String(row.campo_id),
     strutturaId: String(row.struttura_id),
     indice: row.campo_indice ?? 1,
     nome: row.nome_campo,
-    idSport: row.sport_slug,
-    nomeSport: row.nome_sport,
+    idSport,
+    sportIds,
+    nomeSport,
     superficie: row.tipo_superficie ?? "",
     coperto: row.coperto,
     prezzoOrario,
@@ -332,7 +345,7 @@ export function mapNearbyCampoRowToCampoInLista(row: NearbyCampoRow): CampoInLis
     distanza: formatDistanceKm(distanzaKm),
     mediaVoti: row.media_voti ?? 0,
     numeroRecensioni: row.numero_recensioni ?? 0,
-    tipoHero: tipoHeroPerSport(row.sport_slug),
+    tipoHero: tipoHeroPerSport(idSport),
     urlFotoCopertina: row.url_foto_copertina,
     mappa: latLngToMap(lat, lng),
   };

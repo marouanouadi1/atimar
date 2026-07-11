@@ -1,11 +1,10 @@
-import { useMemo, useState } from "react";
-import { useRouter } from "expo-router";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { useMemo, useState } from 'react';
+import { useRouter } from 'expo-router';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { theme } from "@/theme/tokens";
-import { DEFAULT_FILTERS, sportLabel } from "@atimar/data";
-import { filtraCampi } from "@atimar/utils";
-import type { Filtri } from "@atimar/types";
+import { theme } from '@/theme/tokens';
+import { DEFAULT_FILTERS, sportLabel } from '@atimar/data';
+import type { Filtri } from '@atimar/types';
 import {
   Button,
   Header,
@@ -15,10 +14,10 @@ import {
   SportChip,
   ToggleRow,
   textStyle,
-} from "@/ui";
-import { useAppState } from "@/state/AppState";
-import { useCampiInLista, useNearbyCampiInLista } from "@/data/hooks";
-import { useUserLocation } from "@/data/use-user-location";
+} from '@/ui';
+import { useAppState } from '@/state/AppState';
+import { useCampiInLista } from '@/data/hooks';
+import { useUserLocation } from '@/data/use-user-location';
 
 export default function FiltersModal() {
   const router = useRouter();
@@ -27,22 +26,10 @@ export default function FiltersModal() {
 
   const { data: campi = [] } = useCampiInLista();
   const userLocation = useUserLocation();
-  const nearbyCountQuery = useNearbyCampiInLista({
-    location: userLocation.location,
-    filtri: draft,
-    limit: 1,
-  });
   const sports = useMemo(
-    () => Array.from(new Set(campi.map((c) => c.idSport))),
+    () => Array.from(new Set(campi.flatMap((c) => c.sportIds))),
     [campi],
   );
-  const count = useMemo(
-    () => filtraCampi(campi, draft).length,
-    [campi, draft],
-  );
-  const visibleCount = userLocation.hasLocation
-    ? nearbyCountQuery.data?.totalCount ?? 0
-    : count;
 
   const apply = () => {
     setFiltri(
@@ -62,16 +49,12 @@ export default function FiltersModal() {
           title="Filtri"
           right={
             <Pressable onPress={() => setDraft(DEFAULT_FILTERS)} hitSlop={8}>
-              <Text style={textStyle("caption", "primary")}>Reimposta</Text>
+              <Text style={textStyle('caption', 'primary')}>Reimposta</Text>
             </Pressable>
           }
         />
       }
-      footer={
-        <Button onPress={apply}>
-          Applica · {visibleCount} {visibleCount === 1 ? "campo" : "campi"}
-        </Button>
-      }
+      footer={<Button onPress={apply}>Applica</Button>}
     >
       <View style={styles.body}>
         <View style={styles.section}>
@@ -79,8 +62,8 @@ export default function FiltersModal() {
           <View style={styles.chips}>
             <SportChip
               label="Tutti"
-              active={draft.sport === "all"}
-              onPress={() => setDraft((d) => ({ ...d, sport: "all" }))}
+              active={draft.sport === 'all'}
+              onPress={() => setDraft((d) => ({ ...d, sport: 'all' }))}
             />
             {sports.map((id) => (
               <SportChip
@@ -96,7 +79,7 @@ export default function FiltersModal() {
         <View style={styles.section}>
           <View style={styles.rowBetween}>
             <SectionTitle>Distanza massima</SectionTitle>
-            <Text style={textStyle("caption", "primary")}>
+            <Text style={textStyle('caption', 'primary')}>
               {draft.distanzaMax} km
             </Text>
           </View>
@@ -112,10 +95,8 @@ export default function FiltersModal() {
               onPress={() => void userLocation.requestLocation()}
               style={styles.locationHint}
             >
-              <Text style={textStyle("caption", "ink")}>
-                Raggio non attivo
-              </Text>
-              <Text style={textStyle("caption", "primary")}>
+              <Text style={textStyle('caption', 'ink')}>Raggio non attivo</Text>
+              <Text style={textStyle('caption', 'primary')}>
                 Usa la posizione per attivare il raggio
               </Text>
             </Pressable>
@@ -131,13 +112,6 @@ export default function FiltersModal() {
             value={draft.soloAperti}
             onValueChange={(v) => setDraft((d) => ({ ...d, soloAperti: v }))}
           />
-          <ToggleRow
-            label="Solo disponibili"
-            sub="Nascondi i campi senza slot liberi"
-            icon="checkmark-circle-outline"
-            value={draft.soloDisponibili}
-            onValueChange={(v) => setDraft((d) => ({ ...d, soloDisponibili: v }))}
-          />
         </View>
       </View>
     </ScreenContainer>
@@ -148,19 +122,19 @@ const styles = StyleSheet.create({
   body: {
     gap: theme.spacing.xxl,
     paddingTop: theme.spacing.sm,
-    width: "100%",
+    width: '100%',
     maxWidth: theme.layout.maxReading,
-    alignSelf: "center",
+    alignSelf: 'center',
   },
   section: { gap: theme.spacing.md },
-  chips: { flexDirection: "row", flexWrap: "wrap", gap: theme.spacing.sm },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: theme.spacing.sm },
   rowBetween: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   locationHint: {
-    alignSelf: "flex-start",
+    alignSelf: 'flex-start',
     gap: 2,
     paddingVertical: theme.spacing.sm,
     paddingHorizontal: theme.spacing.md,

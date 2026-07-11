@@ -16,7 +16,6 @@ import type { CampoInLista, Filtri } from "@atimar/types";
  * Filtra una lista di campi applicando i {@link Filtri} attivi.
  * La distanza non viene filtrata qui: quando c'è posizione utente la ricerca
  * usa PostGIS tramite RPC, altrimenti il raggio resta inattivo.
- * `soloDisponibili` è un placeholder finché i slot disponibilità non sono collegati.
  */
 export function filtraCampi(
   campi: CampoInLista[],
@@ -24,12 +23,12 @@ export function filtraCampi(
 ): CampoInLista[] {
   let result = campi.slice();
   if (f.sport && f.sport !== "all") {
-    result = result.filter((c) => c.idSport === f.sport);
+    // sportIds copre anche i campi polivalenti (più sport sullo stesso campo).
+    result = result.filter((c) => c.sportIds.includes(f.sport));
   }
   if (f.soloAperti) {
     result = result.filter((c) => c.aperto);
   }
-  // soloDisponibili: hook to AvailabilitySlot data when available.
   return result;
 }
 
@@ -50,15 +49,15 @@ export function ordinaCampi(
   }
 }
 
-const DEFAULT_MAX_DISTANCE = 50;
+// Deve restare allineato a DEFAULT_FILTERS.distanzaMax in @atimar/data.
+const DEFAULT_MAX_DISTANCE = 20;
 
 /** Conta i filtri attivi per il badge del pulsante filtri. */
 function contaFiltriAttivi(f: Filtri): number {
   return (
     (f.sport !== "all" ? 1 : 0) +
     (f.distanzaMax < DEFAULT_MAX_DISTANCE ? 1 : 0) +
-    (f.soloAperti ? 1 : 0) +
-    (f.soloDisponibili ? 1 : 0)
+    (f.soloAperti ? 1 : 0)
   );
 }
 

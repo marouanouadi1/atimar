@@ -21,8 +21,7 @@ export const DEFAULT_PREFS: UserPrefs = {
 
 export const DEFAULT_FILTERS: Filtri = {
   sport: "all",
-  distanzaMax: 50,
+  distanzaMax: 20,
   soloAperti: false,
-  soloDisponibili: false,
   attivi: 0,
 };

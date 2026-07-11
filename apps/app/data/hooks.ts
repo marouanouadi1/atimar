@@ -116,21 +116,25 @@ export function useCampiInListaByIds(ids: string[]) {
 export function useNearbyCampiInLista({
   location,
   filtri,
+  radiusKm,
   limit = 100,
   offset = 0,
   enabled = true,
 }: {
   location: GeoPoint | null;
   filtri: Filtri;
+  /** Sovrascrive `filtri.distanzaMax` (es. raggio derivato dal viewport mappa). */
+  radiusKm?: number;
   limit?: number;
   offset?: number;
   enabled?: boolean;
 }) {
   const hasLocation = location != null;
+  const effectiveRadiusKm = radiusKm ?? filtri.distanzaMax;
   const keyArgs = {
     lat: location?.lat ?? 0,
     lng: location?.lng ?? 0,
-    radiusKm: filtri.distanzaMax,
+    radiusKm: effectiveRadiusKm,
     sport: filtri.sport,
     soloAperti: filtri.soloAperti,
     limit,
@@ -143,7 +147,7 @@ export function useNearbyCampiInLista({
       searchCampiNearby({
         lat: location!.lat,
         lng: location!.lng,
-        radiusKm: filtri.distanzaMax,
+        radiusKm: effectiveRadiusKm,
         sport: filtri.sport,
         soloAperti: filtri.soloAperti,
         limit,

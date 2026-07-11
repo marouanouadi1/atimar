@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -8,11 +8,12 @@ import {
 } from "react-native";
 import MapView, { Circle, Marker } from "react-native-maps";
 import type { Region } from "react-native-maps";
-import { theme, sportColor } from "@/theme/tokens";
+import { theme } from "@/theme/tokens";
 import type { GeoPoint } from "@atimar/types";
 import { textStyle } from "./theme";
 import {
   buildMapPins,
+  radiusKmForViewport,
   selectedMapPin,
   type MapPreviewProps,
 } from "./map-shared";
@@ -23,6 +24,11 @@ const DEFAULT_REGION: Region = {
   latitudeDelta: 8,
   longitudeDelta: 8,
 };
+
+// Tempo massimo (ms) entro cui un animateToRegion programmatico deve produrre
+// un onRegionChangeComplete: oltre, il flag si auto-resetta per non
+// "ingoiare" un gesto utente successivo se l'animazione viene interrotta.
+const PROGRAMMATIC_MOVE_TIMEOUT = 1000;
 
 function regionForPoints(points: GeoPoint[]): Region {
   if (points.length === 0) return DEFAULT_REGION;
@@ -39,6 +45,22 @@ function regionForPoints(points: GeoPoint[]): Region {
   const longitudeDelta = Math.max(0.035, (maxLng - minLng) * 1.6);
 
   return { latitude, longitude, latitudeDelta, longitudeDelta };
+}
+
+/** Regione che inquadra un cerchio di raggio `radiusKm` intorno a `center`. */
+function regionForRadius(center: GeoPoint, radiusKm: number): Region {
+  const latDelta = Math.max(0.035, (radiusKm * 2 * 1.3) / 111);
+  const cos = Math.cos((center.lat * Math.PI) / 180);
+  const lngDelta = Math.max(
+    0.035,
+    (radiusKm * 2 * 1.3) / (111 * (cos || 1)),
+  );
+  return {
+    latitude: center.lat,
+    longitude: center.lng,
+    latitudeDelta: latDelta,
+    longitudeDelta: lngDelta,
+  };
 }
 
 function LocationControl({
@@ -87,13 +109,17 @@ export function MapPreview({
   radius,
   compact = false,
   height,
+  fill = false,
   style,
   userLocation,
   locationStatus,
   onRequestLocation,
+  searchOrigin,
+  onSearchArea,
 }: MapPreviewProps) {
   const mapRef = useRef<MapView | null>(null);
   const h = height ?? (compact ? 140 : 320);
+  const origin = searchOrigin ?? userLocation ?? null;
   const pins = useMemo(() => buildMapPins(campi, selectedId), [campi, selectedId]);
   const points = useMemo(
     () => [
@@ -102,11 +128,40 @@ export function MapPreview({
     ],
     [pins, userLocation],
   );
-  const initialRegion = useMemo(() => regionForPoints(points), [points]);
+  // initialRegion è "uncontrolled" per react-native-maps: usata solo al mount.
+  const initialRegion = useMemo(
+    () =>
+      searchOrigin && radius
+        ? regionForRadius(searchOrigin, radius)
+        : regionForPoints(points),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [],
+  );
   const activePin = selectedMapPin(pins, selectedId);
+
+  // Flag "movimento programmatico": true finché non arriva il primo
+  // onRegionChangeComplete successivo a un animateToRegion innescato dal
+  // codice (selezione pin, nuova ricerca per zona). Parte true per ignorare
+  // il completamento della regione iniziale al mount.
+  const programmatic = useRef(true);
+  const programmaticTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const markProgrammatic = useCallback(() => {
+    programmatic.current = true;
+    if (programmaticTimer.current) clearTimeout(programmaticTimer.current);
+    programmaticTimer.current = setTimeout(() => {
+      programmatic.current = false;
+    }, PROGRAMMATIC_MOVE_TIMEOUT);
+  }, []);
+  useEffect(
+    () => () => {
+      if (programmaticTimer.current) clearTimeout(programmaticTimer.current);
+    },
+    [],
+  );
 
   useEffect(() => {
     if (!activePin) return;
+    markProgrammatic();
     mapRef.current?.animateToRegion(
       {
         latitude: activePin.position.lat,
@@ -116,11 +171,65 @@ export function MapPreview({
       },
       260,
     );
-  }, [activePin]);
+  }, [activePin, markProgrammatic]);
 
-  if (pins.length === 0 && !userLocation) {
+  const searchOriginKey = searchOrigin
+    ? `${searchOrigin.lat.toFixed(4)},${searchOrigin.lng.toFixed(4)}`
+    : null;
+  // Chiave dell'ultimo (centro, raggio) comunicato a onSearchArea dalla mappa
+  // stessa: se searchOrigin/radius cambiano per rispecchiare esattamente
+  // quel valore (perché è stata la mappa a chiederlo spostandosi), il fit
+  // sotto va saltato — la mappa è già inquadrata così, rifittarla
+  // produrrebbe uno "scatto" indietro subito dopo il gesto dell'utente.
+  const lastEmittedKey = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (activePin) return;
+    if (!searchOrigin || !radius) return;
+    if (lastEmittedKey.current === `${searchOriginKey},${radius}`) return;
+    markProgrammatic();
+    mapRef.current?.animateToRegion(regionForRadius(searchOrigin, radius), 300);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchOriginKey, radius]);
+
+  const handleRegionChangeComplete = (region: Region) => {
+    if (programmatic.current) {
+      programmatic.current = false;
+      if (programmaticTimer.current) clearTimeout(programmaticTimer.current);
+      return;
+    }
+    if (!onSearchArea) return;
+    const center: GeoPoint = {
+      lat: Number(region.latitude.toFixed(4)),
+      lng: Number(region.longitude.toFixed(4)),
+    };
+    const radiusKm = radiusKmForViewport(
+      region.latitudeDelta,
+      region.longitudeDelta,
+      region.latitude,
+    );
+    lastEmittedKey.current = `${center.lat.toFixed(4)},${center.lng.toFixed(4)},${radiusKm}`;
+    onSearchArea(center, radiusKm);
+  };
+
+  // Scatta SOLO durante un trascinamento avviato dall'utente (mai per
+  // animateToRegion programmatico). Se l'utente afferra la mappa mentre è in
+  // corso un fit programmatico, la posizione finale del gesto è comunque
+  // sua: invalidiamo subito il flag così l'onRegionChangeComplete risultante
+  // non viene inghiottito da un fit concomitante.
+  const handlePanDrag = () => {
+    programmatic.current = false;
+    if (programmaticTimer.current) clearTimeout(programmaticTimer.current);
+  };
+
+  if (pins.length === 0 && !userLocation && !searchOrigin) {
     return (
-      <View style={[styles.emptyMap, { height: h }, style]}>
+      <View
+        style={[
+          fill ? styles.emptyMapFill : [styles.emptyMap, { height: h }],
+          style,
+        ]}
+      >
         <Text style={textStyle("bodyStrong", "muted")}>Nessun punto mappa</Text>
         <Text style={[textStyle("caption", "muted"), styles.emptyText]}>
           I campi caricati non hanno coordinate disponibili.
@@ -130,19 +239,21 @@ export function MapPreview({
   }
 
   return (
-    <View style={[styles.map, { height: h }, style]}>
+    <View style={[fill ? styles.mapFill : [styles.map, { height: h }], style]}>
       <MapView
         ref={mapRef}
         style={StyleSheet.absoluteFill}
         initialRegion={initialRegion}
         rotateEnabled={false}
         pitchEnabled={false}
+        onPanDrag={handlePanDrag}
+        onRegionChangeComplete={handleRegionChangeComplete}
       >
-        {userLocation && radius ? (
+        {origin && radius ? (
           <Circle
             center={{
-              latitude: userLocation.lat,
-              longitude: userLocation.lng,
+              latitude: origin.lat,
+              longitude: origin.lng,
             }}
             radius={radius * 1000}
             strokeColor="rgba(49, 92, 255, 0.38)"
@@ -166,8 +277,11 @@ export function MapPreview({
         ) : null}
 
         {pins.map((pin) => {
-          const color = sportColor(pin.sportId);
           const active = pin.campi.some((campo) => campo.id === selectedId);
+          const color = active ? theme.mapMarker.pinActive : theme.mapMarker.pin;
+          const head = active ? 34 : 26;
+          const dot = active ? 12 : 9;
+          const tail = active ? 14 : 11;
           return (
             <Marker
               key={pin.id}
@@ -175,21 +289,40 @@ export function MapPreview({
                 latitude: pin.position.lat,
                 longitude: pin.position.lng,
               }}
-              title={pin.campi[0].nomeStruttura}
-              description={`${pin.campi.length} ${
-                pin.campi.length === 1 ? "campo" : "campi"
-              }`}
-              zIndex={active ? 5 : 1}
+              anchor={{ x: 0.5, y: 1 }}
+              zIndex={active ? 20 : 1}
               onPress={() => onSelect?.(pin.selectedCampoId)}
             >
-              <View
-                style={[
-                  styles.pin,
-                  active && styles.pinActive,
-                  { borderColor: color },
-                ]}
-              >
-                <View style={[styles.pinDot, { backgroundColor: color }]} />
+              <View style={styles.pinWrap}>
+                <View
+                  style={[
+                    styles.pinHead,
+                    {
+                      width: head,
+                      height: head,
+                      borderRadius: head / 2,
+                      backgroundColor: color,
+                    },
+                  ]}
+                >
+                  <View
+                    style={[
+                      styles.pinDot,
+                      { width: dot, height: dot, borderRadius: dot / 2 },
+                    ]}
+                  />
+                </View>
+                <View
+                  style={[
+                    styles.pinTail,
+                    {
+                      borderLeftWidth: tail / 2,
+                      borderRightWidth: tail / 2,
+                      borderTopWidth: tail,
+                      borderTopColor: color,
+                    },
+                  ]}
+                />
               </View>
             </Marker>
           );
@@ -212,6 +345,11 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.line,
     overflow: "hidden",
   },
+  mapFill: {
+    flex: 1,
+    backgroundColor: theme.colors.chip,
+    overflow: "hidden",
+  },
   emptyMap: {
     borderRadius: theme.radius.hero,
     backgroundColor: theme.colors.chip,
@@ -222,28 +360,36 @@ const styles = StyleSheet.create({
     gap: theme.spacing.xs,
     paddingHorizontal: theme.spacing.xl,
   },
+  emptyMapFill: {
+    flex: 1,
+    backgroundColor: theme.colors.chip,
+    alignItems: "center",
+    justifyContent: "center",
+    gap: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.xl,
+  },
   emptyText: {
     textAlign: "center",
   },
-  pin: {
-    width: 30,
-    height: 30,
-    borderRadius: theme.radius.pill,
-    backgroundColor: theme.colors.surface,
+  pinWrap: {
+    alignItems: "center",
+  },
+  pinHead: {
     borderWidth: 3,
+    borderColor: theme.mapMarker.ring,
     alignItems: "center",
     justifyContent: "center",
     ...theme.shadows.floatBtn,
   },
-  pinActive: {
-    width: 38,
-    height: 38,
-    borderWidth: 4,
-  },
   pinDot: {
-    width: 12,
-    height: 12,
-    borderRadius: theme.radius.pill,
+    backgroundColor: theme.mapMarker.ring,
+  },
+  pinTail: {
+    width: 0,
+    height: 0,
+    borderLeftColor: "transparent",
+    borderRightColor: "transparent",
+    marginTop: -3,
   },
   userPinOuter: {
     width: 26,
@@ -273,6 +419,7 @@ const styles = StyleSheet.create({
     borderColor: theme.overlays.glassLine,
     alignItems: "center",
     justifyContent: "center",
+    zIndex: 1000,
     ...theme.shadows.floatBtn,
   },
   pressed: {
