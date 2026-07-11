@@ -9,6 +9,7 @@ import {
   View,
   useWindowDimensions,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import L from "leaflet";
 import {
   Circle,
@@ -279,7 +280,10 @@ function LocationControl({
       {loading ? (
         <ActivityIndicator size="small" color={theme.colors.primary} />
       ) : (
-        <Text style={textStyle("caption", "primary")}>{label}</Text>
+        <>
+          <Ionicons name="locate" size={14} color={theme.colors.primary} />
+          <Text style={textStyle("caption", "primary")}>{label}</Text>
+        </>
       )}
     </Pressable>
   );
@@ -443,8 +447,10 @@ const styles = StyleSheet.create({
     backgroundColor: theme.overlays.glass,
     borderWidth: 1,
     borderColor: theme.overlays.glassLine,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    gap: theme.spacing.xs,
     zIndex: 1000,
     ...theme.shadows.floatBtn,
   },
