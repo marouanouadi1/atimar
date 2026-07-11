@@ -134,7 +134,7 @@ export function Button({
  * IconButton — round tappable icon (back, heart, map controls, floating CTAs)
  * ------------------------------------------------------------------ */
 
-export type IconButtonTone = "plain" | "surface" | "glass";
+export type IconButtonTone = "plain" | "surface" | "glass" | "primary";
 
 export interface IconButtonProps {
   name: string;
@@ -412,6 +412,11 @@ const toneStyles = {
       backgroundColor: theme.overlays.glass,
       borderWidth: 1,
       borderColor: theme.overlays.glassLine,
+    },
+  }),
+  primary: StyleSheet.create({
+    container: {
+      backgroundColor: theme.colors.primary,
     },
   }),
 } as const;
