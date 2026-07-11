@@ -13,7 +13,6 @@ import type {
   Struttura,
 } from "@atimar/types";
 import { pluralize } from "@atimar/utils";
-import { sportLabel } from "@atimar/data";
 import { Card, Icon, IconButton } from "./primitives";
 import { AvailabilityBadge, IconBadge, PriceTag, RatingBadge } from "./chips";
 import { textStyle } from "./theme";
@@ -107,7 +106,7 @@ export function CampoCard({
             {campo.nomeStruttura}
           </Text>
           <Text style={textStyle("caption", "muted")} numberOfLines={1}>
-            {sportLabel(campo.idSport)}
+            {campo.nomeSport}
             {campo.distanza ? ` · ${campo.distanza}` : ""}
           </Text>
           <View style={styles.rowGapSm}>
@@ -166,7 +165,7 @@ export function CampoCard({
         </Text>
         <View style={styles.rowBetween}>
           <Text style={textStyle("caption", "muted")} numberOfLines={1}>
-            {sportLabel(campo.idSport)}
+            {campo.nomeSport}
             {campo.superficie ? ` · ${campo.superficie}` : ""}
           </Text>
           <RatingBadge
