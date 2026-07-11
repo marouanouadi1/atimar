@@ -30,6 +30,8 @@ import {
   fetchFavorites,
   addFavorite,
   removeFavorite,
+  createRecensione,
+  updateRecensione,
   createFeedbackApp,
   getInviteByProfile,
   markInviteShared,
@@ -49,6 +51,14 @@ type SubmitFeedbackInput = {
 type PrepareInviteInput = {
   profileId: string;
   appUrl?: string;
+};
+
+export type SubmitRecensioneInput = {
+  strutturaId: string;
+  profileId: string;
+  stelle: number;
+  commento: string;
+  recensioneId?: string;
 };
 
 function sanitizeAppUrl(value?: string): string {
@@ -185,6 +195,51 @@ export function useRecensioni(strutturaId: string) {
     queryFn: () => fetchRecensioniByStruttura(strutturaId),
     enabled: !!strutturaId,
     staleTime: 5 * 60_000,
+  });
+}
+
+export function useSubmitRecensioneMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      strutturaId,
+      profileId,
+      stelle,
+      commento,
+      recensioneId,
+    }: SubmitRecensioneInput) => {
+      if (!Number.isInteger(stelle) || stelle < 1 || stelle > 5) {
+        throw new Error("Seleziona un voto da 1 a 5 stelle");
+      }
+
+      const fkStruttura = Number(strutturaId);
+      if (!Number.isFinite(fkStruttura)) {
+        throw new Error("Struttura non valida");
+      }
+
+      const commentoPulito = commento.trim();
+      const payload = {
+        stelle,
+        commento: commentoPulito.length > 0 ? commentoPulito : null,
+      };
+
+      const result = recensioneId
+        ? await updateRecensione(Number(recensioneId), payload)
+        : await createRecensione({
+            fk_struttura: fkStruttura,
+            fk_profilo: profileId,
+            ...payload,
+          });
+
+      if (result.error) throw new Error(result.error.message);
+      return result.data;
+    },
+    onSuccess: (_data, { strutturaId }) => {
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.recensioni(strutturaId) });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.struttura(strutturaId) });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.strutture() });
+    },
   });
 }
 

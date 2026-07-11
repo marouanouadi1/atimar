@@ -17,6 +17,7 @@ import { Card, Icon, IconButton } from "./primitives";
 import { AvailabilityBadge, IconBadge, PriceTag, RatingBadge } from "./chips";
 import { textStyle } from "./theme";
 import { MediaStruttura } from "./media";
+import { isWeb, useHover, webElev, webTransition } from "./web-fx";
 
 /* ------------------------------------------------------------------ *
  * CampoHero — grafica hero per un campo/struttura (nessuna immagine esterna)
@@ -77,12 +78,18 @@ export function CampoCard({
   width,
   style,
 }: CampoCardProps) {
+  const { hovered, hoverProps } = useHover();
+
   if (variant === "compact") {
     return (
       <Pressable
         onPress={onPress}
+        {...hoverProps}
         style={({ pressed }) => [
           styles.compact,
+          isWeb && styles.compactElev,
+          webTransition("border-color, box-shadow, transform", 180),
+          hovered && styles.compactHover,
           pressed && styles.pressed,
           style,
         ]}
@@ -117,9 +124,12 @@ export function CampoCard({
   return (
     <Pressable
       onPress={onPress}
+      {...hoverProps}
       style={({ pressed }) => [
         styles.large,
+        webTransition("transform, box-shadow", 220),
         width != null && { width },
+        hovered && styles.largeHover,
         pressed && styles.pressed,
         style,
       ]}
@@ -655,6 +665,11 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     ...theme.shadows.pop,
   },
+  // Hover-only (web): onHoverIn never fires on native, so this is inert there.
+  largeHover: {
+    transform: [{ translateY: -6 }],
+    boxShadow: webElev.hover,
+  },
   largeBody: {
     padding: theme.spacing.lg,
     gap: theme.spacing.xs,
@@ -670,6 +685,16 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.colors.line,
     ...theme.shadows.card,
+  },
+  // web-only resting elevation (overrides the flat native card shadow); the
+  // exact "Campi da provare" cards, no longer flat even without hover.
+  compactElev: {
+    boxShadow: webElev.rest,
+  },
+  compactHover: {
+    borderColor: theme.colors.ink,
+    boxShadow: webElev.hover,
+    transform: [{ translateY: -2 }],
   },
   compactThumb: {
     width: 76,

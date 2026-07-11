@@ -7,7 +7,7 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { theme } from "@/theme/tokens";
-import { Icon } from "@/ui";
+import { Icon, bgFloodlitPanel, useHover, webTransition } from "@/ui";
 
 const FEATURES = [
   { icon: "megaphone-outline" as const, label: "Una vetrina chiara per la tua struttura" },
@@ -19,19 +19,13 @@ const FEATURES = [
 export function GestoriCta() {
   const router = useRouter();
   const { width } = useWindowDimensions();
-  const isDesktop = width >= theme.breakpoints.tablet;
-
-  const webGradient =
-    process.env.EXPO_OS === "web"
-      ? ({
-          backgroundImage:
-            "radial-gradient(circle at 82% 20%, rgba(49,92,255,.38), transparent 28%), linear-gradient(145deg, #12140F 0%, #20251A 100%)",
-        } as object)
-      : {};
+  // Soglia mobile↔desktop unica (1024) coerente con le altre sezioni homepage.
+  const isDesktop = width >= theme.breakpoints.desktop;
+  const cta = useHover();
 
   return (
     // Sezione esterna: sfondo ink a piena larghezza — non aggiungere mai maxWidth qui
-    <View style={[styles.section, isDesktop && styles.sectionDesktop, webGradient]}>
+    <View style={[styles.section, isDesktop && styles.sectionDesktop, bgFloodlitPanel]}>
       {/* Interno: centratura del contenuto (mobile: 24px pad; desktop: maxWidth + 40px) */}
       <View style={[styles.inner, isDesktop && styles.innerDesktop]}>
         <View style={styles.content}>
@@ -61,7 +55,13 @@ export function GestoriCta() {
 
           <Pressable
             onPress={() => router.push("/gestori" as never)}
-            style={({ pressed }) => [styles.cta, pressed && { opacity: 0.9 }]}
+            {...cta.hoverProps}
+            style={({ pressed }) => [
+              styles.cta,
+              webTransition("transform, box-shadow", 200),
+              cta.hovered && styles.ctaHover,
+              pressed && { opacity: 0.9 },
+            ]}
           >
             <Text style={styles.ctaText}>Registra la tua struttura</Text>
             <Icon name="arrow-forward" size={18} color={theme.colors.ink} />
@@ -156,6 +156,10 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.lime,
     borderRadius: theme.radius.pill,
     marginTop: theme.spacing.sm,
+  },
+  ctaHover: {
+    transform: [{ translateY: -2 }],
+    boxShadow: "0 16px 34px rgba(147,185,0,0.45)",
   },
   ctaText: {
     color: theme.colors.ink,

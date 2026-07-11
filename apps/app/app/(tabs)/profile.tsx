@@ -8,7 +8,6 @@ import {
   Share,
   StyleSheet,
   Text,
-  TextInput,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -21,6 +20,7 @@ import {
   Avatar,
   Button,
   DetailStat,
+  FormInput,
   Icon,
   MenuList,
   ProfileMenuItem,
@@ -182,17 +182,6 @@ export default function Profile() {
                 {user?.email ?? "—"}
               </Text>
             </View>
-            <Pressable
-              style={styles.editBtn}
-              onPress={() => router.push("/setup/sports")}
-            >
-              <Icon
-                name="create-outline"
-                size={theme.iconSizes.sm}
-                color="surface"
-              />
-              <Text style={textStyle("caption", "surface")}>Modifica</Text>
-            </Pressable>
           </ResponsiveContainer>
         </View>
 
@@ -207,11 +196,6 @@ export default function Profile() {
               icon="heart-outline"
               value={String(favCount)}
               label="Preferiti"
-            />
-            <DetailStat
-              icon="navigate-outline"
-              value={`${prefs.area.radius}km`}
-              label="Raggio"
             />
           </View>
 
@@ -248,18 +232,12 @@ export default function Profile() {
                 icon="tennisball-outline"
                 label="Sport preferiti"
                 sub={`${prefs.sports.length} selezionati`}
-                onPress={() => router.push("/setup/sports")}
-              />
-              <ProfileMenuItem
-                icon="location-outline"
-                label="Zona"
-                sub={prefs.area.location}
-                onPress={() => router.push("/setup/area")}
+                onPress={() => router.push("/setup/sports?mode=edit")}
               />
               <ProfileMenuItem
                 icon="time-outline"
                 label="Disponibilità"
-                onPress={() => router.push("/setup/availability")}
+                onPress={() => router.push("/setup/availability?mode=edit")}
               />
               <ProfileMenuItem
                 icon="notifications-outline"
@@ -378,7 +356,7 @@ export default function Profile() {
               })}
             </View>
 
-            <TextInput
+            <FormInput
               value={feedbackMessage}
               onChangeText={(value) => {
                 setFeedbackMessage(value);
@@ -386,10 +364,7 @@ export default function Profile() {
                 if (feedbackSent) setFeedbackSent(false);
               }}
               placeholder="Scrivi qui il tuo feedback..."
-              placeholderTextColor={theme.colors.subtle}
               multiline
-              textAlignVertical="top"
-              style={styles.feedbackInput}
             />
 
             {feedbackError ? (
@@ -440,15 +415,6 @@ const styles = StyleSheet.create({
     paddingBottom: theme.spacing.xl,
   },
   headerInfo: { alignItems: "center", gap: 2 },
-  editBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: theme.spacing.xs,
-    paddingVertical: theme.spacing.xs,
-    paddingHorizontal: theme.spacing.md,
-    borderRadius: theme.radius.pill,
-    backgroundColor: "rgba(255,255,255,0.12)",
-  },
   content: {
     paddingTop: theme.spacing.xl,
     gap: theme.spacing.xxl,
@@ -507,17 +473,6 @@ const styles = StyleSheet.create({
   categoryPillActive: {
     backgroundColor: theme.tints.limeTint,
     borderColor: theme.colors.lime,
-  },
-  feedbackInput: {
-    minHeight: 136,
-    padding: theme.spacing.md,
-    borderRadius: theme.radius.md,
-    borderWidth: 1.5,
-    borderColor: theme.colors.line,
-    backgroundColor: theme.colors.bg,
-    color: theme.colors.ink,
-    fontSize: theme.typography.body.fontSize,
-    fontFamily: theme.fonts.bodyMedium,
   },
   modalActions: {
     flexDirection: "row",

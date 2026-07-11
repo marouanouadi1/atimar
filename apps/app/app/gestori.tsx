@@ -5,14 +5,13 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TextInput,
   View,
   useWindowDimensions,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { theme } from "@/theme/tokens";
-import { Icon, IconButton } from "@/ui";
+import { FormInput, Icon, IconButton } from "@/ui";
 import { WebHeader } from "@/components/layout/WebHeader";
 import { WebFooter } from "@/components/layout/WebFooter";
 import { supabase } from "@/data/client";
@@ -189,47 +188,35 @@ export default function Gestori() {
                 <View style={styles.fields}>
                   <View style={styles.fieldGroup}>
                     <Text style={styles.fieldLabel}>Nome struttura *</Text>
-                    <View style={styles.inputWrap}>
-                      <Icon name="business-outline" size={16} color={theme.colors.subtle} />
-                      <TextInput
-                        style={styles.input}
-                        placeholder="Es. Green Padel Center"
-                        placeholderTextColor={theme.colors.subtle}
-                        value={nome}
-                        onChangeText={setNome}
-                      />
-                    </View>
+                    <FormInput
+                      icon="business-outline"
+                      placeholder="Es. Green Padel Center"
+                      value={nome}
+                      onChangeText={setNome}
+                    />
                   </View>
 
                   <View style={styles.fieldGroup}>
                     <Text style={styles.fieldLabel}>Email *</Text>
-                    <View style={styles.inputWrap}>
-                      <Icon name="mail-outline" size={16} color={theme.colors.subtle} />
-                      <TextInput
-                        style={styles.input}
-                        placeholder="info@miostruttura.com"
-                        placeholderTextColor={theme.colors.subtle}
-                        value={email}
-                        onChangeText={setEmail}
-                        keyboardType="email-address"
-                        autoCapitalize="none"
-                      />
-                    </View>
+                    <FormInput
+                      icon="mail-outline"
+                      placeholder="info@miostruttura.com"
+                      value={email}
+                      onChangeText={setEmail}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                    />
                   </View>
 
                   <View style={styles.fieldGroup}>
                     <Text style={styles.fieldLabel}>Telefono</Text>
-                    <View style={styles.inputWrap}>
-                      <Icon name="call-outline" size={16} color={theme.colors.subtle} />
-                      <TextInput
-                        style={styles.input}
-                        placeholder="+39 02 1234567"
-                        placeholderTextColor={theme.colors.subtle}
-                        value={telefono}
-                        onChangeText={setTelefono}
-                        keyboardType="phone-pad"
-                      />
-                    </View>
+                    <FormInput
+                      icon="call-outline"
+                      placeholder="+39 02 1234567"
+                      value={telefono}
+                      onChangeText={setTelefono}
+                      keyboardType="phone-pad"
+                    />
                   </View>
                 </View>
 
@@ -461,23 +448,6 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     letterSpacing: 0.8,
     textTransform: "uppercase",
-  },
-  inputWrap: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: theme.spacing.sm,
-    height: theme.layout.inputHeight,
-    paddingHorizontal: theme.spacing.md,
-    borderRadius: theme.radius.md,
-    borderWidth: 1,
-    borderColor: theme.colors.line,
-    backgroundColor: theme.colors.surface,
-  },
-  input: {
-    flex: 1,
-    color: theme.colors.ink,
-    fontSize: 14,
-    fontWeight: "500",
   },
   submitBtn: {
     flexDirection: "row",

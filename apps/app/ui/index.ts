@@ -34,6 +34,7 @@ export {
   resolveColor,
   resolveTint,
   textStyle,
+  noNativeOutline,
 } from "./theme";
 
 export {
@@ -69,6 +70,21 @@ export type { ResponsiveContainerProps } from "./layout";
 
 export { MediaStruttura } from "./media";
 export type { MediaStrutturaProps } from "./media";
+
+export {
+  isWeb,
+  webElev,
+  webTransition,
+  useReducedMotion,
+  useHover,
+  useEntrance,
+  useLift,
+  bgFloodlitHero,
+  bgFloodlitPanel,
+  bgFloodlitFooter,
+  bgWarmLight,
+  bgCourtFallback,
+} from "./web-fx";
 
 export { ScreenTitle, SectionTitle, SectionHeaderRow } from "./typography";
 export type {
@@ -113,6 +129,9 @@ export type {
   SocialButtonProps,
   AuthLayoutProps,
 } from "./navigation";
+
+export { FlowScreen } from "./flow";
+export type { FlowScreenProps } from "./flow";
 
 export { MapPreview } from "./map";
 export type { MapPreviewProps } from "./map-shared";

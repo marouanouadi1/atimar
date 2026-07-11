@@ -24,6 +24,7 @@ import {
   DetailStat,
   Divider,
   FilterChip,
+  FormInput,
   Icon,
   IconButton,
   RatingBadge,
@@ -32,7 +33,13 @@ import {
   textStyle,
 } from "@/ui";
 import { useAppState } from "@/state/AppState";
-import { useStruttura, useCampiByStruttura, useRecensioni } from "@/data/hooks";
+import {
+  useStruttura,
+  useCampiByStruttura,
+  useRecensioni,
+  useSubmitRecensioneMutation,
+} from "@/data/hooks";
+import type { SubmitRecensioneInput } from "@/data/hooks";
 
 type Tab = "info" | "campi" | "recensioni";
 
@@ -46,7 +53,7 @@ export default function StrutturaDetail() {
     campoId?: string;
     sport?: string;
   }>();
-  const { isPreferitoCampo, togglePreferitoCampo, user } = useAppState();
+  const { isPreferitoCampo, togglePreferitoCampo, user, profileId } = useAppState();
   // Se si arriva da una ricerca/filtro per sport (es. da un pin mappa con più
   // campi), si apre direttamente sulla tab "Campi" già filtrata, senza dover
   // rifiltrare da capo.
@@ -55,6 +62,7 @@ export default function StrutturaDetail() {
   const { data: struttura, isLoading } = useStruttura(id ?? "");
   const { data: campi = [] } = useCampiByStruttura(id ?? "");
   const { data: recensioni = [] } = useRecensioni(id ?? "");
+  const submitRecensione = useSubmitRecensioneMutation();
 
   if (isLoading) {
     return (
@@ -208,9 +216,14 @@ export default function StrutturaDetail() {
             />
           ) : (
             <RecensioniTab
+              strutturaId={struttura.id}
               mediaVoti={struttura.mediaVoti}
               numeroRecensioni={struttura.numeroRecensioni}
               recensioni={recensioni}
+              profileId={profileId}
+              onLoginPress={() => router.push("/auth/login")}
+              onSubmit={(input) => submitRecensione.mutateAsync(input)}
+              isSubmitting={submitRecensione.isPending}
             />
           )}
         </View>
@@ -366,14 +379,74 @@ function CampiTab({
 /* ----------------------------- Tab Recensioni ----------------------------- */
 
 function RecensioniTab({
+  strutturaId,
   mediaVoti,
   numeroRecensioni,
   recensioni,
+  profileId,
+  onLoginPress,
+  onSubmit,
+  isSubmitting,
 }: {
+  strutturaId: string;
   mediaVoti: number;
   numeroRecensioni: number;
   recensioni: Recensione[];
+  profileId: string | null;
+  onLoginPress: () => void;
+  onSubmit: (input: SubmitRecensioneInput) => Promise<unknown>;
+  isSubmitting: boolean;
 }) {
+  const recensioneUtente = profileId
+    ? recensioni.find((r) => r.profileId === profileId)
+    : undefined;
+  const [stelle, setStelle] = useState(recensioneUtente?.stelle ?? 0);
+  const [commento, setCommento] = useState(recensioneUtente?.commento ?? "");
+  const [formError, setFormError] = useState<string | null>(null);
+
+  // Riallinea il form quando cambia la recensione di riferimento: login,
+  // struttura diversa, oppure dati caricati/aggiornati dal server in modo
+  // asincrono. Fatto in fase di render (pattern raccomandato da React per
+  // derivare stato da prop) invece che in un useEffect, che innescava render a
+  // cascata segnalati dal linter.
+  const reviewKey = `${profileId ?? ""}|${strutturaId}|${recensioneUtente?.id ?? ""}|${recensioneUtente?.stelle ?? 0}|${recensioneUtente?.commento ?? ""}`;
+  const [syncedKey, setSyncedKey] = useState(reviewKey);
+  if (syncedKey !== reviewKey) {
+    setSyncedKey(reviewKey);
+    setStelle(recensioneUtente?.stelle ?? 0);
+    setCommento(recensioneUtente?.commento ?? "");
+    setFormError(null);
+  }
+
+  const handleSubmit = async () => {
+    if (!profileId) {
+      onLoginPress();
+      return;
+    }
+
+    if (stelle < 1 || stelle > 5) {
+      setFormError("Seleziona un voto da 1 a 5 stelle");
+      return;
+    }
+
+    setFormError(null);
+    try {
+      await onSubmit({
+        strutturaId,
+        profileId,
+        stelle,
+        commento,
+        recensioneId: recensioneUtente?.id,
+      });
+    } catch (err) {
+      setFormError(
+        err instanceof Error
+          ? err.message
+          : "Non siamo riusciti a salvare la recensione",
+      );
+    }
+  };
+
   return (
     <View style={styles.section}>
       <Card style={styles.reviewSummary}>
@@ -386,6 +459,71 @@ function RecensioniTab({
             {pluralize(numeroRecensioni, "recensione", "recensioni")}
           </Text>
         </View>
+      </Card>
+
+      <Card style={styles.reviewForm}>
+        <View style={styles.reviewFormHeader}>
+          <View style={{ flex: 1, gap: 2 }}>
+            <Text style={textStyle("bodyStrong", "ink")}>
+              {recensioneUtente ? "Modifica la tua recensione" : "Lascia una recensione"}
+            </Text>
+            <Text style={textStyle("caption", "muted")}>
+              La tua esperienza aiuta gli altri atleti a scegliere meglio.
+            </Text>
+          </View>
+        </View>
+
+        {profileId ? (
+          <>
+            <View style={styles.starPicker}>
+              {[1, 2, 3, 4, 5].map((value) => (
+                <Pressable
+                  key={value}
+                  accessibilityRole="button"
+                  accessibilityLabel={`${value} stelle`}
+                  onPress={() => setStelle(value)}
+                  style={({ pressed }) => [
+                    styles.starButton,
+                    pressed && styles.starButtonPressed,
+                  ]}
+                >
+                  <Icon
+                    name={value <= stelle ? "star" : "star-outline"}
+                    size={theme.iconSizes.xl}
+                    color={value <= stelle ? theme.semantic.star : "subtle"}
+                  />
+                </Pressable>
+              ))}
+            </View>
+            <FormInput
+              label="Commento"
+              placeholder="Racconta com'è andata..."
+              value={commento}
+              onChangeText={setCommento}
+              multiline
+              numberOfLines={4}
+              autoCapitalize="sentences"
+            />
+            {formError ? (
+              <Text style={textStyle("small", "danger")}>{formError}</Text>
+            ) : null}
+            <Button
+              onPress={handleSubmit}
+              loading={isSubmitting}
+              leadingIcon="star-outline"
+            >
+              {recensioneUtente ? "Aggiorna recensione" : "Pubblica recensione"}
+            </Button>
+          </>
+        ) : (
+          <Button
+            variant="ghost"
+            onPress={onLoginPress}
+            leadingIcon="log-in-outline"
+          >
+            Accedi per recensire
+          </Button>
+        )}
       </Card>
 
       {recensioni.length === 0 ? (
@@ -508,6 +646,26 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: theme.spacing.lg,
   },
+  reviewForm: { gap: theme.spacing.md },
+  reviewFormHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: theme.spacing.md,
+  },
+  starPicker: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: theme.spacing.xs,
+  },
+  starButton: {
+    width: 44,
+    height: 44,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: theme.radius.pill,
+    backgroundColor: theme.colors.chip,
+  },
+  starButtonPressed: { opacity: 0.72 },
   bigRating: {
     color: theme.colors.ink,
     fontSize: 40,
