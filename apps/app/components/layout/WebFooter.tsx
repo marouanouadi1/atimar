@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { useRouter } from "expo-router";
 import { theme } from "@/theme/tokens";
-import { BrandMark } from "@/ui";
+import { BrandMark, bgFloodlitFooter, useHover, webTransition } from "@/ui";
 
 const COLUMNS: {
   title: string;
@@ -23,6 +23,18 @@ const COLUMNS: {
   },
 ];
 
+/** Footer link with a hover brighten (web). */
+function FooterLink({ label, onPress }: { label: string; onPress: () => void }) {
+  const { hovered, hoverProps } = useHover();
+  return (
+    <Pressable onPress={onPress} {...hoverProps} style={styles.link}>
+      <Text style={[styles.linkText, webTransition("color", 150), hovered && styles.linkTextHover]}>
+        {label}
+      </Text>
+    </Pressable>
+  );
+}
+
 /** Full-width footer for the web homepage and web pages. Hidden on native. */
 export function WebFooter() {
   const { width } = useWindowDimensions();
@@ -30,10 +42,11 @@ export function WebFooter() {
 
   if (process.env.EXPO_OS !== "web") return null;
 
-  const isDesktop = width >= theme.breakpoints.tablet;
+  // Soglia mobile↔desktop unica (1024) coerente con le altre sezioni web.
+  const isDesktop = width >= theme.breakpoints.desktop;
 
   return (
-    <View style={styles.footer}>
+    <View style={[styles.footer, bgFloodlitFooter]}>
       <View style={[styles.inner, isDesktop && styles.innerDesktop]}>
         {/* Brand */}
         <View style={styles.brand}>
@@ -50,13 +63,11 @@ export function WebFooter() {
               <View key={col.title} style={styles.column}>
                 <Text style={styles.colTitle}>{col.title}</Text>
                 {col.links.map((link) => (
-                  <Pressable
+                  <FooterLink
                     key={link.label}
+                    label={link.label}
                     onPress={() => router.push(link.route as never)}
-                    style={({ pressed }) => [styles.link, pressed && { opacity: 0.7 }]}
-                  >
-                    <Text style={styles.linkText}>{link.label}</Text>
-                  </Pressable>
+                  />
                 ))}
               </View>
             ))}
@@ -122,12 +133,16 @@ const styles = StyleSheet.create({
   },
   link: {
     paddingVertical: 3,
+    alignSelf: "flex-start",
   },
   linkText: {
     color: theme.colors.subtle,
     fontFamily: theme.fonts.bodyRegular,
     fontSize: 14,
     lineHeight: 22,
+  },
+  linkTextHover: {
+    color: theme.colors.lime,
   },
   bottom: {
     borderTopWidth: StyleSheet.hairlineWidth,

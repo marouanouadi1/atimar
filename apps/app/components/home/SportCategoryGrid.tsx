@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
 import { useRouter } from "expo-router";
 import { theme, sportColor } from "@/theme/tokens";
-import { Icon } from "@/ui";
+import { Icon, bgWarmLight, isWeb, useHover, webElev, webTransition } from "@/ui";
 import { useAppState } from "@/state/AppState";
 
 const SPORTS = [
@@ -12,6 +12,51 @@ const SPORTS = [
   { id: "basket", label: "Basket", icon: "basketball" },
   { id: "all", label: "Tutti gli sport", icon: "grid-outline" },
 ] as const;
+
+/** Single sport tile with a colored hover glow (web). */
+function SportTile({
+  label,
+  icon,
+  color,
+  isDesktop,
+  onPress,
+}: {
+  label: string;
+  icon: string;
+  color: string;
+  isDesktop: boolean;
+  onPress: () => void;
+}) {
+  const { hovered, hoverProps } = useHover();
+  return (
+    <Pressable
+      onPress={onPress}
+      {...hoverProps}
+      style={({ pressed }) => [
+        styles.tile,
+        isDesktop && styles.tileDesktop,
+        isWeb && styles.tileElev,
+        webTransition("transform, box-shadow, border-color", 200),
+        hovered && { transform: [{ translateY: -6 }], boxShadow: `0 18px 40px ${color}38`, borderColor: color },
+        pressed && { opacity: 0.9 },
+      ]}
+    >
+      <View
+        style={[
+          styles.iconCircle,
+          { backgroundColor: hovered ? `${color}30` : `${color}18` },
+          webTransition("background-color", 200),
+        ]}
+      >
+        <Icon name={icon} size={26} color={color} />
+      </View>
+      <Text style={styles.tileLabel}>{label}</Text>
+      <View style={[styles.tileAction, hovered && { backgroundColor: color }]}>
+        <Icon name="arrow-forward" size={16} color={hovered ? theme.colors.surface : color} />
+      </View>
+    </Pressable>
+  );
+}
 
 /** Sport category tiles grid for the web homepage. */
 export function SportCategoryGrid() {
@@ -26,7 +71,7 @@ export function SportCategoryGrid() {
   };
 
   return (
-    <View style={[styles.section, isDesktop && styles.sectionDesktop]}>
+    <View style={[styles.section, bgWarmLight, isDesktop && styles.sectionDesktop]}>
       <View style={styles.header}>
         <Text style={styles.eyebrow}>CATEGORIE</Text>
         <Text style={[styles.heading, isDesktop && styles.headingDesktop]}>
@@ -35,29 +80,16 @@ export function SportCategoryGrid() {
       </View>
 
       <View style={[styles.grid, isDesktop && styles.gridDesktop]}>
-        {SPORTS.map((sport) => {
-          const color = sport.id === "all" ? theme.colors.primary : sportColor(sport.id);
-          return (
-            <Pressable
-              key={sport.id}
-              onPress={() => navigateToSport(sport.id)}
-              style={({ pressed }) => [
-                styles.tile,
-                isDesktop && styles.tileDesktop,
-                { backgroundColor: theme.colors.surface },
-                pressed && { opacity: 0.8 },
-              ]}
-            >
-              <View style={[styles.iconCircle, { backgroundColor: `${color}25` }]}>
-                <Icon name={sport.icon} size={26} color={color} />
-              </View>
-              <Text style={styles.tileLabel}>{sport.label}</Text>
-              <View style={styles.tileAction}>
-                <Icon name="arrow-forward" size={16} color={color} />
-              </View>
-            </Pressable>
-          );
-        })}
+        {SPORTS.map((sport) => (
+          <SportTile
+            key={sport.id}
+            label={sport.label}
+            icon={sport.icon}
+            color={sport.id === "all" ? theme.colors.primary : sportColor(sport.id)}
+            isDesktop={isDesktop}
+            onPress={() => navigateToSport(sport.id)}
+          />
+        ))}
       </View>
     </View>
   );
@@ -110,9 +142,14 @@ const styles = StyleSheet.create({
     padding: theme.spacing.lg,
     gap: theme.spacing.sm,
     alignItems: "flex-start",
+    backgroundColor: theme.colors.surface,
     borderWidth: 1,
     borderColor: theme.colors.line,
     ...theme.shadows.card,
+  },
+  // web-only elevated resting shadow (overrides the flat native card shadow)
+  tileElev: {
+    boxShadow: webElev.rest,
   },
   tileDesktop: {
     flexBasis: 0,

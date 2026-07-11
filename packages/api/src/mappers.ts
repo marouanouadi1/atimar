@@ -362,6 +362,7 @@ export function mapRowToRecensione(row: RecensioneWithProfilo): Recensione {
   return {
     id: String(row.id),
     strutturaId: String(row.fk_struttura),
+    profileId: row.fk_profilo,
     nomeAutore: row.Profili?.nome_completo ?? "Utente",
     stelle: row.stelle,
     quando: tempoRelativo(row.created_at),

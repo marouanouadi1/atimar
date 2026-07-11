@@ -5,6 +5,7 @@ import { Image } from "expo-image";
 
 import { sportColor, theme } from "@/theme/tokens";
 import { Icon } from "./primitives";
+import { bgCourtFallback } from "./web-fx";
 
 export interface MediaStrutturaProps {
   photoUrl?: string | null;
@@ -51,7 +52,7 @@ export function MediaStruttura({
           onError={() => setFailed(true)}
         />
       ) : (
-        <View style={[StyleSheet.absoluteFill, styles.fallback]}>
+        <View style={[StyleSheet.absoluteFill, styles.fallback, bgCourtFallback]}>
           <View
             style={[
               styles.glow,
@@ -97,7 +98,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     inset: 18,
     borderWidth: 1,
-    borderColor: "rgba(255,255,255,0.28)",
+    borderColor: "rgba(255,255,255,0.34)",
     borderRadius: theme.radius.md,
   },
   verticalLine: {
@@ -106,7 +107,7 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: "50%",
     width: 1,
-    backgroundColor: "rgba(255,255,255,0.22)",
+    backgroundColor: "rgba(255,255,255,0.28)",
   },
   horizontalLine: {
     position: "absolute",
@@ -114,7 +115,7 @@ const styles = StyleSheet.create({
     right: 0,
     top: "50%",
     height: 1,
-    backgroundColor: "rgba(255,255,255,0.22)",
+    backgroundColor: "rgba(255,255,255,0.28)",
   },
   scrim: {
     position: "absolute",

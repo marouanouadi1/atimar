@@ -1,39 +1,44 @@
-import { Pressable, ScrollView, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-native";
+import { useMemo } from "react";
 import { useRouter } from "expo-router";
 
+import { formatRating } from "@atimar/utils";
 import { theme } from "@/theme/tokens";
-import { BrandMark, Icon, MediaStruttura } from "@/ui";
+import {
+  BrandMark,
+  Icon,
+  MediaStruttura,
+  bgFloodlitHero,
+  useEntrance,
+  useHover,
+  webElev,
+  webTransition,
+} from "@/ui";
 import { useStrutture } from "@/data/hooks";
-import { useAppState } from "@/state/AppState";
 
-const SPORTS = [
-  { id: "all", label: "Tutti" },
-  { id: "padel", label: "Padel" },
-  { id: "tennis", label: "Tennis" },
-  { id: "calcio5", label: "Calcio 5" },
-  { id: "beachvolley", label: "Beach Volley" },
-] as const;
-
-interface Props {
-  onSportSelect?: (sportId: string) => void;
-}
-
-export function HeroSection({ onSportSelect }: Props) {
+export function HeroSection() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const { data: strutture = [] } = useStrutture();
-  const { filtri, setFiltri } = useAppState();
   const desktop = width >= theme.breakpoints.desktop;
-  const featured = strutture.find((s) => s.urlFotoCopertina) ?? strutture[0];
+  // La struttura in copertina è quella con più consensi reali (voto medio,
+  // poi numero recensioni), non semplicemente la prima con una foto: così la
+  // card ha sempre un motivo verificabile per essere "in evidenza".
+  const featured = useMemo(() => {
+    const ranked = [...strutture].sort(
+      (a, b) => b.mediaVoti - a.mediaVoti || b.numeroRecensioni - a.numeroRecensioni,
+    );
+    return ranked.find((s) => s.urlFotoCopertina) ?? ranked[0];
+  }, [strutture]);
+  const hasRating = !!featured && featured.mediaVoti > 0;
 
-  const selectSport = (id: string) => {
-    onSportSelect?.(id);
-    setFiltri({ ...filtri, sport: id });
-    router.push("/search");
-  };
+  const copyIn = useEntrance(0);
+  const visualIn = useEntrance(desktop ? 140 : 90);
+  const primary = useHover();
+  const secondary = useHover();
 
   return (
-    <View style={styles.section}>
+    <View style={[styles.section, bgFloodlitHero]}>
       <View
         style={[
           styles.inner,
@@ -49,7 +54,7 @@ export function HeroSection({ onSportSelect }: Props) {
           desktop && styles.innerDesktop,
         ]}
       >
-        <View style={styles.copy}>
+        <View style={[styles.copy, desktop && styles.copyDesktop, copyIn]}>
           <BrandMark inverse size={42} style={styles.mobileBrand} />
           <View style={styles.eyebrow}>
             <View style={styles.eyebrowLine} />
@@ -63,36 +68,30 @@ export function HeroSection({ onSportSelect }: Props) {
             Scopri strutture sportive vicino a te, confronta campi e dettagli
             utili, poi scegli dove giocare senza perdere tempo.
           </Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.chips}
-          >
-            {SPORTS.map((sport) => (
-              <Pressable
-                key={sport.id}
-                onPress={() => selectSport(sport.id)}
-                style={styles.chip}
-              >
-                <Text style={styles.chipText}>{sport.label}</Text>
-              </Pressable>
-            ))}
-          </ScrollView>
           <View style={styles.actions}>
-            <Pressable onPress={() => router.push("/search")} style={styles.primaryCta}>
+            <Pressable
+              onPress={() => router.push("/search")}
+              {...primary.hoverProps}
+              style={[
+                styles.primaryCta,
+                webTransition("transform, box-shadow", 200),
+                primary.hovered && styles.primaryCtaHover,
+              ]}
+            >
               <Text style={styles.primaryCtaText}>Esplora i campi</Text>
               <Icon name="arrow-forward" size={18} color="ink" />
             </Pressable>
             <Pressable
               onPress={() => router.push("/gestori" as never)}
-              style={styles.secondaryCta}
+              {...secondary.hoverProps}
+              style={[styles.secondaryCta, webTransition("opacity", 160), secondary.hovered && { opacity: 0.7 }]}
             >
               <Text style={styles.secondaryCtaText}>Sei una struttura?</Text>
             </Pressable>
           </View>
         </View>
 
-        <View style={styles.visual}>
+        <View style={[styles.visual, desktop && styles.visualDesktop, visualIn]}>
           <MediaStruttura
             photoUrl={featured?.urlFotoCopertina}
             sportId={featured?.idSport[0]}
@@ -100,23 +99,24 @@ export function HeroSection({ onSportSelect }: Props) {
             style={styles.photo}
           >
             <View style={styles.photoShade} />
+            {hasRating ? (
+              <View style={styles.photoStats}>
+                <Text style={styles.photoStatValue}>★ {formatRating(featured!.mediaVoti)}</Text>
+                <Text style={styles.photoStatLabel}>
+                  {featured!.numeroRecensioni} recensioni
+                </Text>
+              </View>
+            ) : null}
             <View style={styles.photoBadge}>
               <View style={styles.liveDot} />
               <Text style={styles.photoBadgeText}>
                 {featured?.nome ?? "Campi selezionati da Atimar"}
               </Text>
-            </View>
-            <View style={styles.photoStats}>
-              <Text style={styles.photoStatValue}>
+              <Text style={styles.photoBadgePrice}>
                 {featured?.prezzoDaLabel ?? "Da oggi"}
               </Text>
-              <Text style={styles.photoStatLabel}>prenota meglio</Text>
             </View>
           </MediaStruttura>
-          <View style={styles.visualTag}>
-            <Text style={styles.visualTagTop}>GIOCA</Text>
-            <Text style={styles.visualTagBottom}>VICINO</Text>
-          </View>
         </View>
       </View>
     </View>
@@ -144,9 +144,11 @@ const styles = StyleSheet.create({
     gap: 64,
   },
   copy: {
-    flex: 0.92,
     gap: theme.spacing.xl,
     minWidth: 0,
+  },
+  copyDesktop: {
+    flex: 0.92,
   },
   mobileBrand: {
     display: "none",
@@ -159,6 +161,7 @@ const styles = StyleSheet.create({
   eyebrowLine: {
     width: 32,
     height: 3,
+    borderRadius: 2,
     backgroundColor: theme.colors.lime,
   },
   eyebrowText: {
@@ -189,21 +192,6 @@ const styles = StyleSheet.create({
     lineHeight: 27,
     maxWidth: 600,
   },
-  chips: {
-    gap: theme.spacing.sm,
-  },
-  chip: {
-    paddingVertical: 9,
-    paddingHorizontal: 15,
-    borderRadius: theme.radius.pill,
-    borderWidth: 1,
-    borderColor: theme.overlays.chipOnDark,
-  },
-  chipText: {
-    color: theme.colors.surface,
-    fontFamily: theme.fonts.bodySemiBold,
-    fontSize: 13,
-  },
   actions: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -218,6 +206,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.xl,
     borderRadius: theme.radius.pill,
     backgroundColor: theme.colors.lime,
+  },
+  primaryCtaHover: {
+    transform: [{ translateY: -2 }],
+    boxShadow: webElev.hover,
   },
   primaryCtaText: {
     color: theme.colors.ink,
@@ -236,13 +228,16 @@ const styles = StyleSheet.create({
     textDecorationLine: "underline",
   },
   visual: {
-    flex: 1.08,
     minWidth: 0,
+  },
+  visualDesktop: {
+    flex: 1.08,
   },
   photo: {
     borderRadius: theme.radius.xl,
     borderWidth: 1,
     borderColor: theme.overlays.borderOnDark,
+    boxShadow: "0 40px 90px rgba(0,0,0,0.45)",
   },
   photoShade: {
     ...StyleSheet.absoluteFill,
@@ -273,6 +268,11 @@ const styles = StyleSheet.create({
     fontFamily: theme.fonts.bodySemiBold,
     fontSize: 13,
   },
+  photoBadgePrice: {
+    color: theme.colors.lime,
+    fontFamily: theme.fonts.displayBold,
+    fontSize: 14,
+  },
   photoStats: {
     position: "absolute",
     top: theme.spacing.lg,
@@ -295,29 +295,5 @@ const styles = StyleSheet.create({
     color: theme.overlays.subtleOnDark,
     fontFamily: theme.fonts.bodyMedium,
     fontSize: 12,
-  },
-  visualTag: {
-    position: "absolute",
-    top: -20,
-    right: -12,
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: theme.colors.primary,
-    transform: [{ rotate: "9deg" }],
-  },
-  visualTagTop: {
-    color: theme.colors.surface,
-    fontFamily: theme.fonts.displayBold,
-    fontSize: 12,
-    letterSpacing: 2,
-  },
-  visualTagBottom: {
-    color: theme.colors.lime,
-    fontFamily: theme.fonts.displayBold,
-    fontSize: 18,
-    letterSpacing: -0.5,
   },
 });

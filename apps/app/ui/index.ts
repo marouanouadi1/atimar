@@ -34,6 +34,7 @@ export {
   resolveColor,
   resolveTint,
   textStyle,
+  noNativeOutline,
 } from "./theme";
 
 export {
@@ -69,6 +70,21 @@ export type { ResponsiveContainerProps } from "./layout";
 
 export { MediaStruttura } from "./media";
 export type { MediaStrutturaProps } from "./media";
+
+export {
+  isWeb,
+  webElev,
+  webTransition,
+  useReducedMotion,
+  useHover,
+  useEntrance,
+  useLift,
+  bgFloodlitHero,
+  bgFloodlitPanel,
+  bgFloodlitFooter,
+  bgWarmLight,
+  bgCourtFallback,
+} from "./web-fx";
 
 export { ScreenTitle, SectionTitle, SectionHeaderRow } from "./typography";
 export type {
