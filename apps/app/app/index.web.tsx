@@ -19,12 +19,13 @@ export default function WebHomepage() {
 
   // After Google OAuth redirect, the user lands here. Once the session is
   // detected (detectSessionInUrl: true in client.ts), redirect to the app —
-  // through onboarding first if the account hasn't completed it yet.
+  // through setup first if the account hasn't completed onboarding yet.
+  // Skip the native marketing intro on web, same as (tabs)/_layout.tsx.
   // Guard on pathname === "/" so deep links to /favorites etc. are not overridden
   // when this component stays mounted as the stack anchor.
   useEffect(() => {
     if (ready && user && onboardedResolved && pathname === "/") {
-      router.replace(onboarded ? "/home" : "/onboarding/value-near");
+      router.replace(onboarded ? "/home" : "/setup/sports");
     }
   }, [ready, user, onboarded, onboardedResolved, pathname, router]);
 
