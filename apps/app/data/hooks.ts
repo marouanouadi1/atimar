@@ -228,7 +228,7 @@ export function useSubmitRecensioneMutation() {
             ...payload,
           });
 
-      if (result.error) throw result.error;
+      if (result.error) throw new Error(result.error.message);
       return result.data;
     },
     onSuccess: (_data, { strutturaId }) => {
