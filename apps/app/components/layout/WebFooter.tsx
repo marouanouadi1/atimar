@@ -46,7 +46,7 @@ export function WebFooter() {
   const isDesktop = width >= theme.breakpoints.desktop;
 
   return (
-    <View style={[styles.footer, bgFloodlitFooter]}>
+    <View style={[styles.footer, bgFloodlitFooter, { width: "100%" }]}>
       <View style={[styles.inner, isDesktop && styles.innerDesktop]}>
         {/* Brand */}
         <View style={styles.brand}>

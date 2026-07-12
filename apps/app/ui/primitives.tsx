@@ -303,6 +303,8 @@ export interface ScreenContainerProps {
   scroll?: boolean;
   header?: React.ReactNode;
   footer?: React.ReactNode;
+  /** Renders below the body, full-width, outside the maxWidth constraint. */
+  fullWidthFooter?: React.ReactNode;
   /** Apply the top safe-area inset (set false when a custom header handles it). */
   safeTop?: boolean;
   /** Background color token. */
@@ -316,6 +318,7 @@ export function ScreenContainer({
   scroll = true,
   header,
   footer,
+  fullWidthFooter,
   safeTop = true,
   background = "bg",
   style,
@@ -390,6 +393,7 @@ export function ScreenContainer({
           </View>
         </View>
       ) : null}
+      {fullWidthFooter ?? null}
     </View>
   );
 }

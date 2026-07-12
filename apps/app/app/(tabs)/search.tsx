@@ -150,15 +150,13 @@ export default function Search() {
   return (
     <ScreenContainer scroll={false} contentStyle={styles.screenContent}>
       <View style={[styles.fixedTop, { paddingHorizontal: padX }]}>
-        {view === "list" ? (
-          <View style={styles.heading}>
-            <Text style={styles.kicker}>TROVA CAMPO</Text>
-            <Text style={styles.title}>Trova il tuo campo</Text>
-            <Text style={styles.subtitle}>
-              Cerca per struttura o campo e confronta subito i campi disponibili.
-            </Text>
-          </View>
-        ) : null}
+        <View style={styles.heading}>
+          <Text style={styles.kicker}>TROVA CAMPO</Text>
+          <Text style={styles.title}>Trova il tuo campo</Text>
+          <Text style={styles.subtitle}>
+            Cerca per struttura o campo e confronta subito i campi disponibili.
+          </Text>
+        </View>
 
         {/* Barra cerca + filtri */}
         <View style={styles.searchRow}>
@@ -274,65 +272,67 @@ export default function Search() {
       ) : view === "list" ? (
         <ScrollView
           style={styles.listScroll}
-          contentContainerStyle={[styles.listContent, { paddingHorizontal: padX }]}
+          contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {results.length === 0 ? (
-            <EmptyState
-              icon="search"
-              title="Nessun campo trovato"
-              desc="Prova a modificare i filtri o ad ampliare la distanza di ricerca."
-              cta={
-                primaryEmptyAction || showResetAll ? (
-                  <View style={styles.emptyActions}>
-                    {primaryEmptyAction ? (
-                      <Button variant="lime" onPress={primaryEmptyAction.onPress}>
-                        {primaryEmptyAction.label}
-                      </Button>
-                    ) : null}
-                    {showResetAll ? (
-                      <Pressable onPress={resetAll} style={styles.emptyLink} hitSlop={8}>
-                        <Text style={textStyle("caption", "primary")}>
-                          Vedi tutto il catalogo
-                        </Text>
-                      </Pressable>
-                    ) : null}
+          <View style={{ paddingHorizontal: padX }}>
+            {results.length === 0 ? (
+              <EmptyState
+                icon="search"
+                title="Nessun campo trovato"
+                desc="Prova a modificare i filtri o ad ampliare la distanza di ricerca."
+                cta={
+                  primaryEmptyAction || showResetAll ? (
+                    <View style={styles.emptyActions}>
+                      {primaryEmptyAction ? (
+                        <Button variant="lime" onPress={primaryEmptyAction.onPress}>
+                          {primaryEmptyAction.label}
+                        </Button>
+                      ) : null}
+                      {showResetAll ? (
+                        <Pressable onPress={resetAll} style={styles.emptyLink} hitSlop={8}>
+                          <Text style={textStyle("caption", "primary")}>
+                            Vedi tutto il catalogo
+                          </Text>
+                        </Pressable>
+                      ) : null}
+                    </View>
+                  ) : undefined
+                }
+              />
+            ) : isDesktop ? (
+              <View style={styles.gridDesktop}>
+                {results.map((campo) => (
+                  <View key={campo.id} style={styles.gridItem}>
+                    <CampoCard
+                      campo={campo}
+                      variant="large"
+                      isFav={isPreferitoCampo(campo.id)}
+                      onFav={() => void togglePreferitoCampo(campo.id)}
+                      onPress={() => apriStruttura(campo)}
+                    />
                   </View>
-                ) : undefined
-              }
-            />
-          ) : isDesktop ? (
-            <View style={styles.gridDesktop}>
-              {results.map((campo) => (
-                <View key={campo.id} style={styles.gridItem}>
+                ))}
+              </View>
+            ) : (
+              <View style={styles.list}>
+                {results.map((campo) => (
                   <CampoCard
+                    key={campo.id}
                     campo={campo}
-                    variant="large"
+                    variant="compact"
                     isFav={isPreferitoCampo(campo.id)}
                     onFav={() => void togglePreferitoCampo(campo.id)}
                     onPress={() => apriStruttura(campo)}
                   />
-                </View>
-              ))}
-            </View>
-          ) : (
-            <View style={styles.list}>
-              {results.map((campo) => (
-                <CampoCard
-                  key={campo.id}
-                  campo={campo}
-                  variant="compact"
-                  isFav={isPreferitoCampo(campo.id)}
-                  onFav={() => void togglePreferitoCampo(campo.id)}
-                  onPress={() => apriStruttura(campo)}
-                />
-              ))}
-            </View>
-          )}
+                ))}
+              </View>
+            )}
+          </View>
         </ScrollView>
       ) : (
-        <View style={styles.mapArea}>
+        <View style={[styles.mapArea, { marginHorizontal: padX }]}>
           <MapPreview
             fill
             campi={results}
@@ -424,8 +424,8 @@ export default function Search() {
 }
 
 const styles = StyleSheet.create({
-  screenContent: { paddingHorizontal: 0, paddingBottom: 0 },
-  fixedTop: { gap: theme.spacing.md, paddingTop: theme.spacing.sm, paddingBottom: theme.spacing.sm },
+  screenContent: { paddingHorizontal: 0, paddingBottom: 0, paddingTop: 0 },
+  fixedTop: { gap: theme.spacing.md, paddingTop: theme.spacing.xl, paddingBottom: theme.spacing.sm },
   heading: { gap: theme.spacing.xs },
   kicker: {
     color: theme.colors.primary,
@@ -542,11 +542,12 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: theme.spacing.lg,
+    alignItems: "flex-start",
   },
   gridItem: {
-    flexBasis: 300,
-    flexGrow: 1,
-    maxWidth: 360,
+    flexBasis: "calc(33.333% - 12px)",
+    flexGrow: 0,
+    flexShrink: 0,
   },
   emptyActions: { gap: theme.spacing.sm, alignItems: "center", alignSelf: "stretch" },
   emptyLink: { paddingVertical: theme.spacing.sm, paddingHorizontal: theme.spacing.sm },

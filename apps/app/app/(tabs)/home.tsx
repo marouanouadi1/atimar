@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { WebFooter } from "@/components/layout/WebFooter";
 import { useRouter } from "expo-router";
 import {
   ActivityIndicator,
@@ -42,7 +43,7 @@ export default function Home() {
   const clubHover = useHover();
 
   const { data: campi = [], isLoading } = useCampiInLista();
-  const popular = useMemo(() => ordinaCampi(campi, "voti").slice(0, 6), [campi]);
+  const popular = useMemo(() => ordinaCampi(campi, "voti").slice(0, 9), [campi]);
   // Il campo del momento è il primo dei più votati (stesso ordinamento di
   // "Campi da provare"), non una struttura scelta a caso: così la card ha
   // sempre un motivo verificabile per essere in cima alla home.
@@ -74,20 +75,15 @@ export default function Home() {
       style={styles.root}
       contentInsetAdjustmentBehavior="automatic"
       showsVerticalScrollIndicator={false}
-      contentContainerStyle={{
-        paddingBottom: insets.bottom + theme.layout.tabBarHeight + theme.spacing.xxxl,
-      }}
+      contentContainerStyle={
+        process.env.EXPO_OS === "web"
+          ? undefined
+          : { paddingBottom: insets.bottom + theme.layout.tabBarHeight + theme.spacing.xxxl }
+      }
     >
-      <ResponsiveContainer
-        style={[
-          styles.page,
-          bgWarmLight,
-          {
-            paddingTop: desktop ? theme.spacing.xxxl : insets.top + theme.spacing.lg,
-          },
-        ]}
-      >
-        <View style={[styles.hero, desktop && styles.heroDesktop]}>
+      <View style={[styles.heroBg, bgWarmLight]}>
+        <ResponsiveContainer style={{ paddingTop: desktop ? theme.spacing.xxxl : insets.top + theme.spacing.lg, paddingBottom: theme.spacing.xxxl }}>
+          <View style={[styles.hero, desktop && styles.heroDesktop]}>
           <View style={styles.heroCopy}>
             <Text style={styles.kicker}>READY WHEN YOU ARE</Text>
             <Text style={[styles.title, desktop && styles.titleDesktop]}>
@@ -176,8 +172,11 @@ export default function Home() {
               </View>
             </MediaStruttura>
           </Pressable>
-        </View>
+          </View>
+        </ResponsiveContainer>
+      </View>
 
+      <ResponsiveContainer style={styles.page}>
         <View style={styles.section}>
           <View style={styles.sectionHead}>
             <View>
@@ -237,6 +236,11 @@ export default function Home() {
           </View>
         </Pressable>
       </ResponsiveContainer>
+      {process.env.EXPO_OS === "web" && (
+        <View style={{ marginTop: theme.spacing.xl }}>
+          <WebFooter />
+        </View>
+      )}
     </ScrollView>
   );
 }
@@ -246,8 +250,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: theme.colors.bg,
   },
+  heroBg: {
+    width: "100%",
+  },
   page: {
     gap: 64,
+    paddingTop: 64,
+    paddingBottom: 64,
   },
   hero: {
     gap: theme.spacing.xxl,
@@ -433,6 +442,7 @@ const styles = StyleSheet.create({
     fontFamily: theme.fonts.bodyMedium,
   },
   clubBanner: {
+    marginTop: theme.spacing.xxxl,
     flexDirection: "row",
     flexWrap: "wrap",
     alignItems: "center",
