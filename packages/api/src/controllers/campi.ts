@@ -19,6 +19,13 @@ export function getCampiByStruttura(fkStruttura: number) {
     .eq('fk_struttura', fkStruttura);
 }
 
+export function countCampiByStruttura(fkStruttura: number) {
+  return getSupabaseClient()
+    .from('Campi')
+    .select('id', { count: 'exact', head: true })
+    .eq('fk_struttura', fkStruttura);
+}
+
 export function getCampoById(id: number) {
   return getSupabaseClient().from('Campi').select('*').eq('id', id).single();
 }

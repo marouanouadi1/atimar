@@ -1,22 +1,23 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useEffect, useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+  Combobox,
+  ComboboxInput,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxList,
+  ComboboxItem,
+} from '@/components/ui/combobox'
 import { MultiStepDialog } from '@/components/custom/multistep-dialog'
-import { createStrutturaAction } from '@/app/dashboard/strutture/actions'
+import { createStrutturaAction, searchCittaAction } from '@/app/dashboard/strutture/actions'
 import { toast } from 'sonner'
 
-type Citta = { id: number; nome: string | null }
+type CittaOption = { value: string; label: string }
 
 function Field({ id, label, children }: { id: string; label: string; children: React.ReactNode }) {
   return (
@@ -85,11 +86,28 @@ const emptyForm = (): FormState => ({
   verificata: false,
 })
 
-export function CreaStrutturaDialog({ citta }: { citta: Citta[] }) {
+export function CreaStrutturaDialog() {
   const router = useRouter()
   const [form, setForm] = useState<FormState>(emptyForm())
+  const [selectedCitta, setSelectedCitta] = useState<CittaOption | null>(null)
+  const [cittaQuery, setCittaQuery] = useState('')
+  const [cittaResults, setCittaResults] = useState<CittaOption[]>([])
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
+  const [isSearchPending, startSearchTransition] = useTransition()
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      startSearchTransition(async () => {
+        setCittaResults(await searchCittaAction(cittaQuery))
+      })
+    }, 250)
+    return () => clearTimeout(timeout)
+  }, [cittaQuery])
+
+  const cittaItems = selectedCitta && !cittaResults.some((o) => o.value === selectedCitta.value)
+    ? [selectedCitta, ...cittaResults]
+    : cittaResults
 
   function set<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((f) => ({ ...f, [key]: value }))
@@ -121,6 +139,7 @@ export function CreaStrutturaDialog({ citta }: { citta: Citta[] }) {
         } else {
           setError(null)
           setForm(emptyForm())
+          setSelectedCitta(null)
           toast.success('Struttura creata con successo')
           router.push(`/dashboard/strutture/${result.id}`)
         }
@@ -146,16 +165,32 @@ export function CreaStrutturaDialog({ citta }: { citta: Citta[] }) {
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
               <Label>Città *</Label>
-              <Select value={form.fk_citta} onValueChange={(v) => set('fk_citta', v)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Seleziona una città" />
-                </SelectTrigger>
-                <SelectContent>
-                  {citta.map((c) => (
-                    <SelectItem key={c.id} value={String(c.id)}>{c.nome}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Combobox<CittaOption>
+                items={cittaItems}
+                filter={null}
+                inputValue={cittaQuery}
+                onInputValueChange={setCittaQuery}
+                value={selectedCitta}
+                onValueChange={(option) => {
+                  setSelectedCitta(option)
+                  set('fk_citta', option ? option.value : '')
+                }}
+                isItemEqualToValue={(item, val) => item.value === val.value}
+              >
+                <ComboboxInput placeholder="Seleziona una città" />
+                <ComboboxContent>
+                  <ComboboxEmpty>
+                    {isSearchPending ? 'Ricerca in corso...' : 'Nessuna città trovata.'}
+                  </ComboboxEmpty>
+                  <ComboboxList>
+                    {(item: CittaOption) => (
+                      <ComboboxItem key={item.value} value={item}>
+                        {item.label}
+                      </ComboboxItem>
+                    )}
+                  </ComboboxList>
+                </ComboboxContent>
+              </Combobox>
             </div>
             <Field id="indirizzo" label="Indirizzo *">
               <Input id="indirizzo" value={form.indirizzo} onChange={(e) => set('indirizzo', e.target.value)} required />
@@ -229,7 +264,7 @@ export function CreaStrutturaDialog({ citta }: { citta: Citta[] }) {
       trigger={<Button size="sm">+ Aggiungi</Button>}
       steps={steps}
       onComplete={handleComplete}
-      onClose={() => { setForm(emptyForm()); setError(null) }}
+      onClose={() => { setForm(emptyForm()); setSelectedCitta(null); setError(null) }}
       isSubmitting={isPending}
       submitLabel="Crea struttura"
     />
