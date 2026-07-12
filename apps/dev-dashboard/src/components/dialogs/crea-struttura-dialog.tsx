@@ -264,7 +264,13 @@ export function CreaStrutturaDialog() {
       trigger={<Button size="sm">+ Aggiungi</Button>}
       steps={steps}
       onComplete={handleComplete}
-      onClose={() => { setForm(emptyForm()); setSelectedCitta(null); setError(null) }}
+      onClose={() => {
+        setForm(emptyForm())
+        setSelectedCitta(null)
+        setCittaQuery('')
+        setCittaResults([])
+        setError(null)
+      }}
       isSubmitting={isPending}
       submitLabel="Crea struttura"
     />
