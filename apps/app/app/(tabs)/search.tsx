@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   ActivityIndicator,
+  type DimensionValue,
   Pressable,
   ScrollView,
   StyleSheet,
@@ -545,7 +546,8 @@ const styles = StyleSheet.create({
     alignItems: "flex-start",
   },
   gridItem: {
-    flexBasis: "calc(33.333% - 12px)",
+    // calc() è valido solo via react-native-web (isDesktop implica web); i tipi RN non lo contemplano.
+    flexBasis: "calc(33.333% - 12px)" as DimensionValue,
     flexGrow: 0,
     flexShrink: 0,
   },
