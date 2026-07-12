@@ -140,7 +140,7 @@ export interface NativeShadow {
 export const shadows = {
   card: { boxShadow: "0 2px 0 rgba(18,20,15,0.10)" },
   pop: { boxShadow: "0 18px 48px rgba(18,20,15,0.14)" },
-  cta: { boxShadow: "0 8px 24px rgba(49,92,255,0.24)" },
+  cta: { boxShadow: "0 4px 12px rgba(49,92,255,0.12)" },
   lime: { boxShadow: "0 8px 22px rgba(147,185,0,0.25)" },
   sheet: { boxShadow: "0 -16px 44px rgba(18,20,15,0.18)" },
   floatBtn: { boxShadow: "0 8px 20px rgba(18,20,15,0.14)" },
@@ -149,7 +149,7 @@ export const shadows = {
 export const webShadows = {
   card: "0 2px 0 rgba(18,20,15,.10)",
   pop: "0 18px 48px rgba(18,20,15,.14)",
-  cta: "0 8px 24px rgba(49,92,255,.24)",
+  cta: "0 4px 12px rgba(49,92,255,.12)",
   lime: "0 8px 22px rgba(147,185,0,.25)",
   sheet: "0 -16px 44px rgba(18,20,15,.18)",
   floatBtn: "0 8px 20px rgba(18,20,15,.14)",
