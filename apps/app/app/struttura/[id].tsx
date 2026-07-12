@@ -41,6 +41,7 @@ import {
   useSubmitRecensioneMutation,
 } from "@/data/hooks";
 import type { SubmitRecensioneInput } from "@/data/hooks";
+import { getAppUrl } from "@/data/appUrl";
 
 type Tab = "info" | "campi" | "recensioni";
 
@@ -91,7 +92,7 @@ export default function StrutturaDetail() {
     );
   }
 
-  const appUrl = __DEV__ ? "http://localhost:8081" : "https://atimar.app";
+  const appUrl = getAppUrl();
   const condividi = () => {
     void Clipboard.setStringAsync(`${appUrl}/struttura/${id}`).then(() => {
       setLinkCopiato(true);

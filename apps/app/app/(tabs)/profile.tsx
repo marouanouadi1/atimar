@@ -53,7 +53,6 @@ export default function Profile() {
 
   const favCount = preferiti.campoIds.length;
   const version = Constants.expoConfig?.version ?? "1.0.0";
-  const appUrl = process.env.EXPO_PUBLIC_APP_URL ?? "https://atimar.app";
   const webGrad =
     process.env.EXPO_OS === "web"
       ? ({
@@ -114,7 +113,7 @@ export default function Profile() {
     setInviteNotice(null);
 
     try {
-      const invito = await inviteMutation.mutateAsync({ profileId, appUrl });
+      const invito = await inviteMutation.mutateAsync({ profileId });
       const text = "Unisciti ad ATIMAR e trova campi sportivi vicino a te.";
 
       if (

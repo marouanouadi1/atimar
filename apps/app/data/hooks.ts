@@ -21,6 +21,7 @@ import type {
 } from "@atimar/types";
 import "./client";
 import { QUERY_KEYS } from "./keys";
+import { getAppUrl } from "./appUrl";
 import {
   fetchStruttureConCampi,
   searchCampiNearby,
@@ -50,7 +51,6 @@ type SubmitFeedbackInput = {
 
 type PrepareInviteInput = {
   profileId: string;
-  appUrl?: string;
 };
 
 export type SubmitRecensioneInput = {
@@ -60,12 +60,6 @@ export type SubmitRecensioneInput = {
   commento: string;
   recensioneId?: string;
 };
-
-function sanitizeAppUrl(value?: string): string {
-  const fallback = "https://atimar.app";
-  const raw = value?.trim() || fallback;
-  return raw.replace(/\/+$/, "");
-}
 
 function createInviteCode(profileId: string): string {
   const seed = `${profileId}-${Date.now()}-${Math.random()}`;
@@ -341,8 +335,8 @@ export function useInviteMutation() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ profileId, appUrl }: PrepareInviteInput) => {
-      const inviteUrl = sanitizeAppUrl(appUrl);
+    mutationFn: async ({ profileId }: PrepareInviteInput) => {
+      const inviteUrl = getAppUrl();
       const existing = await getInviteByProfile(profileId);
 
       if (existing.error) throw existing.error;
