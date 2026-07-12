@@ -394,8 +394,8 @@ export function sportColor(sportId: string): string {
  * ------------------------------------------------------------------ */
 
 export const mapMarker = {
-  pin: "#E5484D",
-  pinActive: "#B4231F",
+  pin: "#315CFF",
+  pinActive: "#1736B8",
   ring: "#FFFEF7",
 } as const;
 

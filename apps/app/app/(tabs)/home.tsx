@@ -53,7 +53,7 @@ export default function Home() {
   const topSports = useMemo(() => {
     const counts = new Map<string, number>();
     for (const c of campi) {
-      counts.set(c.idSport, (counts.get(c.idSport) ?? 0) + 1);
+      if (c.idSport) counts.set(c.idSport, (counts.get(c.idSport) ?? 0) + 1);
     }
     return [...counts.entries()]
       .sort((a, b) => b[1] - a[1])
@@ -299,8 +299,7 @@ const styles = StyleSheet.create({
     paddingLeft: theme.spacing.lg,
     paddingRight: theme.spacing.xs,
     borderRadius: theme.radius.pill,
-    borderWidth: 1.5,
-    borderColor: theme.colors.ink,
+    boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
     backgroundColor: theme.colors.surface,
   },
   searchInput: {

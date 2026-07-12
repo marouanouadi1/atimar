@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   ActivityIndicator,
@@ -10,6 +10,7 @@ import {
   View,
   useWindowDimensions,
 } from "react-native";
+import * as Clipboard from "expo-clipboard";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { theme } from "@/theme/tokens";
@@ -40,6 +41,7 @@ import {
   useSubmitRecensioneMutation,
 } from "@/data/hooks";
 import type { SubmitRecensioneInput } from "@/data/hooks";
+import { getAppUrl } from "@/data/appUrl";
 
 type Tab = "info" | "campi" | "recensioni";
 
@@ -58,6 +60,8 @@ export default function StrutturaDetail() {
   // campi), si apre direttamente sulla tab "Campi" già filtrata, senza dover
   // rifiltrare da capo.
   const [tab, setTab] = useState<Tab>(sport || campoId ? "campi" : "info");
+  const [linkCopiato, setLinkCopiato] = useState(false);
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { data: struttura, isLoading } = useStruttura(id ?? "");
   const { data: campi = [] } = useCampiByStruttura(id ?? "");
@@ -87,6 +91,15 @@ export default function StrutturaDetail() {
       </View>
     );
   }
+
+  const appUrl = getAppUrl();
+  const condividi = () => {
+    void Clipboard.setStringAsync(`${appUrl}/struttura/${id}`).then(() => {
+      setLinkCopiato(true);
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+      toastTimer.current = setTimeout(() => setLinkCopiato(false), 2000);
+    });
+  };
 
   const targetPrenotazione = struttura.linkPrenotazione ?? struttura.linkSitoWeb;
   const apriPrenotazione = () => {
@@ -132,6 +145,20 @@ export default function StrutturaDetail() {
               onPress={() => router.back()}
               accessibilityLabel="Indietro"
             />
+            <View style={styles.shareWrap}>
+              {linkCopiato && (
+                <View style={styles.toastBubble}>
+                  <Text style={textStyle("caption", "surface")}>Link copiato</Text>
+                </View>
+              )}
+              <IconButton
+                name="share-outline"
+                tone="primary"
+                color="surface"
+                onPress={condividi}
+                accessibilityLabel="Condividi"
+              />
+            </View>
           </View>
         </View>
 
@@ -570,6 +597,17 @@ const styles = StyleSheet.create({
     right: theme.layout.screenPadX,
     flexDirection: "row",
     justifyContent: "space-between",
+  },
+  shareWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: theme.spacing.sm,
+  },
+  toastBubble: {
+    backgroundColor: theme.colors.ink,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.xs,
+    borderRadius: theme.radius.pill,
   },
   bodyPad: {
     paddingHorizontal: theme.layout.screenPadX,

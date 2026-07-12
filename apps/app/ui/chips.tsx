@@ -295,6 +295,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.lg,
     borderRadius: theme.radius.pill,
   },
   segmentActive: {
