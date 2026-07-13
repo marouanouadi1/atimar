@@ -131,6 +131,7 @@ export interface StrutturaWithRelations {
   prezzo_orario: number | null;
   sempre_aperto: boolean;
   attivo: boolean;
+  aperto_al_pubblico: boolean;
   link_prenotazione_esterno: string | null;
   telefono: string | null;
   link_sito_web: string | null;
@@ -169,6 +170,7 @@ export interface NearbyCampoRow {
   coperto: boolean | null;
   prezzo_orario: number | null;
   sempre_aperto: boolean;
+  aperto_al_pubblico: boolean;
   media_voti: number | null;
   numero_recensioni: number | null;
   url_foto_copertina: string | null;
@@ -251,6 +253,7 @@ export function mapRowToStruttura(row: StrutturaWithRelations): Struttura {
     linkPrenotazione: row.link_prenotazione_esterno ?? null,
     telefono: row.telefono ?? null,
     linkSitoWeb: row.link_sito_web ?? null,
+    apertoAlPubblico: row.aperto_al_pubblico,
   };
 }
 
@@ -313,6 +316,7 @@ export function toCampoInLista(campo: Campo, struttura: Struttura): CampoInLista
     tipoHero: struttura.tipoHero,
     urlFotoCopertina: struttura.urlFotoCopertina,
     mappa: struttura.mappa,
+    apertoAlPubblico: struttura.apertoAlPubblico,
   };
 }
 
@@ -348,6 +352,7 @@ export function mapNearbyCampoRowToCampoInLista(row: NearbyCampoRow): CampoInLis
     tipoHero: tipoHeroPerSport(idSport),
     urlFotoCopertina: row.url_foto_copertina,
     mappa: latLngToMap(lat, lng),
+    apertoAlPubblico: row.aperto_al_pubblico,
   };
 }
 

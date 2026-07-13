@@ -7,15 +7,15 @@ export type AtimarSupabaseClient = SupabaseClient<Database>;
 
 export type SupabaseConfig = {
   url: string;
-  anonKey: string;
+  key: string;
 };
 
 type SupabaseEnv = Partial<
   Record<
     | 'EXPO_PUBLIC_SUPABASE_URL'
-    | 'EXPO_PUBLIC_SUPABASE_ANON_KEY'
+    | 'EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY'
     | 'NEXT_PUBLIC_SUPABASE_URL'
-    | 'NEXT_PUBLIC_SUPABASE_ANON_KEY',
+    | 'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY',
     string
   >
 >;
@@ -24,11 +24,11 @@ let cachedSupabase: AtimarSupabaseClient | null = null;
 
 export function validateSupabaseConfig(config: SupabaseConfig): SupabaseConfig {
   const rawUrl = config.url.trim();
-  const anonKey = config.anonKey.trim();
+  const key = config.key.trim();
 
-  if (!rawUrl || !anonKey) {
+  if (!rawUrl || !key) {
     throw new Error(
-      'Supabase is not configured. Set SUPABASE_URL and SUPABASE_ANON_KEY for the current app.',
+      'Supabase is not configured. Set SUPABASE_URL and SUPABASE_PUBLISHABLE_KEY for the current app.',
     );
   }
 
@@ -55,7 +55,7 @@ export function validateSupabaseConfig(config: SupabaseConfig): SupabaseConfig {
 
   return {
     url: parsedUrl.origin,
-    anonKey,
+    key,
   };
 }
 
@@ -63,28 +63,28 @@ export function getSupabaseConfigFromEnv(env?: SupabaseEnv): SupabaseConfig {
   const source = env ?? (typeof process !== 'undefined' ? process.env : {});
   const supabaseUrl =
     source.EXPO_PUBLIC_SUPABASE_URL ?? source.NEXT_PUBLIC_SUPABASE_URL ?? '';
-  const supabaseAnonKey =
-    source.EXPO_PUBLIC_SUPABASE_ANON_KEY ??
-    source.NEXT_PUBLIC_SUPABASE_ANON_KEY ??
+  const supabasePublishableKey =
+    source.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
+    source.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
     '';
 
-  if (!supabaseUrl || !supabaseAnonKey) {
+  if (!supabaseUrl || !supabasePublishableKey) {
     throw new Error(
-      'Supabase is not configured. Set EXPO_PUBLIC_SUPABASE_URL/EXPO_PUBLIC_SUPABASE_ANON_KEY for Expo or NEXT_PUBLIC_SUPABASE_URL/NEXT_PUBLIC_SUPABASE_ANON_KEY for Next.',
+      'Supabase is not configured. Set EXPO_PUBLIC_SUPABASE_URL/EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY for Expo or NEXT_PUBLIC_SUPABASE_URL/NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY for Next.',
     );
   }
 
   return validateSupabaseConfig({
     url: supabaseUrl,
-    anonKey: supabaseAnonKey,
+    key: supabasePublishableKey,
   });
 }
 
 export function createSupabaseClient(
   config: SupabaseConfig,
 ): AtimarSupabaseClient {
-  const { url, anonKey } = validateSupabaseConfig(config);
-  return createClient<Database>(url, anonKey);
+  const { url, key } = validateSupabaseConfig(config);
+  return createClient<Database>(url, key);
 }
 
 export function setSupabaseClient(client: AtimarSupabaseClient | null) {

@@ -29,6 +29,9 @@ export function filtraCampi(
   if (f.soloAperti) {
     result = result.filter((c) => c.aperto);
   }
+  if (f.soloApertoAlPubblico) {
+    result = result.filter((c) => c.apertoAlPubblico);
+  }
   return result;
 }
 
@@ -51,13 +54,16 @@ export function ordinaCampi(
 
 // Deve restare allineato a DEFAULT_FILTERS.distanzaMax in @atimar/data.
 const DEFAULT_MAX_DISTANCE = 20;
+// Deve restare allineato a DEFAULT_FILTERS.soloApertoAlPubblico in @atimar/data.
+const DEFAULT_SOLO_APERTO_AL_PUBBLICO = true;
 
 /** Conta i filtri attivi per il badge del pulsante filtri. */
 function contaFiltriAttivi(f: Filtri): number {
   return (
     (f.sport !== "all" ? 1 : 0) +
     (f.distanzaMax < DEFAULT_MAX_DISTANCE ? 1 : 0) +
-    (f.soloAperti ? 1 : 0)
+    (f.soloAperti ? 1 : 0) +
+    (f.soloApertoAlPubblico !== DEFAULT_SOLO_APERTO_AL_PUBBLICO ? 1 : 0)
   );
 }
 

@@ -8,6 +8,7 @@ export const QUERY_KEYS = {
     radiusKm: number;
     sport: string;
     soloAperti: boolean;
+    soloApertoAlPubblico: boolean;
     limit: number;
     offset: number;
   }) =>
@@ -18,6 +19,7 @@ export const QUERY_KEYS = {
       args.radiusKm,
       args.sport,
       args.soloAperti,
+      args.soloApertoAlPubblico,
       args.limit,
       args.offset,
     ] as const,

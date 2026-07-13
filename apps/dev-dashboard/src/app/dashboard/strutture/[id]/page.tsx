@@ -80,6 +80,7 @@ export default async function StrutturaDetailPage({ params }: Props) {
                 </span>
                 {struttura.sempre_aperto && <Badge variant="outline">Sempre aperto</Badge>}
                 {struttura.verificata && <Badge variant="outline">Verificata</Badge>}
+                {struttura.aperto_al_pubblico && <Badge variant="outline">Aperto al pubblico</Badge>}
               </div>
             </div>
 
@@ -97,6 +98,7 @@ export default async function StrutturaDetailPage({ params }: Props) {
               <InfoField label="Link prenotazione" value={struttura.link_prenotazione_esterno} />
               <InfoField label="Sempre aperto" value={struttura.sempre_aperto ? 'Sì' : 'No'} />
               <InfoField label="Verificata" value={struttura.verificata ? 'Sì' : 'No'} />
+              <InfoField label="Aperto al pubblico" value={struttura.aperto_al_pubblico ? 'Sì' : 'No'} />
               <InfoField label="Creata il" value={new Date(struttura.created_at).toLocaleDateString('it-IT')} />
               <InfoField label="Aggiornata il" value={new Date(struttura.aggiornato_il).toLocaleDateString('it-IT')} />
             </div>

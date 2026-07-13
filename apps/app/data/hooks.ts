@@ -131,6 +131,7 @@ export function useNearbyCampiInLista({
     radiusKm: effectiveRadiusKm,
     sport: filtri.sport,
     soloAperti: filtri.soloAperti,
+    soloApertoAlPubblico: filtri.soloApertoAlPubblico,
     limit,
     offset,
   };
@@ -144,6 +145,7 @@ export function useNearbyCampiInLista({
         radiusKm: effectiveRadiusKm,
         sport: filtri.sport,
         soloAperti: filtri.soloAperti,
+        soloApertoAlPubblico: filtri.soloApertoAlPubblico,
         limit,
         offset,
       }),

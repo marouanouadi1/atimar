@@ -21,7 +21,7 @@ export async function proxy(request: NextRequest) {
 
   const supabase = createServerClient(
     supabaseConfig.url,
-    supabaseConfig.anonKey,
+    supabaseConfig.publishableKey,
     {
       cookies: {
         getAll() {

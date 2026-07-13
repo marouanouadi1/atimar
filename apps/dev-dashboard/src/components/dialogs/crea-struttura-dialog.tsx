@@ -65,6 +65,7 @@ type FormState = {
   attivo: boolean
   sempre_aperto: boolean
   verificata: boolean
+  aperto_al_pubblico: boolean
 }
 
 const emptyForm = (): FormState => ({
@@ -83,6 +84,7 @@ const emptyForm = (): FormState => ({
   attivo: true,
   sempre_aperto: false,
   verificata: false,
+  aperto_al_pubblico: false,
 })
 
 export function CreaStrutturaDialog({ citta }: { citta: Citta[] }) {
@@ -114,6 +116,7 @@ export function CreaStrutturaDialog({ citta }: { citta: Citta[] }) {
           attivo: form.attivo,
           sempre_aperto: form.sempre_aperto,
           verificata: form.verificata,
+          aperto_al_pubblico: form.aperto_al_pubblico,
         })
         if (result.error) {
           setError(result.error)
@@ -217,6 +220,7 @@ export function CreaStrutturaDialog({ citta }: { citta: Citta[] }) {
             <Checkbox id="attivo" name="attivo" label="Attivo" checked={form.attivo} onChange={(v) => set('attivo', v)} />
             <Checkbox id="sempre_aperto" name="sempre_aperto" label="Sempre aperto" checked={form.sempre_aperto} onChange={(v) => set('sempre_aperto', v)} />
             <Checkbox id="verificata" name="verificata" label="Verificata" checked={form.verificata} onChange={(v) => set('verificata', v)} />
+            <Checkbox id="aperto_al_pubblico" name="aperto_al_pubblico" label="Aperto al pubblico" checked={form.aperto_al_pubblico} onChange={(v) => set('aperto_al_pubblico', v)} />
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
