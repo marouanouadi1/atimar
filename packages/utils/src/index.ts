@@ -6,7 +6,7 @@
  * la stessa logica gira su mobile, web ed è testabile in isolamento.
  */
 
-import type { CampoInLista, Filtri } from "@atimar/types";
+import type { CampoInLista, Filtri, Struttura } from "@atimar/types";
 
 /* ------------------------------------------------------------------ *
  * Filtri e ordinamento (campo-first)
@@ -33,6 +33,22 @@ export function filtraCampi(
     result = result.filter((c) => c.apertoAlPubblico);
   }
   return result;
+}
+
+/**
+ * Filtra i campi non aperti al pubblico. Da usare nelle superfici che
+ * mostrano il catalogo "in evidenza" senza esporre il toggle
+ * `soloApertoAlPubblico` di {@link Filtri} (home, onboarding): quelle
+ * superfici non hanno modo di far scegliere all'utente di includerle, quindi
+ * il filtro va applicato sempre, non solo di default.
+ */
+export function campiPubblici(campi: CampoInLista[]): CampoInLista[] {
+  return campi.filter((c) => c.apertoAlPubblico);
+}
+
+/** Equivalente di {@link campiPubblici} per la lista di `Struttura`. */
+export function strutturePubbliche(strutture: Struttura[]): Struttura[] {
+  return strutture.filter((s) => s.apertoAlPubblico);
 }
 
 /** Restituisce un nuovo array ordinato (non muta l'input). */

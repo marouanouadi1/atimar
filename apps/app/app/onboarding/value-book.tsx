@@ -11,12 +11,15 @@ import {
   StepProgress,
   textStyle,
 } from "@/ui";
+import { campiPubblici } from "@atimar/utils";
 import { useCampiInLista } from "@/data/hooks";
 
 export default function ValueBook() {
   const router = useRouter();
-  const { data: campi = [] } = useCampiInLista();
-  const campo = campi[0];
+  const { data: campiAll = [] } = useCampiInLista();
+  // Nessun toggle "aperto al pubblico" in onboarding: si mostra solo un
+  // campo del catalogo pubblico, coerente col default della ricerca.
+  const campo = campiPubblici(campiAll)[0];
 
   return (
     <ScreenContainer
