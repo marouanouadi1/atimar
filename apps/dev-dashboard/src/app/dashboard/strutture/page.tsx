@@ -23,7 +23,7 @@ export default async function StrutturePage() {
           data={(strutture ?? []) as Parameters<typeof StrutturTable>[0]['data']}
           cittaMap={cittaMap}
           sport={sport ?? []}
-          action={<CreaStrutturaDialog citta={citta ?? []} />}
+          action={<CreaStrutturaDialog />}
         />
       </div>
     </>

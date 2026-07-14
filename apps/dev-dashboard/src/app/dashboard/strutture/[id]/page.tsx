@@ -1,4 +1,4 @@
-import { getStrutturaById, getCampiByStruttura, getServiziByStruttura, getCitta, getServizi, getFotoByStruttura, getSport } from '@atimar/api'
+import { getStrutturaById, getCampiByStruttura, getServiziByStruttura, getCittaById, getServizi, getFotoByStruttura, getSport } from '@atimar/api'
 import { Topbar } from '@/components/topbar'
 import { Badge } from '@/components/ui/badge'
 import { notFound } from 'next/navigation'
@@ -7,8 +7,6 @@ import { AggiungiServizioDialog } from '@/components/dialogs/aggiungi-servizio-d
 import { CreaCampoDialog } from '@/components/dialogs/crea-campo-dialog'
 import { FotoCampoDialog } from '@/components/dialogs/foto-campo-dialog'
 import { FotoStruttura } from './foto-struttura'
-import { Button } from '@/components/ui/button'
-import { Images, Plus } from 'lucide-react'
 
 type Props = { params: Promise<{ id: string }> }
 
@@ -46,11 +44,10 @@ export default async function StrutturaDetailPage({ params }: Props) {
   const { id } = await params
   const strutturaId = Number(id)
 
-  const [{ data: struttura }, { data: campi }, { data: servizi }, { data: citta }, { data: tuttiServizi }, { data: foto }, { data: sport }] = await Promise.all([
+  const [{ data: struttura }, { data: campi }, { data: servizi }, { data: tuttiServizi }, { data: foto }, { data: sport }] = await Promise.all([
     getStrutturaById(strutturaId),
     getCampiByStruttura(strutturaId),
     getServiziByStruttura(strutturaId),
-    getCitta(),
     getServizi(),
     getFotoByStruttura(strutturaId),
     getSport(),
@@ -58,13 +55,15 @@ export default async function StrutturaDetailPage({ params }: Props) {
 
   if (!struttura) notFound()
 
+  const { data: cittaStruttura } = await getCittaById(struttura.fk_citta)
+
   return (
     <>
       <Topbar title={struttura.nome} />
       <div className="p-6 flex flex-col gap-8">
 
         {/* Dati generali */}
-        <Section title="Dati generali" action={<ModificaStrutturaDialog struttura={struttura} citta={citta ?? []} />}>
+        <Section title="Dati generali" action={<ModificaStrutturaDialog struttura={struttura} cittaSelezionata={cittaStruttura ?? null} />}>
           <div className="border rounded-xl p-6 flex flex-col gap-6">
             <div className="flex items-start justify-between">
               <h3 className="text-lg font-semibold">{struttura.nome}</h3>
@@ -85,7 +84,7 @@ export default async function StrutturaDetailPage({ params }: Props) {
             </div>
 
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-              <InfoField label="Città" value={citta?.find((c) => c.id === struttura.fk_citta)?.nome ?? '—'} />
+              <InfoField label="Città" value={cittaStruttura?.nome ?? '—'} />
               <InfoField label="Indirizzo" value={struttura.indirizzo} />
               <InfoField label="Posizione" value={struttura.posizione ? String(struttura.posizione) : null} />
               <InfoField label="Latitudine" value={struttura.latitudine} />
@@ -122,7 +121,7 @@ export default async function StrutturaDetailPage({ params }: Props) {
             strutture={[]}
             sport={sport ?? []}
             fixedStrutturaId={strutturaId}
-            trigger={<Button size="icon-sm" variant="outline"><Plus className="w-4 h-4" /></Button>}
+            compact
           />
         }>
           {!campi?.length ? (
@@ -166,12 +165,6 @@ export default async function StrutturaDetailPage({ params }: Props) {
                             campoNome={c.nome_campo}
                             strutturaId={strutturaId}
                             foto={fotoCampo}
-                            trigger={
-                              <Button size="sm" variant="outline">
-                                <Images className="w-4 h-4" />
-                                {fotoCampo.length}
-                              </Button>
-                            }
                           />
                         </td>
                       </tr>

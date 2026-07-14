@@ -35,7 +35,7 @@ export function FotoCampoDialog({ campoId, campoNome, foto, strutturaId, trigger
         {trigger ?? (
           <Button size="sm" variant="outline">
             <Images className="w-4 h-4" />
-            Foto
+            {foto.length}
           </Button>
         )}
       </DialogTrigger>
