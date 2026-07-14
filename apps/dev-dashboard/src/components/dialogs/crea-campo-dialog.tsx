@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useMemo, useTransition } from 'react'
+import { Plus } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
@@ -92,7 +93,7 @@ const emptyForm = (): FormState => ({
   sport_ids: [],
 })
 
-export function CreaCampoDialog({ strutture, sport, fixedStrutturaId, trigger }: { strutture: Struttura[]; sport: Sport[]; fixedStrutturaId?: number; trigger?: React.ReactNode }) {
+export function CreaCampoDialog({ strutture, sport, fixedStrutturaId, compact }: { strutture: Struttura[]; sport: Sport[]; fixedStrutturaId?: number; compact?: boolean }) {
   const [form, setForm] = useState<FormState>(() => ({ ...emptyForm(), fk_struttura: fixedStrutturaId ? String(fixedStrutturaId) : '' }))
   const [error, setError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
@@ -216,7 +217,9 @@ export function CreaCampoDialog({ strutture, sport, fixedStrutturaId, trigger }:
 
   return (
     <MultiStepDialog
-      trigger={trigger ?? <Button size="sm">+ Aggiungi</Button>}
+      trigger={compact
+        ? <Button size="icon-sm" variant="outline"><Plus className="w-4 h-4" /></Button>
+        : <Button size="sm">+ Aggiungi</Button>}
       steps={steps}
       onComplete={handleComplete}
       onClose={() => { setForm(emptyForm()); setError(null) }}

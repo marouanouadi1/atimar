@@ -1,6 +1,6 @@
 'use server'
 
-import { createStruttura, updateStruttura, deleteStruttura, addServizioAStruttura, createServizio, createFoto, deleteFoto, setCopertinaFoto } from '@atimar/api'
+import { createStruttura, updateStruttura, deleteStruttura, countCampiByStruttura, addServizioAStruttura, createServizio, createFoto, deleteFoto, setCopertinaFoto, searchCitta } from '@atimar/api'
 import type { Database } from '@atimar/db-types'
 import { revalidatePath } from 'next/cache'
 
@@ -24,6 +24,20 @@ export async function updateStrutturaAction(id: number, data: StrutturaUpdate) {
 }
 
 export async function deleteStrutturaAction(id: number) {
+  const { count, error: countError } = await countCampiByStruttura(id)
+  if (countError) return { error: countError.message, hasDatiCollegati: false }
+  if (count && count > 0) return { error: null, hasDatiCollegati: true }
+
+  const { error } = await deleteStruttura(id)
+  if (error) {
+    if (error.code === '23503') return { error: null, hasDatiCollegati: true }
+    return { error: error.message, hasDatiCollegati: false }
+  }
+  revalidatePath('/dashboard/strutture')
+  return { error: null, hasDatiCollegati: false }
+}
+
+export async function deleteStrutturaConCampiAction(id: number) {
   const { error } = await deleteStruttura(id)
   if (error) return { error: error.message }
   revalidatePath('/dashboard/strutture')
@@ -56,6 +70,12 @@ export async function setCopertinaAction(fotoId: number, strutturaId: number) {
   if (error) return { error: error.message }
   revalidatePath(`/dashboard/strutture/${strutturaId}`)
   return { error: null }
+}
+
+export async function searchCittaAction(query: string) {
+  const { data, error } = await searchCitta(query)
+  if (error) return []
+  return (data ?? []).map((c) => ({ value: String(c.id), label: c.nome ?? '' }))
 }
 
 export async function creaEAggiungiServizioAction(strutturaId: number, data: Pick<ServizioInsert, 'nome_servizio' | 'descrizione' | 'attivo'>) {
