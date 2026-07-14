@@ -55,6 +55,8 @@ const campo: Campo = {
   prezzoOrario: 24,
   prezzoLabel: "€24",
   aperto: true,
+  minGiocatori: null,
+  maxGiocatori: null,
 };
 
 const struttura: Struttura = {
@@ -99,6 +101,8 @@ describe("coperto nullable", () => {
       tipo_superficie: null,
       coperto: null,
       prezzo_orario: null,
+      min_giocatori: null,
+      max_giocatori: null,
       attivo: true,
       Campi_Sport: [],
     });
@@ -153,6 +157,8 @@ describe("mapRowToCampo sport", () => {
       tipo_superficie: null,
       coperto: true,
       prezzo_orario: 20,
+      min_giocatori: null,
+      max_giocatori: null,
       attivo: true,
       Campi_Sport: [
         { fk_campo: 20, fk_sport: 4, Sport: { id: 4, nome_sport: "Tennis", slug: "tennis" } },
@@ -174,6 +180,8 @@ describe("mapRowToCampo sport", () => {
       tipo_superficie: null,
       coperto: null,
       prezzo_orario: null,
+      min_giocatori: null,
+      max_giocatori: null,
       attivo: true,
       Campi_Sport: [],
     });
@@ -344,6 +352,8 @@ function campoRowFixture(overrides: { id: number; coperto: boolean | null }) {
     tipo_superficie: null,
     coperto: overrides.coperto,
     prezzo_orario: null,
+    min_giocatori: null,
+    max_giocatori: null,
     attivo: true,
     Campi_Sport: [],
   };

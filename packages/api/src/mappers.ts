@@ -342,6 +342,8 @@ export function mapNearbyCampoRowToCampoInLista(row: NearbyCampoRow): CampoInLis
     prezzoOrario,
     prezzoLabel: formatPrice(prezzoOrario),
     aperto: row.sempre_aperto,
+    minGiocatori: null,
+    maxGiocatori: null,
     nomeStruttura: row.nome_struttura,
     indirizzo: row.indirizzo,
     posizione: { lat, lng },
