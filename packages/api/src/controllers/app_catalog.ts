@@ -22,7 +22,7 @@ export async function fetchStruttureConCampi() {
        prezzo_orario, sempre_aperto, attivo,
        link_prenotazione_esterno, telefono, link_sito_web,
        Campi (
-         id, fk_struttura, nome_campo, tipo_superficie, coperto, prezzo_orario, attivo,
+         id, fk_struttura, nome_campo, tipo_superficie, coperto, prezzo_orario, min_giocatori, max_giocatori, attivo,
          Campi_Sport ( fk_campo, fk_sport, Sport ( id, nome_sport, slug ) )
        ),
        Strutture_Servizi ( Servizi ( id, nome_servizio ) ),
@@ -110,7 +110,7 @@ export async function fetchStrutturaById(id: string): Promise<Struttura | null> 
        prezzo_orario, sempre_aperto, attivo,
        link_prenotazione_esterno, telefono, link_sito_web,
        Campi (
-         id, fk_struttura, nome_campo, tipo_superficie, coperto, prezzo_orario, attivo,
+         id, fk_struttura, nome_campo, tipo_superficie, coperto, prezzo_orario, min_giocatori, max_giocatori, attivo,
          Campi_Sport ( fk_campo, fk_sport, Sport ( id, nome_sport, slug ) )
        ),
        Strutture_Servizi ( Servizi ( id, nome_servizio ) ),
@@ -133,7 +133,7 @@ export async function fetchCampiByStruttura(strutturaId: string): Promise<Campo[
     .select(
       `sempre_aperto,
        Campi (
-         id, fk_struttura, nome_campo, tipo_superficie, coperto, prezzo_orario, attivo,
+         id, fk_struttura, nome_campo, tipo_superficie, coperto, prezzo_orario, min_giocatori, max_giocatori, attivo,
          Campi_Sport ( fk_campo, fk_sport, Sport ( id, nome_sport, slug ) )
        )`,
     )

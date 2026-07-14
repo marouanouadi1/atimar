@@ -68,6 +68,8 @@ export interface CampoRow {
   tipo_superficie: string | null;
   coperto: boolean | null;
   prezzo_orario: number | null;
+  min_giocatori: number | null;
+  max_giocatori: number | null;
   attivo: boolean;
   Campi_Sport: CampoSportRow[];
 }
@@ -293,6 +295,8 @@ export function mapRowToCampo(
     prezzoOrario,
     prezzoLabel: formatPrice(prezzoOrario),
     aperto: strutturaAperta,
+    minGiocatori: campo.min_giocatori ?? null,
+    maxGiocatori: campo.max_giocatori ?? null,
   };
 }
 

@@ -119,6 +119,8 @@ export interface Campo {
   /** Prezzo formattato IT, es. "€18". */
   prezzoLabel: string;
   aperto: boolean;
+  minGiocatori: number | null;
+  maxGiocatori: number | null;
 }
 
 /**
