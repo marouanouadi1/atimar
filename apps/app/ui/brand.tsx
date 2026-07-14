@@ -2,6 +2,7 @@ import { StyleSheet, Text, View } from "react-native";
 import type { StyleProp, ViewStyle } from "react-native";
 
 import { theme } from "@/theme/tokens";
+import AMark from "@/assets/brand/logo-mark.svg";
 
 export interface BrandMarkProps {
   size?: number;
@@ -32,30 +33,7 @@ export function BrandMark({
           },
         ]}
       >
-        <View
-          style={[
-            styles.court,
-            {
-              inset: Math.round(size * 0.2),
-              borderColor: light,
-              borderRadius: Math.round(size * 0.08),
-            },
-          ]}
-        >
-          <View style={[styles.centerLine, { backgroundColor: light }]} />
-          <View style={[styles.serviceLine, { backgroundColor: light }]} />
-        </View>
-        <View
-          style={[
-            styles.voltCut,
-            {
-              width: Math.round(size * 0.16),
-              height: Math.round(size * 0.5),
-              backgroundColor: theme.colors.lime,
-              transform: [{ rotate: "28deg" }],
-            },
-          ]}
-        />
+        <AMark width={size * 0.7} height={size * 0.7} fill={light} />
       </View>
       {wordmark ? (
         <Text
@@ -69,6 +47,7 @@ export function BrandMark({
           ]}
         >
           ATIMAR
+          <Text style={{ color: theme.colors.lime }}>·</Text>
         </Text>
       ) : null}
     </View>
@@ -82,30 +61,8 @@ const styles = StyleSheet.create({
     gap: theme.spacing.sm,
   },
   mark: {
-    overflow: "hidden",
-  },
-  court: {
-    position: "absolute",
-    borderWidth: 1.5,
-  },
-  centerLine: {
-    position: "absolute",
-    left: "50%",
-    top: 0,
-    bottom: 0,
-    width: 1.5,
-  },
-  serviceLine: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    top: "50%",
-    height: 1.5,
-  },
-  voltCut: {
-    position: "absolute",
-    right: "18%",
-    top: "-8%",
+    alignItems: "center",
+    justifyContent: "center",
   },
   wordmark: {
     fontFamily: theme.fonts.displayBold,

@@ -25,4 +25,14 @@ config.resolver.extraNodeModules = {
   "@atimar/api": path.resolve(packagesRoot, "api/src"),
 };
 
+// Import .svg files as React components (react-native-svg-transformer),
+// so brand assets stay single-source SVG files instead of inlined path data.
+config.transformer.babelTransformerPath = require.resolve(
+  "react-native-svg-transformer/expo",
+);
+config.resolver.assetExts = config.resolver.assetExts.filter(
+  (ext) => ext !== "svg",
+);
+config.resolver.sourceExts = [...config.resolver.sourceExts, "svg"];
+
 module.exports = config;
