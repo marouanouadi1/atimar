@@ -17,8 +17,8 @@ import { theme } from "@/theme/tokens";
 import { sportLabel } from "@atimar/data";
 import { formatRating, ordinaCampi } from "@atimar/utils";
 import {
+  bgFloodlitHero,
   bgFloodlitPanel,
-  bgWarmLight,
   CampoCard,
   Icon,
   MediaStruttura,
@@ -81,14 +81,23 @@ export default function Home() {
           : { paddingBottom: insets.bottom + theme.layout.tabBarHeight + theme.spacing.xxxl }
       }
     >
-      <View style={[styles.heroBg, bgWarmLight]}>
+      <View style={[styles.heroBg, bgFloodlitHero]}>
         <ResponsiveContainer style={{ paddingTop: desktop ? theme.spacing.xxxl : insets.top + theme.spacing.lg, paddingBottom: theme.spacing.xxxl }}>
           <View style={[styles.hero, desktop && styles.heroDesktop]}>
           <View style={styles.heroCopy}>
             <Text style={styles.kicker}>READY WHEN YOU ARE</Text>
             <Text style={[styles.title, desktop && styles.titleDesktop]}>
-              Ciao {user?.name?.split(" ")[0] ?? "Atleta"},{"\n"}
-              <Text style={styles.titleAccent}>dove giochiamo?</Text>
+              {user ? (
+                <>
+                  Ciao {user.name?.split(" ")[0] ?? "Atleta"},{"\n"}
+                  <Text style={styles.titleAccent}>dove giochiamo?</Text>
+                </>
+              ) : (
+                <>
+                  {"Il campo giusto,\n"}
+                  <Text style={styles.titleAccent}>nel momento giusto.</Text>
+                </>
+              )}
             </Text>
             <Text style={styles.subtitle}>
               Cerca il prossimo campo oppure riparti dai tuoi sport preferiti.
@@ -252,6 +261,7 @@ const styles = StyleSheet.create({
   },
   heroBg: {
     width: "100%",
+    backgroundColor: theme.colors.ink,
   },
   page: {
     gap: 64,
@@ -279,7 +289,7 @@ const styles = StyleSheet.create({
     letterSpacing: 1.8,
   },
   title: {
-    color: theme.colors.ink,
+    color: theme.colors.surface,
     fontFamily: theme.fonts.displayBold,
     fontSize: 42,
     lineHeight: 43,
@@ -291,10 +301,10 @@ const styles = StyleSheet.create({
     letterSpacing: -2.6,
   },
   titleAccent: {
-    color: theme.colors.primary,
+    color: theme.colors.lime,
   },
   subtitle: {
-    color: theme.colors.muted,
+    color: "rgba(255,255,255,0.6)",
     fontFamily: theme.fonts.bodyRegular,
     fontSize: 16,
     lineHeight: 25,
@@ -328,7 +338,6 @@ const styles = StyleSheet.create({
   },
   searchButtonHover: {
     transform: [{ translateY: -1 }],
-    boxShadow: "0 10px 22px rgba(147,185,0,0.45)",
   },
   sportsScroll: {
     // Un horizontal ScrollView senza altezza esplicita collassa a 0 su web
