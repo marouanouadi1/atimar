@@ -2,7 +2,7 @@ import { useRouter } from "expo-router";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { theme } from "@/theme/tokens";
-import { pluralize } from "@atimar/utils";
+import { campiPubblici, pluralize } from "@atimar/utils";
 import {
   Button,
   Header,
@@ -18,7 +18,10 @@ import { useUserLocation } from "@/data/use-user-location";
 
 export default function ValueNear() {
   const router = useRouter();
-  const { data: campi = [] } = useCampiInLista();
+  const { data: campiAll = [] } = useCampiInLista();
+  // Nessun toggle "aperto al pubblico" in onboarding: si mostra solo il
+  // catalogo pubblico, coerente col default della ricerca.
+  const campi = campiPubblici(campiAll);
   const userLocation = useUserLocation();
 
   return (

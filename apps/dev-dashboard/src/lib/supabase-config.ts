@@ -2,16 +2,16 @@ const PLACEHOLDER_SUPABASE_HOST = 'placeholder.supabase.co'
 
 type SupabaseConfig = {
   url: string
-  anonKey: string
+  publishableKey: string
 }
 
 export function getSupabaseConfig(): SupabaseConfig {
   const rawUrl = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()
-  const anonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim()
+  const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY?.trim()
 
-  if (!rawUrl || !anonKey) {
+  if (!rawUrl || !publishableKey) {
     throw new Error(
-      'Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in apps/dev-dashboard/.env.local.'
+      'Supabase is not configured. Set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY in apps/dev-dashboard/.env.local.'
     )
   }
 
@@ -38,6 +38,6 @@ export function getSupabaseConfig(): SupabaseConfig {
 
   return {
     url: parsedUrl.origin,
-    anonKey,
+    publishableKey,
   }
 }

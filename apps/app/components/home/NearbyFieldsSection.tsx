@@ -2,6 +2,7 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View, useWi
 import { useRouter } from "expo-router";
 import { theme } from "@/theme/tokens";
 import { CampoCard, textStyle } from "@/ui";
+import { campiPubblici } from "@atimar/utils";
 import { useCampiInLista } from "@/data/hooks";
 
 /** Horizontal scroll of court cards, shown on the web homepage. */
@@ -9,7 +10,9 @@ export function NearbyFieldsSection() {
   const router = useRouter();
   const { width } = useWindowDimensions();
   const { data: allCampi = [], isLoading } = useCampiInLista();
-  const campi = allCampi.slice(0, 8);
+  // Nessun toggle "aperto al pubblico" in questa sezione: va filtrata qui,
+  // altrimenti una struttura privata potrebbe finire "in evidenza".
+  const campi = campiPubblici(allCampi).slice(0, 8);
   const isDesktop = width >= theme.breakpoints.desktop;
 
   const apriStruttura = (strutturaId: string) =>

@@ -6,7 +6,7 @@
  * la stessa logica gira su mobile, web ed è testabile in isolamento.
  */
 
-import type { CampoInLista, Filtri } from "@atimar/types";
+import type { CampoInLista, Filtri, Struttura } from "@atimar/types";
 
 /* ------------------------------------------------------------------ *
  * Filtri e ordinamento (campo-first)
@@ -29,7 +29,26 @@ export function filtraCampi(
   if (f.soloAperti) {
     result = result.filter((c) => c.aperto);
   }
+  if (f.soloApertoAlPubblico) {
+    result = result.filter((c) => c.apertoAlPubblico);
+  }
   return result;
+}
+
+/**
+ * Filtra i campi non aperti al pubblico. Da usare nelle superfici che
+ * mostrano il catalogo "in evidenza" senza esporre il toggle
+ * `soloApertoAlPubblico` di {@link Filtri} (home, onboarding): quelle
+ * superfici non hanno modo di far scegliere all'utente di includerle, quindi
+ * il filtro va applicato sempre, non solo di default.
+ */
+export function campiPubblici(campi: CampoInLista[]): CampoInLista[] {
+  return campi.filter((c) => c.apertoAlPubblico);
+}
+
+/** Equivalente di {@link campiPubblici} per la lista di `Struttura`. */
+export function strutturePubbliche(strutture: Struttura[]): Struttura[] {
+  return strutture.filter((s) => s.apertoAlPubblico);
 }
 
 /** Restituisce un nuovo array ordinato (non muta l'input). */
@@ -51,13 +70,16 @@ export function ordinaCampi(
 
 // Deve restare allineato a DEFAULT_FILTERS.distanzaMax in @atimar/data.
 const DEFAULT_MAX_DISTANCE = 20;
+// Deve restare allineato a DEFAULT_FILTERS.soloApertoAlPubblico in @atimar/data.
+const DEFAULT_SOLO_APERTO_AL_PUBBLICO = true;
 
 /** Conta i filtri attivi per il badge del pulsante filtri. */
 function contaFiltriAttivi(f: Filtri): number {
   return (
     (f.sport !== "all" ? 1 : 0) +
     (f.distanzaMax < DEFAULT_MAX_DISTANCE ? 1 : 0) +
-    (f.soloAperti ? 1 : 0)
+    (f.soloAperti ? 1 : 0) +
+    (f.soloApertoAlPubblico !== DEFAULT_SOLO_APERTO_AL_PUBBLICO ? 1 : 0)
   );
 }
 

@@ -15,7 +15,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { theme } from "@/theme/tokens";
 import { sportLabel } from "@atimar/data";
-import { formatRating, ordinaCampi } from "@atimar/utils";
+import { campiPubblici, formatRating, ordinaCampi } from "@atimar/utils";
 import {
   bgFloodlitPanel,
   bgWarmLight,
@@ -42,7 +42,11 @@ export default function Home() {
   const searchHover = useHover();
   const clubHover = useHover();
 
-  const { data: campi = [], isLoading } = useCampiInLista();
+  const { data: campiAll = [], isLoading } = useCampiInLista();
+  // La home non espone il toggle "aperto al pubblico" (a differenza della
+  // ricerca): il catalogo va quindi ristretto qui, altrimenti una struttura
+  // privata appena creata finirebbe comunque "in evidenza".
+  const campi = useMemo(() => campiPubblici(campiAll), [campiAll]);
   const popular = useMemo(() => ordinaCampi(campi, "voti").slice(0, 9), [campi]);
   // Il campo del momento è il primo dei più votati (stesso ordinamento di
   // "Campi da provare"), non una struttura scelta a caso: così la card ha

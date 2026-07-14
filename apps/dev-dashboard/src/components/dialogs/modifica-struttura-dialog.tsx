@@ -24,23 +24,24 @@ type Citta = { id: number; nome: string | null };
 type CittaOption = { value: string; label: string };
 
 type Struttura = {
-  id: number;
-  nome: string;
-  email: string | null;
-  fk_citta: number;
-  indirizzo: string;
-  latitudine: number;
-  longitudine: number;
-  prezzo_orario: number | null;
-  telefono: string | null;
-  cellulare: string | null;
-  link_sito_web: string | null;
-  link_prenotazione_esterno: string | null;
-  descrizione: string | null;
-  attivo: boolean;
-  sempre_aperto: boolean;
-  verificata: boolean;
-};
+  id: number
+  nome: string
+  email: string | null
+  fk_citta: number
+  indirizzo: string
+  latitudine: number
+  longitudine: number
+  prezzo_orario: number | null
+  telefono: string | null
+  cellulare: string | null
+  link_sito_web: string | null
+  link_prenotazione_esterno: string | null
+  descrizione: string | null
+  attivo: boolean
+  sempre_aperto: boolean
+  verificata: boolean
+  aperto_al_pubblico: boolean
+}
 
 function Field({
   id,
@@ -85,22 +86,23 @@ function Checkbox({
 }
 
 type FormState = {
-  nome: string;
-  email: string;
-  fk_citta: string;
-  indirizzo: string;
-  latitudine: string;
-  longitudine: string;
-  prezzo_orario: string;
-  telefono: string;
-  cellulare: string;
-  link_sito_web: string;
-  link_prenotazione_esterno: string;
-  descrizione: string;
-  attivo: boolean;
-  sempre_aperto: boolean;
-  verificata: boolean;
-};
+  nome: string
+  email: string
+  fk_citta: string
+  indirizzo: string
+  latitudine: string
+  longitudine: string
+  prezzo_orario: string
+  telefono: string
+  cellulare: string
+  link_sito_web: string
+  link_prenotazione_esterno: string
+  descrizione: string
+  attivo: boolean
+  sempre_aperto: boolean
+  verificata: boolean
+  aperto_al_pubblico: boolean
+}
 
 function cittaToOption(c: Citta | null): CittaOption | null {
   return c ? { value: String(c.id), label: c.nome ?? '' } : null;
@@ -123,7 +125,8 @@ function strutturaToForm(s: Struttura): FormState {
     attivo: s.attivo,
     sempre_aperto: s.sempre_aperto,
     verificata: s.verificata,
-  };
+    aperto_al_pubblico: s.aperto_al_pubblico,
+  }
 }
 
 export function ModificaStrutturaDialog({
@@ -180,7 +183,8 @@ export function ModificaStrutturaDialog({
           attivo: form.attivo,
           sempre_aperto: form.sempre_aperto,
           verificata: form.verificata,
-        });
+          aperto_al_pubblico: form.aperto_al_pubblico,
+        })
         if (result.error) {
           setError(result.error);
           toast.error('Errore durante la modifica', {
@@ -361,24 +365,10 @@ export function ModificaStrutturaDialog({
             />
           </Field>
           <div className="flex flex-col gap-2">
-            <Checkbox
-              id="attivo"
-              label="Attivo"
-              checked={form.attivo}
-              onChange={(v) => set('attivo', v)}
-            />
-            <Checkbox
-              id="sempre_aperto"
-              label="Sempre aperto"
-              checked={form.sempre_aperto}
-              onChange={(v) => set('sempre_aperto', v)}
-            />
-            <Checkbox
-              id="verificata"
-              label="Verificata"
-              checked={form.verificata}
-              onChange={(v) => set('verificata', v)}
-            />
+            <Checkbox id="attivo" label="Attivo" checked={form.attivo} onChange={(v) => set('attivo', v)} />
+            <Checkbox id="sempre_aperto" label="Sempre aperto" checked={form.sempre_aperto} onChange={(v) => set('sempre_aperto', v)} />
+            <Checkbox id="verificata" label="Verificata" checked={form.verificata} onChange={(v) => set('verificata', v)} />
+            <Checkbox id="aperto_al_pubblico" label="Aperto al pubblico" checked={form.aperto_al_pubblico} onChange={(v) => set('aperto_al_pubblico', v)} />
           </div>
           {error && <p className="text-sm text-destructive">{error}</p>}
         </div>
