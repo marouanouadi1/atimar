@@ -15,7 +15,8 @@ type SupabaseEnv = Partial<
     | 'EXPO_PUBLIC_SUPABASE_URL'
     | 'EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY'
     | 'NEXT_PUBLIC_SUPABASE_URL'
-    | 'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY',
+    | 'NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY'
+    | 'SUPABASE_SECRET_KEY',
     string
   >
 >;
@@ -63,12 +64,20 @@ export function getSupabaseConfigFromEnv(env?: SupabaseEnv): SupabaseConfig {
   const source = env ?? (typeof process !== 'undefined' ? process.env : {});
   const supabaseUrl =
     source.EXPO_PUBLIC_SUPABASE_URL ?? source.NEXT_PUBLIC_SUPABASE_URL ?? '';
-  const supabasePublishableKey =
+  // SUPABASE_SECRET_KEY (server-only, mai esposta a un bundle client) ha la
+  // priorità: bypassa la RLS ed è quella richiesta dal dashboard admin. Va
+  // letta qui, ad ogni costruzione lazy del client, e non impostata una tantum
+  // altrove (es. instrumentation.ts) perché Next.js compila instrumentation,
+  // Server Components, Server Actions e Route Handler come bundle separati:
+  // un singleton assegnato in uno di questi non è visibile negli altri, mentre
+  // process.env è condiviso da tutto il processo Node.
+  const supabaseKey =
+    source.SUPABASE_SECRET_KEY ??
     source.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
     source.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??
     '';
 
-  if (!supabaseUrl || !supabasePublishableKey) {
+  if (!supabaseUrl || !supabaseKey) {
     throw new Error(
       'Supabase is not configured. Set EXPO_PUBLIC_SUPABASE_URL/EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY for Expo or NEXT_PUBLIC_SUPABASE_URL/NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY for Next.',
     );
@@ -76,7 +85,7 @@ export function getSupabaseConfigFromEnv(env?: SupabaseEnv): SupabaseConfig {
 
   return validateSupabaseConfig({
     url: supabaseUrl,
-    key: supabasePublishableKey,
+    key: supabaseKey,
   });
 }
 
