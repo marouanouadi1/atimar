@@ -82,6 +82,7 @@ const struttura: Struttura = {
   linkPrenotazione: null,
   telefono: null,
   linkSitoWeb: null,
+  apertoAlPubblico: true,
 };
 
 describe("coordinate", () => {
@@ -211,6 +212,7 @@ describe("mapNearbyCampoRowToCampoInLista", () => {
       coperto: true,
       prezzo_orario: 28,
       sempre_aperto: true,
+      aperto_al_pubblico: true,
       media_voti: 4.7,
       numero_recensioni: 18,
       url_foto_copertina: "https://cdn.test/cover.jpg",
@@ -256,6 +258,7 @@ describe("mapNearbyCampoRowToCampoInLista", () => {
       coperto: null,
       prezzo_orario: null,
       sempre_aperto: true,
+      aperto_al_pubblico: true,
       media_voti: null,
       numero_recensioni: null,
       url_foto_copertina: null,
@@ -283,6 +286,7 @@ describe("mapNearbyCampoRowToCampoInLista", () => {
       coperto: true,
       prezzo_orario: 20,
       sempre_aperto: true,
+      aperto_al_pubblico: true,
       media_voti: null,
       numero_recensioni: null,
       url_foto_copertina: null,
@@ -311,6 +315,7 @@ describe("mapNearbyCampoRowToCampoInLista", () => {
       coperto: null,
       prezzo_orario: null,
       sempre_aperto: true,
+      aperto_al_pubblico: true,
       media_voti: null,
       numero_recensioni: null,
       url_foto_copertina: null,
@@ -334,6 +339,7 @@ function strutturaRowFixture() {
     prezzo_orario: null,
     sempre_aperto: true,
     attivo: true,
+    aperto_al_pubblico: true,
     link_prenotazione_esterno: null,
     telefono: null,
     link_sito_web: null,

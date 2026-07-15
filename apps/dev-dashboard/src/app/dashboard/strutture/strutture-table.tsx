@@ -27,6 +27,7 @@ type Struttura = {
   descrizione: string | null
   sempre_aperto: boolean | null
   verificata: boolean | null
+  aperto_al_pubblico: boolean | null
   attivo: boolean | null
   Campi: CampoEntry[] | null
 }
@@ -167,6 +168,15 @@ export function StrutturTable({ data, cittaMap, sport, action }: Props) {
       cell: (s) => (
         <Badge variant={s.verificata ? 'default' : 'secondary'}>
           {s.verificata ? 'Sì' : 'No'}
+        </Badge>
+      ),
+    },
+    {
+      key: 'aperto_al_pubblico',
+      header: 'Aperto al pubblico',
+      cell: (s) => (
+        <Badge variant={s.aperto_al_pubblico ? 'default' : 'secondary'}>
+          {s.aperto_al_pubblico ? 'Sì' : 'No'}
         </Badge>
       ),
     },

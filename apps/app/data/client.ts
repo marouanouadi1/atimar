@@ -15,12 +15,10 @@ import type { Database } from "@atimar/db-types";
 const url =
   process.env.EXPO_PUBLIC_SUPABASE_URL ?? "";
 
-const anonKey =
-  process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ??
-  (process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY as string | undefined) ??
-  "";
+const publishableKey =
+  process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "";
 
-export const supabase = createClient<Database>(url, anonKey, {
+export const supabase = createClient<Database>(url, publishableKey, {
   auth: {
     storage: AsyncStorage,
     autoRefreshToken: true,

@@ -23,5 +23,6 @@ export const DEFAULT_FILTERS: Filtri = {
   sport: "all",
   distanzaMax: 20,
   soloAperti: false,
+  soloApertoAlPubblico: true,
   attivi: 0,
 };

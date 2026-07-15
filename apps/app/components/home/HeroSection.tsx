@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, Text, View, useWindowDimensions } from "react-na
 import { useMemo } from "react";
 import { useRouter } from "expo-router";
 
-import { formatRating } from "@atimar/utils";
+import { formatRating, strutturePubbliche } from "@atimar/utils";
 import { theme } from "@/theme/tokens";
 import {
   BrandMark,
@@ -19,17 +19,19 @@ import { useStrutture } from "@/data/hooks";
 export function HeroSection() {
   const router = useRouter();
   const { width } = useWindowDimensions();
-  const { data: strutture = [] } = useStrutture();
+  const { data: struttureAll = [] } = useStrutture();
   const desktop = width >= theme.breakpoints.desktop;
   // La struttura in copertina è quella con più consensi reali (voto medio,
   // poi numero recensioni), non semplicemente la prima con una foto: così la
-  // card ha sempre un motivo verificabile per essere "in evidenza".
+  // card ha sempre un motivo verificabile per essere "in evidenza". Nessun
+  // toggle "aperto al pubblico" in questa sezione, quindi si esclude sempre
+  // il privato: altrimenti finirebbe in copertina sull'hero pubblico del sito.
   const featured = useMemo(() => {
-    const ranked = [...strutture].sort(
+    const ranked = [...strutturePubbliche(struttureAll)].sort(
       (a, b) => b.mediaVoti - a.mediaVoti || b.numeroRecensioni - a.numeroRecensioni,
     );
     return ranked.find((s) => s.urlFotoCopertina) ?? ranked[0];
-  }, [strutture]);
+  }, [struttureAll]);
   const hasRating = !!featured && featured.mediaVoti > 0;
 
   const copyIn = useEntrance(0);

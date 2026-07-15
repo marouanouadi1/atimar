@@ -98,6 +98,8 @@ export interface Struttura {
   telefono?: string | null;
   /** Sito web della struttura (Strutture.link_sito_web). */
   linkSitoWeb?: string | null;
+  /** Strutture.aperto_al_pubblico — filtro di default in ricerca, non un cancello di sicurezza. */
+  apertoAlPubblico: boolean;
 }
 
 export interface Campo {
@@ -138,6 +140,7 @@ export interface CampoInLista extends Campo {
   tipoHero: TipoHero;
   urlFotoCopertina: string | null;
   mappa: MapPoint;
+  apertoAlPubblico: boolean;
 }
 
 /* ------------------------------------------------------------------ *
@@ -189,6 +192,8 @@ export interface Filtri {
    * @todo Filtrare per distanza reale quando disponibile. */
   distanzaMax: number;
   soloAperti: boolean;
+  /** Mostra solo strutture aperte al pubblico; disattivandolo si vedono anche quelle private. */
+  soloApertoAlPubblico: boolean;
   /** Numero di filtri attivi, per il badge. */
   attivi: number;
 }

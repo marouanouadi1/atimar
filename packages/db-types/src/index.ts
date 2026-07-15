@@ -7,6 +7,11 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.5"
+  }
   graphql_public: {
     Tables: {
       [_ in never]: never
@@ -649,6 +654,7 @@ export type Database = {
       Strutture: {
         Row: {
           aggiornato_il: string
+          aperto_al_pubblico: boolean
           attivo: boolean
           cellulare: string | null
           created_at: string
@@ -670,6 +676,7 @@ export type Database = {
         }
         Insert: {
           aggiornato_il?: string
+          aperto_al_pubblico?: boolean
           attivo: boolean
           cellulare?: string | null
           created_at?: string
@@ -691,6 +698,7 @@ export type Database = {
         }
         Update: {
           aggiornato_il?: string
+          aperto_al_pubblico?: boolean
           attivo?: boolean
           cellulare?: string | null
           created_at?: string
@@ -766,12 +774,14 @@ export type Database = {
           p_offset?: number
           p_radius_km: number
           p_solo_aperti?: boolean
+          p_solo_pubblico?: boolean
           p_sport?: string
         }
         Returns: {
+          aperto_al_pubblico: boolean
           campo_id: number
           campo_indice: number
-          coperto: boolean | null
+          coperto: boolean
           distanza_km: number
           indirizzo: string
           latitudine: number
@@ -784,6 +794,7 @@ export type Database = {
           prezzo_orario: number
           sempre_aperto: boolean
           sport_slug: string
+          sport_slugs: string[]
           struttura_id: number
           tipo_superficie: string
           total_count: number

@@ -112,6 +112,15 @@ export default function FiltersModal() {
             value={draft.soloAperti}
             onValueChange={(v) => setDraft((d) => ({ ...d, soloAperti: v }))}
           />
+          <ToggleRow
+            label="Aperto al pubblico"
+            sub="Disattiva per vedere anche le strutture non aperte al pubblico"
+            icon="people-outline"
+            value={draft.soloApertoAlPubblico}
+            onValueChange={(v) =>
+              setDraft((d) => ({ ...d, soloApertoAlPubblico: v }))
+            }
+          />
         </View>
       </View>
     </ScreenContainer>

@@ -19,7 +19,7 @@ export async function fetchStruttureConCampi() {
     .from('Strutture')
     .select(
       `id, nome, descrizione, indirizzo, latitudine, longitudine,
-       prezzo_orario, sempre_aperto, attivo,
+       prezzo_orario, sempre_aperto, attivo, aperto_al_pubblico,
        link_prenotazione_esterno, telefono, link_sito_web,
        Campi (
          id, fk_struttura, nome_campo, tipo_superficie, coperto, prezzo_orario, min_giocatori, max_giocatori, attivo,
@@ -30,6 +30,7 @@ export async function fetchStruttureConCampi() {
        Foto_Strutture ( url_foto, copertina, ordine )`,
     )
     .eq('attivo', true)
+    .eq('verificata', true)
     .order('id');
 
   if (error) throw error;
@@ -62,6 +63,7 @@ export async function searchCampiNearby(
     radiusKm: number;
     sport?: string;
     soloAperti?: boolean;
+    soloApertoAlPubblico?: boolean;
     limit?: number;
     offset?: number;
   },
@@ -89,6 +91,7 @@ export async function searchCampiNearby(
     p_solo_aperti: params.soloAperti ?? false,
     p_limit: limit,
     p_offset: offset,
+    p_solo_pubblico: params.soloApertoAlPubblico ?? true,
   });
 
   if (error) throw new Error(error.message);
@@ -107,7 +110,7 @@ export async function fetchStrutturaById(id: string): Promise<Struttura | null> 
     .from('Strutture')
     .select(
       `id, nome, descrizione, indirizzo, latitudine, longitudine,
-       prezzo_orario, sempre_aperto, attivo,
+       prezzo_orario, sempre_aperto, attivo, aperto_al_pubblico,
        link_prenotazione_esterno, telefono, link_sito_web,
        Campi (
          id, fk_struttura, nome_campo, tipo_superficie, coperto, prezzo_orario, min_giocatori, max_giocatori, attivo,
@@ -119,6 +122,7 @@ export async function fetchStrutturaById(id: string): Promise<Struttura | null> 
     )
     .eq('id', Number(id))
     .eq('attivo', true)
+    .eq('verificata', true)
     .single();
 
   if (error || !data) return null;
@@ -138,6 +142,8 @@ export async function fetchCampiByStruttura(strutturaId: string): Promise<Campo[
        )`,
     )
     .eq('id', Number(strutturaId))
+    .eq('attivo', true)
+    .eq('verificata', true)
     .single();
 
   if (error || !data) return [];
