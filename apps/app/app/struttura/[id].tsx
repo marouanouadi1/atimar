@@ -378,25 +378,60 @@ function CampiTab({
             campo.id === highlightId && styles.campoRowHighlight,
           ]}
         >
-          <View style={{ flex: 1, gap: 2 }}>
-            <Text style={textStyle("bodyStrong", "ink")}>{campo.nome}</Text>
-            <Text style={textStyle("caption", "muted")}>
-              {sportsLabel(campo.sportIds)}
-              {campo.superficie ? ` · ${campo.superficie}` : ""}
+          {/* Riga principale: nome + prezzo + cuore */}
+          <View style={styles.campoRowTop}>
+            <Text style={[textStyle("bodyStrong", "ink"), { flex: 1 }]}>{campo.nome}</Text>
+            <Text style={textStyle("bodyStrong", "primary")}>
+              {formatPrice(campo.prezzoOrario)}
             </Text>
+            <IconButton
+              name={isPreferitoCampo(campo.id) ? "heart" : "heart-outline"}
+              tone="plain"
+              size={32}
+              iconSize={theme.iconSizes.md}
+              active={isPreferitoCampo(campo.id)}
+              onPress={() => onTogglePreferito(campo.id)}
+              accessibilityLabel="Preferito"
+            />
           </View>
-          <Text style={textStyle("bodyStrong", "primary")}>
-            {formatPrice(campo.prezzoOrario)}
-          </Text>
-          <IconButton
-            name={isPreferitoCampo(campo.id) ? "heart" : "heart-outline"}
-            tone="plain"
-            size={32}
-            iconSize={theme.iconSizes.md}
-            active={isPreferitoCampo(campo.id)}
-            onPress={() => onTogglePreferito(campo.id)}
-            accessibilityLabel="Preferito"
-          />
+
+          {/* Chip attributi */}
+          <View style={styles.campoChips}>
+            {campo.sportIds.map((sid) => (
+              <View key={sid} style={styles.chip}>
+                <Text style={textStyle("small", "ink")}>{sportLabel(sid)}</Text>
+              </View>
+            ))}
+            {campo.superficie ? (
+              <View style={styles.chip}>
+                <Text style={textStyle("small", "ink")}>{campo.superficie}</Text>
+              </View>
+            ) : null}
+            {campo.coperto != null ? (
+              <View style={styles.chip}>
+                <Icon
+                  name={campo.coperto ? "home-outline" : "sunny-outline"}
+                  size={theme.iconSizes.xs}
+                  color="ink"
+                />
+                <Text style={textStyle("small", "ink")}>
+                  {campo.coperto ? "Coperto" : "Scoperto"}
+                </Text>
+              </View>
+            ) : null}
+            {campo.minGiocatori != null || campo.maxGiocatori != null ? (
+              <View style={styles.chip}>
+                <Icon name="people-outline" size={theme.iconSizes.xs} color="ink" />
+                <Text style={textStyle("small", "ink")}>
+                  {campo.minGiocatori != null && campo.maxGiocatori != null
+                    ? `${campo.minGiocatori}–${campo.maxGiocatori} giocatori`
+                    : campo.maxGiocatori != null
+                      ? `Max ${campo.maxGiocatori} giocatori`
+                      : `Min ${campo.minGiocatori} giocatori`}
+                </Text>
+              </View>
+            ) : null}
+          </View>
         </Card>
       ))}
     </View>
@@ -671,9 +706,27 @@ const styles = StyleSheet.create({
     backgroundColor: theme.tints.blueTint,
   },
   campoRow: {
+    flexDirection: "column",
+    gap: theme.spacing.sm,
+  },
+  campoRowTop: {
     flexDirection: "row",
     alignItems: "center",
     gap: theme.spacing.md,
+  },
+  campoChips: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: theme.spacing.xs,
+  },
+  chip: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: 3,
+    borderRadius: theme.radius.pill,
+    backgroundColor: theme.colors.chip,
   },
   campoRowHighlight: {
     borderWidth: 2,
