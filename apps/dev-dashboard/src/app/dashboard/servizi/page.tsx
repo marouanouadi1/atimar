@@ -15,7 +15,7 @@ export default async function ServiziPage() {
         )}
         <ServiziTable
           data={servizi ?? []}
-          action={<CreaServizioDialog />}
+          action={<CreaServizioDialog key="crea-servizio" />}
         />
       </div>
     </>

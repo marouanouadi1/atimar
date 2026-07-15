@@ -15,7 +15,7 @@ export default async function SportPage() {
         )}
         <SportTable
           data={sport ?? []}
-          action={<CreaSportDialog />}
+          action={<CreaSportDialog key="crea-sport" />}
         />
       </div>
     </>

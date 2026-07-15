@@ -21,7 +21,7 @@ export default async function CampiPage() {
           data={(campi ?? []) as Parameters<typeof CampiTable>[0]['data']}
           strutture={strutture ?? []}
           sport={sport ?? []}
-          action={<CreaCampoDialog strutture={strutture ?? []} sport={sport ?? []} />}
+          action={<CreaCampoDialog key="crea-campo" strutture={strutture ?? []} sport={sport ?? []} />}
         />
       </div>
     </>

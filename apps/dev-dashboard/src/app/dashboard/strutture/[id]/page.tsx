@@ -63,7 +63,7 @@ export default async function StrutturaDetailPage({ params }: Props) {
       <div className="p-6 flex flex-col gap-8">
 
         {/* Dati generali */}
-        <Section title="Dati generali" action={<ModificaStrutturaDialog struttura={struttura} cittaSelezionata={cittaStruttura ?? null} />}>
+        <Section title="Dati generali" action={<ModificaStrutturaDialog key="modifica-struttura" struttura={struttura} cittaSelezionata={cittaStruttura ?? null} />}>
           <div className="border rounded-xl p-6 flex flex-col gap-6">
             <div className="flex items-start justify-between">
               <h3 className="text-lg font-semibold">{struttura.nome}</h3>
@@ -118,6 +118,7 @@ export default async function StrutturaDetailPage({ params }: Props) {
         {/* Campi sportivi */}
         <Section title="Campi sportivi" action={
           <CreaCampoDialog
+            key="crea-campo"
             strutture={[]}
             sport={sport ?? []}
             fixedStrutturaId={strutturaId}
@@ -177,7 +178,7 @@ export default async function StrutturaDetailPage({ params }: Props) {
         </Section>
 
         {/* Servizi */}
-        <Section title="Servizi" action={<AggiungiServizioDialog strutturaId={strutturaId} servizi={tuttiServizi ?? []} />}>
+        <Section title="Servizi" action={<AggiungiServizioDialog key="aggiungi-servizio" strutturaId={strutturaId} servizi={tuttiServizi ?? []} />}>
           {!servizi?.length ? (
             <p className="text-sm text-muted-foreground">Nessun servizio aggiunto.</p>
           ) : (
