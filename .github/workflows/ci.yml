@@ -48,7 +48,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
         with:
-          version: 9.15.9
+          version: 11.13.1
           run_install: false
 
       - name: Setup Node
@@ -82,7 +82,7 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
         with:
-          version: 9.15.9
+          version: 11.13.1
           run_install: false
 
       - name: Setup Node

@@ -2,6 +2,10 @@ packages:
   - "apps/*"
   - "packages/*"
 
+allowBuilds:
+  sharp: true
+  unrs-resolver: true
+
 # Single source of truth for dependencies shared across workspace packages.
 # Reference these in package.json with "catalog:" so versions can never drift
 # (drift produces duplicate copies of e.g. @types/react -> "two different types
