@@ -369,6 +369,7 @@ export type Database = {
           chiuso: boolean | null
           fk_struttura: number
           giorno_settimana: number
+          id: number
           note: string | null
           orario_apertura: string | null
           orario_chiusura: string | null
@@ -378,6 +379,7 @@ export type Database = {
           chiuso?: boolean | null
           fk_struttura: number
           giorno_settimana: number
+          id?: number
           note?: string | null
           orario_apertura?: string | null
           orario_chiusura?: string | null
@@ -387,6 +389,7 @@ export type Database = {
           chiuso?: boolean | null
           fk_struttura?: number
           giorno_settimana?: number
+          id?: number
           note?: string | null
           orario_apertura?: string | null
           orario_chiusura?: string | null

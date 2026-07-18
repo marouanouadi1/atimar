@@ -1,4 +1,4 @@
-import { getStrutturaById, getCampiByStruttura, getServiziByStruttura, getCittaById, getServizi, getFotoByStruttura, getSport } from '@atimar/api'
+import { getStrutturaById, getCampiByStruttura, getServiziByStruttura, getCittaById, getServizi, getFotoByStruttura, getSport, getOrariByStruttura } from '@atimar/api'
 import { Topbar } from '@/components/topbar'
 import { Badge } from '@/components/ui/badge'
 import { notFound } from 'next/navigation'
@@ -6,9 +6,12 @@ import { ModificaStrutturaDialog } from '@/components/dialogs/modifica-struttura
 import { AggiungiServizioDialog } from '@/components/dialogs/aggiungi-servizio-dialog'
 import { CreaCampoDialog } from '@/components/dialogs/crea-campo-dialog'
 import { FotoCampoDialog } from '@/components/dialogs/foto-campo-dialog'
+import { OrariStrutturaDialog } from '@/components/dialogs/orari-struttura-dialog'
 import { FotoStruttura } from './foto-struttura'
 
 type Props = { params: Promise<{ id: string }> }
+
+const GIORNI = ['Lunedì', 'Martedì', 'Mercoledì', 'Giovedì', 'Venerdì', 'Sabato', 'Domenica']
 
 type FotoCampo = {
   id: number
@@ -44,13 +47,14 @@ export default async function StrutturaDetailPage({ params }: Props) {
   const { id } = await params
   const strutturaId = Number(id)
 
-  const [{ data: struttura }, { data: campi }, { data: servizi }, { data: tuttiServizi }, { data: foto }, { data: sport }] = await Promise.all([
+  const [{ data: struttura }, { data: campi }, { data: servizi }, { data: tuttiServizi }, { data: foto }, { data: sport }, { data: orari }] = await Promise.all([
     getStrutturaById(strutturaId),
     getCampiByStruttura(strutturaId),
     getServiziByStruttura(strutturaId),
     getServizi(),
     getFotoByStruttura(strutturaId),
     getSport(),
+    getOrariByStruttura(strutturaId),
   ])
 
   if (!struttura) notFound()
@@ -203,6 +207,55 @@ export default async function StrutturaDetailPage({ params }: Props) {
                           <Badge className={servizio.attivo ? 'bg-green-500 text-white hover:bg-green-600' : ''} variant={servizio.attivo ? 'default' : 'secondary'}>
                             {servizio.attivo ? 'Attivo' : 'Inattivo'}
                           </Badge>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </Section>
+
+        {/* Orari di apertura */}
+        <Section title="Orari di apertura" action={<OrariStrutturaDialog key="orari-struttura" strutturaId={strutturaId} orari={orari ?? []} />}>
+          {struttura.sempre_aperto && (
+            <p className="text-sm text-muted-foreground">Struttura contrassegnata come sempre aperta.</p>
+          )}
+          {!orari?.length ? (
+            <p className="text-sm text-muted-foreground">Orari non impostati.</p>
+          ) : (
+            <div className="border rounded-lg overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-muted/50">
+                  <tr>
+                    <th className="text-left px-4 py-2 font-medium">Giorno</th>
+                    <th className="text-left px-4 py-2 font-medium">Orari</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {GIORNI.map((nomeGiorno, giorno) => {
+                    const righeGiorno = orari.filter((o) => o.giorno_settimana === giorno)
+                    if (!righeGiorno.length) {
+                      return (
+                        <tr key={giorno} className="border-t">
+                          <td className="px-4 py-2 font-medium">{nomeGiorno}</td>
+                          <td className="px-4 py-2 text-muted-foreground">—</td>
+                        </tr>
+                      )
+                    }
+                    const chiuso = righeGiorno.some((r) => r.chiuso)
+                    return (
+                      <tr key={giorno} className="border-t">
+                        <td className="px-4 py-2 font-medium">{nomeGiorno}</td>
+                        <td className="px-4 py-2">
+                          {chiuso ? (
+                            <Badge variant="secondary">Chiuso</Badge>
+                          ) : (
+                            righeGiorno
+                              .map((r) => `${(r.orario_apertura ?? '').slice(0, 5)}–${(r.orario_chiusura ?? '').slice(0, 5)}`)
+                              .join(', ')
+                          )}
                         </td>
                       </tr>
                     )

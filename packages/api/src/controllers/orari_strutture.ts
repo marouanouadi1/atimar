@@ -2,7 +2,6 @@ import type { Database } from '@atimar/db-types';
 import { getSupabaseClient } from '../client';
 
 type OrarioInsert = Database['public']['Tables']['Orari_Strutture']['Insert'];
-type OrarioUpdate = Database['public']['Tables']['Orari_Strutture']['Update'];
 
 export function getOrari() {
   return getSupabaseClient().from('Orari_Strutture').select('*');
@@ -24,24 +23,16 @@ export function createOrario(orario: OrarioInsert) {
     .single();
 }
 
-export function updateOrario(
-  fkStruttura: number,
-  giornoSettimana: number,
-  updates: OrarioUpdate,
-) {
-  return getSupabaseClient()
-    .from('Orari_Strutture')
-    .update(updates)
-    .eq('fk_struttura', fkStruttura)
-    .eq('giorno_settimana', giornoSettimana)
-    .select()
-    .single();
+// Inserisce più righe in una volta sola (una per fascia oraria/giorno chiuso).
+export function createOrari(orari: OrarioInsert[]) {
+  return getSupabaseClient().from('Orari_Strutture').insert(orari).select();
 }
 
-export function deleteOrario(fkStruttura: number, giornoSettimana: number) {
+// Cancella tutti gli orari di una struttura: usata insieme a createOrari
+// per il salvataggio "replace-all" dell'editor settimanale.
+export function deleteOrariByStruttura(fkStruttura: number) {
   return getSupabaseClient()
     .from('Orari_Strutture')
     .delete()
-    .eq('fk_struttura', fkStruttura)
-    .eq('giorno_settimana', giornoSettimana);
+    .eq('fk_struttura', fkStruttura);
 }
