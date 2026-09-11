@@ -64,7 +64,7 @@
     "eslint-config-expo": "~56.0.4",
     "react-native-svg-transformer": "^1.5.3",
     "typescript": "catalog:",
-    "vitest": "^4.1.9"
+    "vitest": "^4.1.11"
   },
   "private": true
 }
