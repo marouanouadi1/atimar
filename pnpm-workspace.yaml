@@ -6,6 +6,12 @@ allowBuilds:
   sharp: true
   unrs-resolver: true
 
+# brace-expansion 1.1.14 (via minimatch 3.x nei plugin eslint) non viene spostata da
+# `pnpm update` anche se la correzione è nel range: la forziamo a >=1.1.16 (stessa
+# major) per GHSA-3jxr-9vmj-r5cp. Rimuovibile quando nessuno risolve più la 1.1.x vulnerabile.
+overrides:
+  "brace-expansion@<1.1.16": "^1.1.16"
+
 # Single source of truth for dependencies shared across workspace packages.
 # Reference these in package.json with "catalog:" so versions can never drift
 # (drift produces duplicate copies of e.g. @types/react -> "two different types
@@ -13,7 +19,7 @@ allowBuilds:
 catalog:
   react: "19.2.7"
   react-dom: "19.2.7"
-  next: "16.2.11"
+  next: "16.3.3"
   "@supabase/supabase-js": "^2.108.1"
   "@tanstack/react-query": "^5.80.0"
   "@types/node": "^25"
